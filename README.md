@@ -10,9 +10,11 @@ bash install_colabbatch_linux_custom.sh
 ```
 
 3. Download Foldseek installation file and install <br>
-```wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz```
-```tar xvzf foldseek-linux-avx2.tar.gz```
-```export PATH=$(pwd)/foldseek/bin/:$PATH```
+```
+wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
+tar xvzf foldseek-linux-avx2.tar.gz
+export PATH=$(pwd)/foldseek/bin/:$PATH
+```
 
 
 
