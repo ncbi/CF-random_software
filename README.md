@@ -2,7 +2,7 @@
 The general installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br><br>
 
 # Installation
-CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek).<br>
+CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek).
 It can be simply installed with following commands. <br><br>
 
 1. Install miniconda <br>
