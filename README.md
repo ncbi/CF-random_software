@@ -3,9 +3,10 @@ The general installation and usage guidance of CF-random for predicting the alte
 
 
 # Installation
-  1.
-  2.
-  3.
+CF-random uses the *[localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and *[foldseek](https://github.com/steineggerlab/foldseek).
+Currently, CF-random only supports the linux environments.
+
+
 
 
 # Usage
