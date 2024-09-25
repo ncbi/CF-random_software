@@ -8,9 +8,9 @@ CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfol
 ```bash install_colabbatch_linux_custom.sh```
 
 2. Download Foldseek installation file and install <br>
-``wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz``
-`tar xvzf foldseek-linux-avx2.tar.gz`
-``export PATH=$(pwd)/foldseek/bin/:$PATH``
+```wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz```
+```tar xvzf foldseek-linux-avx2.tar.gz```
+```export PATH=$(pwd)/foldseek/bin/:$PATH```
 
 
 
