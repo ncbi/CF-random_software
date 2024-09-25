@@ -16,6 +16,12 @@ wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
 tar xvzf foldseek-linux-avx2.tar.gz
 export PATH=$(pwd)/foldseek/bin/:$PATH
 ```
+
+3. Add additional libries to conda environment
+```
+conda activate <your localfolabfold environment>
+conda env update --file CF-random.yml --prune
+```
 <br>
 
 # Usage
