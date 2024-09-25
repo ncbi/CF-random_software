@@ -12,11 +12,10 @@ CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfol
 `tar xvzf foldseek-linux-avx2.tar.gz`
 ``export PATH=$(pwd)/foldseek/bin/:$PATH``
 
-<details>
-wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
+
+```wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
 tar xvzf foldseek-linux-avx2.tar.gz
-export PATH=$(pwd)/foldseek/bin/:$PATH
-</details>
+export PATH=$(pwd)/foldseek/bin/:$PATH```
 
 
 
