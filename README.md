@@ -1,6 +1,6 @@
 # Data and code for CF-random
 The general installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br>
-This program also can be used in Colab notebook.<br>
+For using CF-random in Colab notebook, please use following link.<br>
 ''' hyperlink for colab notebook '''<br><br>
 
 # Installation
