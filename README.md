@@ -3,7 +3,7 @@ The general installation and usage guidance of CF-random for predicting the alte
 
 # Installation
 CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek).
-It can be simply installed with following commands. <br><br>
+It can be simply installed with following commands. <br>
 
 1. Download and install localcolabfold <br>
 ```
