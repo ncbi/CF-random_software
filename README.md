@@ -5,8 +5,9 @@ The general installation and usage guidance of CF-random for predicting the alte
 CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek).
 It can be simply installed with following commands. <br><br>
 
-1. Install miniconda <br>
+1. Download and install localcolabfold <br>
 ```
+wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
 bash install_colabbatch_linux_custom.sh
 ```
 
@@ -17,7 +18,9 @@ tar xvzf foldseek-linux-avx2.tar.gz
 export PATH=$(pwd)/foldseek/bin/:$PATH
 ```
 
-3. Add additional libries to conda environment
+3. Add additional libries to conda environment<br>
+Please check out your miniconda environment after finished the first step.<br>
+The name of miniconda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
 conda env update --file CF-random.yml --prune
