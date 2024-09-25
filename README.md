@@ -33,17 +33,17 @@ To execute all modes of CF-random, a multiple sequence alignment (MSA) is requir
 
 For running the fold-switching default mode. <br>
 ```
-python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
+python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
 ```
 
 For executing the alternative confroamtion mode. <br>
 ```
-python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
+python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
 ```
 
 For running the CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
-python main.py --fname folder_containing_MSA/ --option blind
+python main.py --fname <folder_containing_MSA> --option blind
 ```
 <br>
 
