@@ -5,8 +5,9 @@ The general installation and usage guidance of CF-random for predicting the alte
 # Installation
 CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek). It can be simply installed with following commands. <br><br>
 1. Install miniconda <br>
-``bash install_colabbatch_linux_custom.sh`` 
-<br>2. Download Foldseek installation file and install <br>
+``bash install_colabbatch_linux_custom.sh``
+
+2. Download Foldseek installation file and install <br>
 ``wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;``<br>
 `tar xvzf foldseek-linux-avx2.tar.gz`<br>
 ``export PATH=$(pwd)/foldseek/bin/:$PATH``<br>
