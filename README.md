@@ -22,8 +22,8 @@ export PATH=$(pwd)/foldseek/bin/:$PATH
 ```
 
 3. Add additional libries to conda environment<br>
-Please check out your miniconda environment after finished the first step.<br>
-The name of miniconda environment would be the installed directory.
+Please check out your conda environment after finished the first step.<br>
+The name of conda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
 conda env update --file CF-random.yml --prune
