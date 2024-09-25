@@ -37,4 +37,10 @@ For running the CF-random with blind mode covering both fold-switching and alter
 python main.py --fname folder_containing_MSA/ --option blind
 ```
 
+# How to Cite
+To be updated
+
+# Lincese
+To be updated
+
 
