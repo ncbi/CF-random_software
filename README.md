@@ -52,7 +52,7 @@ python main.py --fname <folder_containing_MSA> --option blind
 
 # How to Cite
 To be updated
-<br>
+<br><br>
 
 # Lincese
 To be updated
