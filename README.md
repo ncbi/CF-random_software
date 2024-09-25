@@ -7,6 +7,9 @@ It can be simply installed with following commands. <br>
 
 1. Download and install localcolabfold <br>
 ```
+'''
+Download the bash script file in installation folder or use following command
+'''
 wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
 bash install_colabbatch_linux_custom.sh
 ```
