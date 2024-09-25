@@ -8,6 +8,7 @@ Installation guide
   3.
 
 
+# Usage
 CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.
 To execute all modes of CF-random, a multiple sequence alignment (MSA) is required. PDB IDs for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for running the default fold-switching and alternative conformation.
 
