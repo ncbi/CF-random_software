@@ -1,8 +1,8 @@
 # Data and code for CF-random
-Prediction of alternative conformation and fold-switching proteins with AF2
+The general installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.
 
 
-Installation guide
+# Installation
   1.
   2.
   3.
