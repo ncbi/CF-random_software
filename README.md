@@ -47,7 +47,7 @@ If CF-random predicts both fold1 and fold2, it will produce as follows:
 > plDDT scores of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation <br>
 > 
 If CF-random can't predict both fold1 and fold2, it will not generate anything.
-<br>
+<br><br>
 
 
 For executing the alternative confroamtion mode. <br>
