@@ -38,6 +38,13 @@ export PATH=$(pwd)/foldseek/bin/:$PATH
 CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
 To execute all modes of CF-random, a multiple sequence alignment (MSA) is required.<br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for running the default fold-switching and alternative conformation. Blind mode doesn't require the PDB files.<br>
 
+```
+ -fname ####    |  folder name having a multiple sequence alignment (MSA)
+ -pdb1  ####    |  dmoninat reference model used to calculate TM-score with predicted models
+ -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
+ -option ###    |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
+```
+
 ### For running the fold-switching default mode. <br>
 ```
 python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
