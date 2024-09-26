@@ -42,27 +42,13 @@ To execute all modes of CF-random, a multiple sequence alignment (MSA) is requir
 ```
 python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
 ```
-If CF-random predicts both fold1 and fold2 of fold-switching proteins, it will produce as follows:
-> selection of random MSA size <br>
-> TM-score of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation <br>
-> plDDT scores of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation <br>
-> D scatter plot of TM-score of whole structure and fold-switching region 
-If CF-random can't predict both fold1 and fold2, it will not generate anything.
-<br><br>
-
+<br>
 
 ### For executing the alternative confroamtion mode. <br>
 ```
 python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
 ```
-If CF-random predicts both fold1 and fold2 of alternative conformations of protein, it will produce as follows:
-> selection of random MSA size <br>
-> TM-score of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation <br>
-> plDDT scores of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation <br>
-> 2D scatter plot of TM-score of whole structure
-If CF-random can't predict both fold1 and fold2, it will not generate anything.
-<br><br>
-
+<br>
 
 ### For running the CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
