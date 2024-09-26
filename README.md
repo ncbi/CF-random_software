@@ -17,19 +17,19 @@ wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_c
 bash install_colabbatch_linux_custom.sh
 ```
 
-2. Download Foldseek installation file and install <br>
-```
-wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
-tar xvzf foldseek-linux-avx2.tar.gz
-export PATH=$(pwd)/foldseek/bin/:$PATH
-```
-
-3. Add additional libries to conda environment<br>
+2. Add additional libries to conda environment<br>
 Please check out your conda environment after finished the first step.<br>
 The name of conda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
 conda env update --file CF-random.yml --prune
+```
+
+3. Download Foldseek installation file and install <br>
+```
+wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
+tar xvzf foldseek-linux-avx2.tar.gz
+export PATH=$(pwd)/foldseek/bin/:$PATH
 ```
 <br>
 
