@@ -1,7 +1,7 @@
 # Data and code for CF-random
 The general installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br>
 For using CF-random in Colab notebook, please use following link.<br>
-''' hyperlink for colab notebook '''<br><br>
+''' hyperlink for colab notebook '''<br>
 
 # Installation
 Local CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek) under linux environment.<br>
@@ -32,7 +32,6 @@ wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz
 tar xvzf foldseek-linux-avx2.tar.gz
 export PATH=$(pwd)/foldseek/bin/:$PATH
 ```
-<br>
 
 # Usage
 CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
