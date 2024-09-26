@@ -41,6 +41,12 @@ For running the fold-switching default mode. <br>
 ```
 python main.py --fname <folder_containing_MSA> --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
 ```
+If CF-random predicts both fold1 and fold2, it will produce as follows:
+> selection of random MSA size
+> TM-score of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation
+> plDDT scores of prediction from full-length MSA, each of shallow random-MSA, and ensemble generation
+> 
+<br>
 
 For executing the alternative confroamtion mode. <br>
 ```
