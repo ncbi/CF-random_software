@@ -5,7 +5,7 @@ For using CF-random in Colab notebook, please use following link.<br>
 
 # Installation
 Local CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek) under linux environment.<br>
-For more details about localcolabfold, please visit [here](https://github.com/YoshitakaMo/localcolabfold) 
+For more details about localcolabfold, please visit [here.](https://github.com/YoshitakaMo/localcolabfold) <br>
 We currently not support the Windows and MacOS environment.<br>
 Installation can be done with following three commands. <br>
 
