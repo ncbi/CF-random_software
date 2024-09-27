@@ -37,7 +37,7 @@ conda activate "$COLABFOLDDIR/colabfold-conda"
 "$COLABFOLDDIR/colabfold-conda/bin/pip" install silence_tensorflow
 
 
-# # Download the updater
+## Download the updater
 # wget -qnc -O "$COLABFOLDDIR/update_linux.sh" \
 #     https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/update_linux.sh
 # chmod +x "$COLABFOLDDIR/update_linux.sh"
@@ -53,7 +53,7 @@ sed -i -e "s#from io import StringIO#from io import StringIO\nfrom silence_tenso
 rm -rf __pycache__
 popd
 
-Download weights
+## Download weights
 "$COLABFOLDDIR/colabfold-conda/bin/python3" -m colabfold.download
 echo "Download of alphafold2 weights finished."
 echo "-----------------------------------------"
