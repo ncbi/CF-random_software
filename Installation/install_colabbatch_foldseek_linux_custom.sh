@@ -74,3 +74,6 @@ wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
 echo "Installing Foldseek"
 tar xvzf foldseek-linux-avx2.tar.gz;
 export PATH=$(pwd)/foldseek/bin/:$PATH
+
+#### Downlaoding the parameters for running Foldseek
+foldseek databases PDB pdb tmp
