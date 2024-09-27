@@ -38,6 +38,7 @@ conda activate <your localfolabfold environment>
 ** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda
 ```
 <br>
+
 ### For running the fold-switching default mode. <br>
 ```
 python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
