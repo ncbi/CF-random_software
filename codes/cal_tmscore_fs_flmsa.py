@@ -108,7 +108,7 @@ class TM_score_fs():
            """
            
            tmscores = []
-           modelfiles = sorted(glob.glob(str(predfilepath) + "/*_relaxed*pdb"))
+           modelfiles = sorted(glob.glob(str(predfilepath) + "/*_unrelaxed*pdb"))
     
            if len(modelfiles)==0:
                    tmscores = [0.0,0.0,0.0,0.0,0.0]
