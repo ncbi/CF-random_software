@@ -10,7 +10,7 @@ We currently not support the Windows and MacOS environment.<br>
 
 Installation process including localcolabfold, dependencies, and Foldseek is done with following command.
 ```
-bash install_colabbatch_linux_custom.sh
+bash install_colabbatch_foldseek_linux_custom.sh
 ```
 
 
