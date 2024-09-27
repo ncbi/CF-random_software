@@ -1,4 +1,4 @@
-name: /vf/users/leem28/colabfold_custom_update/localcolabfold/colabfold-conda
+name: CFrandom
 channels:
   - bioconda
   - conda-forge
