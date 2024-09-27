@@ -125,7 +125,7 @@ class fs_range():
         print(pred_path)
     
     
-        pred_files = (glob.glob(str(pred_path) + "/*_relaxed*pdb"))
+        pred_files = (glob.glob(str(pred_path) + "/*_unrelaxed*pdb"))
     
     
         ##### read range file information
