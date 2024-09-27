@@ -35,7 +35,7 @@ export PATH=$(pwd)/foldseek/bin/:$PATH
 
 # Usage
 CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
-To execute all modes of CF-random, a multiple sequence alignment (MSA) is required.<br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for running the default fold-switching and alternative conformation. Blind mode doesn't require the PDB files.<br>
+To execute all modes of CF-random, a multiple sequence alignment (MSA) is required ((mandatory).<br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
 
 ```
  -fname ####    |  folder name having a multiple sequence alignment (MSA)
