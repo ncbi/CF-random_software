@@ -43,6 +43,8 @@ To execute all modes of CF-random, a multiple sequence alignment (MSA) is requir
  -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
  -option ###    |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
+*In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
+*In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 
 ### For running the fold-switching default mode. <br>
 ```
