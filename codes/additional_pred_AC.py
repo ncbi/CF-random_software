@@ -67,32 +67,32 @@ class additional_prediction_AC():
 
 
         elif selection == 1: ## max = 2, max-extra = 4
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 2 --max-extra-seq 4 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 2 --max-extra-seq 4 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
         elif selection == 2: ## max = 4, max-extra = 8
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 4 --max-extra-seq 8 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 4 --max-extra-seq 8 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
         elif selection == 3: ## max = 8, max-extra = 16
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 8 --max-extra-seq 16 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 8 --max-extra-seq 16 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
         elif selection == 4: ## max = 16, max-extra = 32
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 16 --max-extra-seq 32 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 16 --max-extra-seq 32 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
         elif selection == 5: ## max = 32, max-extra = 64
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 32 --max-extra-seq 64 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 32 --max-extra-seq 64 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
         elif selection == 6: ## max = 64, max-extra = 128
-            command = 'colabfold_batch --amber --use-gpu-relax --num-seeds 20 --max-seq 64 --max-extra-seq 128 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
+            command = 'colabfold_batch --num-seeds 20 --max-seq 64 --max-extra-seq 128 ' + search_dir + ' ' + pwd  + 'additional_sampling/' + pdb1_name
             print(command)
             os.system(command)
 
