@@ -64,9 +64,6 @@ python main.py --fname folder_containing_MSA/ --option blind
 ```
 <br>
 
-# Examples
-To be updated
-
 # How to Cite
 To be updated
 <br><br>
