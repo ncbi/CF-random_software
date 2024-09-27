@@ -33,8 +33,8 @@ class TM_score():
         pwd = os.getcwd() + '/'
         tmscores = []
         
-        #files_list = sorted(glob.glob(str(pred_dir) + "/*_relaxed*pdb"))
-        files_list = (glob.glob(str(pred_dir) + "/*_relaxed*pdb"))
+        #files_list = sorted(glob.glob(str(pred_dir) + "/*_unrelaxed*pdb"))
+        files_list = (glob.glob(str(pred_dir) + "/*_unrelaxed*pdb"))
         print(files_list)
 
 
