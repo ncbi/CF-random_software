@@ -23,7 +23,8 @@ Please check out your conda environment after finished the first step.<br>
 The name of conda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
-** examples of generated localcolabfold name would be "our installed directory"/localcolabfold/colabfold-conda
+** examples of generated localcolabfold name would be "directory when installed the localcolabfold"/localcolabfold/colabfold-conda
+
 conda env update --file CF-random.yml --prune
 ```
 
