@@ -62,3 +62,15 @@ echo "Add ${COLABFOLDDIR}/colabfold-conda/bin to your PATH environment variable 
 echo -e "i.e. for Bash:\n\texport PATH=\"${COLABFOLDDIR}/colabfold-conda/bin:\$PATH\""
 echo "For more details, please run 'colabfold_batch --help'."
 
+
+
+pip install textalloc tmtools adjustText thefuzz
+
+
+
+#### Downloading and installing foldseek
+echo "Downloading Foldseek"
+wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
+echo "Installing Foldseek"
+tar xvzf foldseek-linux-avx2.tar.gz;
+export PATH=$(pwd)/foldseek/bin/:$PATH
