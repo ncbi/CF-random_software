@@ -25,7 +25,6 @@ The name of conda environment would be the installed directory.
 conda activate <your localfolabfold environment>
 ** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda
 
-pip install textalloc tmtools adjustText thefuzz
 ```
 
 3. Download Foldseek installation file and install <br>
