@@ -34,8 +34,8 @@ class TM_score():
         pwd = os.getcwd() + '/'
         tmscores = []
         
-        #files_list = sorted(glob.glob(str(pred_dir) + "/*_relaxed*pdb"))
-        files_list = (glob.glob(str(pred_dir) + "/*_relaxed*pdb"))
+        #files_list = sorted(glob.glob(str(pred_dir) + "/*_unrelaxed*pdb"))
+        files_list = (glob.glob(str(pred_dir) + "/*_unrelaxed*pdb"))
         print(files_list)
 
 
@@ -97,7 +97,7 @@ class TM_score():
 class CF_MSA_max():
     def __init__(self, search_dir, output_dir, pdb_name, rseed):
 
-        command = 'colabfold_batch --amber --use-gpu-relax --model-type alphafold2 --num-seeds 5 --random-seed ' + str(rseed) + search_dir + output_dir
+        command = 'colabfold_batch --num-seeds 5 --random-seed ' + str(rseed) + search_dir + output_dir
         print(command)
         os.system(command)
         
@@ -200,7 +200,7 @@ class CF_MSA_var():
                 ext_msa = ext_msa * multi
 
                 #### Colabfold part
-                command = 'colabfold_batch --amber --use-gpu-relax --model-type alphafold2 --num-seed 5 --max-seq ' + str(max_msa) + ' --max-extra-seq ' + str(ext_msa) + search_dir + output_dir + str(ran_seed) + '_max_' + str(max_msa) + '_ext_' + str(ext_msa)
+                command = 'colabfold_batch --num-seed 5 --max-seq ' + str(max_msa) + ' --max-extra-seq ' + str(ext_msa) + search_dir + output_dir + str(ran_seed) + '_max_' + str(max_msa) + '_ext_' + str(ext_msa)
                 print(command)
                 os.system(command)
 
