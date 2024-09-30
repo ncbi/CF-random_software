@@ -25,7 +25,6 @@ pip install textalloc tmtools adjustText thefuzz
 Once finalize the dependencies, install the Foldseek.
 <br>
 ```
-
 wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
 tar xvzf foldseek-linux-avx2.tar.gz;
 export PATH= "current directory" /localcolabfold/foldseek/bin/:$PATH
