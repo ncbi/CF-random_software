@@ -17,7 +17,7 @@ bash install_colabbatch_linux.sh
 
 
 After finishing the installation of localcolabfold, activate conda environment.<br>
-Conda name would be "installed localcolabfold directory", e.g.) "current directory" /localcolabfold/colabfold-conda <br>
+Conda name would be "installed localcolabfold directory", e.g.) "current directory" + /localcolabfold/colabfold-conda <br>
 ```
 conda activate " current directory /localcolabfold/colabfold-conda"
 pip install textalloc tmtools adjustText thefuzz
