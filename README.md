@@ -25,9 +25,7 @@ pip install textalloc tmtools adjustText thefuzz
 Once finalize the dependencies, install the Foldseek.
 <br>
 ```
-wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
-tar xvzf foldseek-linux-avx2.tar.gz;
-export PATH=$(pwd)/foldseek/bin/:$PATH
+conda install -c conda-forge -c bioconda foldseek
 foldseek databases PDB pdb tmp
 ```
 
