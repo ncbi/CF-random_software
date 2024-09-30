@@ -27,7 +27,7 @@ Once finalize the dependencies, install the Foldseek.
 ```
 wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
 tar xvzf foldseek-linux-avx2.tar.gz;
-export PATH= "current directory" /localcolabfold/foldseek/bin/:$PATH
+export PATH=$(pwd)/foldseek/bin/:$PATH
 foldseek databases PDB pdb tmp
 ```
 
