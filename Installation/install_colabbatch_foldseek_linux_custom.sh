@@ -21,6 +21,10 @@ conda create -p "$COLABFOLDDIR/colabfold-conda" -c conda-forge -c bioconda \
     kalign2=2.04 hhsuite=3.3.0 mmseqs2=15.6f452 -y
 conda activate "$COLABFOLDDIR/colabfold-conda"
 
+
+
+#### installing the dependencies
+
 # install ColabFold and Jaxlib
 # "$COLABFOLDDIR/colabfold-conda/bin/pip" install --no-warn-conflicts \
 #     "colabfold[alphafold-without-jax] @ git+https://github.com/sokrypton/ColabFold"
@@ -37,7 +41,7 @@ conda activate "$COLABFOLDDIR/colabfold-conda"
 "$COLABFOLDDIR/colabfold-conda/bin/pip" install silence_tensorflow
 
 
-## Download the updater
+# # Download the updater
 # wget -qnc -O "$COLABFOLDDIR/update_linux.sh" \
 #     https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/update_linux.sh
 # chmod +x "$COLABFOLDDIR/update_linux.sh"
@@ -53,7 +57,7 @@ sed -i -e "s#from io import StringIO#from io import StringIO\nfrom silence_tenso
 rm -rf __pycache__
 popd
 
-## Download weights
+#Download weights
 "$COLABFOLDDIR/colabfold-conda/bin/python3" -m colabfold.download
 echo "Download of alphafold2 weights finished."
 echo "-----------------------------------------"
@@ -64,16 +68,20 @@ echo "For more details, please run 'colabfold_batch --help'."
 
 
 
+conda deactivate
+
+source "${COLABFOLDDIR}/conda/etc/profile.d/conda.sh"
+export PATH="${COLABFOLDDIR}/conda/condabin:${PATH}"
+conda activate "$COLABFOLDDIR/colabfold-conda"
+#### installing the dependencies
 pip install textalloc tmtools adjustText thefuzz
-
-
 
 #### Downloading and installing foldseek
 echo "Downloading Foldseek"
 wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
 echo "Installing Foldseek"
 tar xvzf foldseek-linux-avx2.tar.gz;
-export PATH=$(pwd)/foldseek/bin/:$PATH
+export PATH=${CURRENTPATH}/localcolabfold/foldseek/bin/:$PATH
 
-#### Downlaoding the parameters for running Foldseek
+
 foldseek databases PDB pdb tmp
