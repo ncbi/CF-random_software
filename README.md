@@ -10,7 +10,25 @@ We currently not support the Windows and MacOS environment.<br>
 
 Installation process including localcolabfold, dependencies, and Foldseek is done with following command.
 ```
-bash install_colabbatch_foldseek_linux_custom.sh
+wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
+bash install_colabbatch_linux.sh
+```
+<br>
+
+
+After finishing the installation of localcolabfold, activate conda environment.<br>
+Conda name would be "installed localcolabfold directory", e.g.) "current directory" /localcolabfold/colabfold-conda <br>
+```
+conda activate " current directory /localcolabfold/colabfold-conda"
+pip install textalloc tmtools adjustText thefuzz
+```
+Once finalize the dependencies, install the Foldseek.
+<br>
+```
+
+wget https://mmseqs.com/foldseek/foldseek-linux-avx2.tar.gz;
+tar xvzf foldseek-linux-avx2.tar.gz;
+export PATH= "current directory" /localcolabfold/foldseek/bin/:$PATH
 ```
 
 
