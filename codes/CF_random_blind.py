@@ -36,6 +36,7 @@ class blind_screening():
     
          max_score = 0
          max_ID = ''
+         print(IDs)
          
          with open(IDs) as log:
               f = log.read().splitlines()
@@ -47,7 +48,13 @@ class blind_screening():
     
          idx = np.argmax(scores)
 
-         return IDs.split('/')[0] + '/' + IDs.split('/')[1] + '/' + IDs.split('/')[2] + '/0_unrelaxed_'+pdbs[idx]+'.pdb'
+         with open(IDs) as log:
+             f = log.read().splitlines()
+             rank = [x.split('_')[1] for x in f if pdbs[idx] in x]
+
+
+         print(rank[-1])
+         return IDs.split('/')[0] + '/' + IDs.split('/')[1] + '/' + IDs.split('/')[2] + '/0_unrelaxed_rank_' + rank[-1] + '_' +pdbs[idx]+'.pdb'
     
 
 
@@ -183,8 +190,3 @@ class blind_screening():
         plt.savefig(pdb1_name + '.png', dpi=600)
     
         plt.clf()
-
-    
-
-
-    
