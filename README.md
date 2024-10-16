@@ -20,7 +20,8 @@ After finishing the installation of localcolabfold, activate conda environment.<
 Conda name would be "installed localcolabfold directory", e.g.) "current directory" + /localcolabfold/colabfold-conda <br>
 ```
 conda activate " current directory "/localcolabfold/colabfold-conda
-pip install textalloc tmtools adjustText thefuzz
+pip install textalloc tmtools adjustText thefuzz mdtraj
+pip3 install -U scikit-learn
 ```
 Once finalize the dependencies, install the Foldseek.
 <br>
