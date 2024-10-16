@@ -32,7 +32,7 @@ class blind_screening():
          tmscore = round(res.tm_norm_chain1,5) # wrt to model
          tmscores.append(tmscore)
     
-    def get_reference_ID(self, IDs, pdb1_name):
+    def get_reference_ID(self, IDs, pdb1_name, a3m_name):
     
          max_score = 0
          max_ID = ''
@@ -54,7 +54,7 @@ class blind_screening():
 
 
          print(rank[-1])
-         return IDs.split('/')[0] + '/' + IDs.split('/')[1] + '/' + IDs.split('/')[2] + '/0_unrelaxed_rank_' + rank[-1] + '_' +pdbs[idx]+'.pdb'
+         return IDs.split('/')[0] + '/' + IDs.split('/')[1] + '/' + IDs.split('/')[2] + '/' + a3m_name + '_unrelaxed_rank_' + rank[-1] + '_' +pdbs[idx]+'.pdb'
     
 
 
@@ -66,7 +66,16 @@ class blind_screening():
 
         pwd = os.getcwd() + '/'
     
-        ref = self.get_reference_ID(glob.glob(blind_path + '/*full*/log.txt')[0], pdb1_name)
+
+
+        a3m_name = glob.glob(blind_path + '/*max*/*pdb')
+        a3m_name = a3m_name[0]
+        a3m_name = a3m_name.split('/')[3]
+        a3m_name = a3m_name.split('_')[0]
+        print(a3m_name)
+        
+
+        ref = self.get_reference_ID(glob.glob(blind_path + '/*full*/log.txt')[0], pdb1_name, a3m_name)
         print(ref)
     
         tmscores = []
@@ -190,3 +199,4 @@ class blind_screening():
         plt.savefig(pdb1_name + '.png', dpi=600)
     
         plt.clf()
+
