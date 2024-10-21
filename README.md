@@ -1,19 +1,19 @@
 # Data and code for CF-random
-The general installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br>
-For using CF-random in Colab notebook, please use following [link](https://colab.research.google.com/drive/1LsSFe8FxJaLfNGUcE5HMgxxwGGlLfexk?usp=sharing).<br>
+General installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br>
+To use the CF-random in Colab notebook, please use following [link](https://colab.research.google.com/drive/1LsSFe8FxJaLfNGUcE5HMgxxwGGlLfexk?usp=sharing).<br>
 
 
 # Installation
-Local CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek) under linux environment.<br>
+CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek) under linux environment.<br>
 For more details about localcolabfold, please visit [here.](https://github.com/YoshitakaMo/localcolabfold) <br>
 We currently not support the Windows and MacOS environment.<br>
 
-Installation process including localcolabfold, dependencies, and Foldseek is done with following command.
+Installation process including localcolabfold, dependencies, and Foldseek is done with following commands.
 ```
 wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
 bash install_colabbatch_linux.sh
 
-** Alternatively, use a bash script in install folder
+** A bash script in install folder 
 bash install_colabbatch_linux.sh
 ```
 <br>
@@ -37,7 +37,7 @@ foldseek databases PDB pdb tmp
 
 # Usage
 CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
-To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential).<br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
+To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential). To avoid the overwriting the output files, we would recommend to use different folder name having MSA. <br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
 
 ```
  -fname ####    |  folder name having a multiple sequence alignment (MSA)
