@@ -36,8 +36,9 @@ foldseek databases PDB pdb tmp
 
 
 # Usage
-CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
-To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential). To avoid the overwriting the output files, we would recommend to use different folder name having MSA. <br> PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
+* CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
+* To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential). To avoid the overwriting the output files, we would recommend to use different folder name having MSA. <br>
+* PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
 
 ```
  -fname ####    |  folder name having a multiple sequence alignment (MSA)
@@ -45,10 +46,10 @@ To execute all modes of CF-random, a multiple sequence alignment (MSA) is requir
  -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
  -option ###    |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
-*In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
-*Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
+* In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
+* Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
  examples) pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX <br>
-*In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br><br>
+* In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br><br>
 
 
 Before running the CF-random, please check out your conda environment.<br>
