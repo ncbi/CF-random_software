@@ -12,11 +12,14 @@ Installation process including localcolabfold, dependencies, and Foldseek is don
 ```
 wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
 bash install_colabbatch_linux.sh
+
+** Alternatively, use a bash script in install folder
+bash install_colabbatch_linux.sh
 ```
 <br>
 
 
-After finishing the installation of localcolabfold, activate conda environment.<br>
+After the installation of localcolabfold, activate conda environment.<br>
 Conda name would be "installed localcolabfold directory", e.g.) "current directory" + /localcolabfold/colabfold-conda <br>
 ```
 conda activate " current directory "/localcolabfold/colabfold-conda
