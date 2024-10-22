@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
 
     if args.pdb1 is None:
-        pdb1_name = blind_pdb_name[:6]
+        pdb1_name = blind_pdb_name[:3]
     else:
         pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
 
