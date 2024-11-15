@@ -43,7 +43,7 @@ foldseek databases PDB pdb tmp
 * To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential). To avoid the overwriting the output files, we would recommend to use different folder name having MSA. <br>
 * PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
 * All required PDB files and MSA file should be in same directory with provided Python scripts.
-<span style="color:blue">some *This is Blue italic.* text</span>
+* <font color='red'>test blue color font</font>
 * Please make sure that a PDB file should have a single chain, not multiple chains. If PDB file has multiple chains, CF-random would be stopped. <Pbr>
 
 ```
