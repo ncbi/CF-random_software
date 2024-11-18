@@ -55,7 +55,7 @@ foldseek databases PDB pdb tmp
 * Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
  examples) pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX <br>
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br><br>
-* For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
+* ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
 
 Before running the CF-random, please check out your conda environment.<br>
 The name of conda environment would be the installed directory.
