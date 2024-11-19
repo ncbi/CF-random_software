@@ -84,14 +84,14 @@ range_fs_pairs_all.txt (This file is required for reading the fold-switching reg
 
 
 ### For executing the alternative confroamtion mode. <br>
-For this mode, ribose binding protein (RBP) would be predicted with two reference structures (i.e., 1ba2.pdb and 2dri.pdb) and a MSA file.
+For this mode, Phosphoglycerate kinase 1 would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and a MSA file.
 ```
-python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
+python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
 ```
 * Used input files: <br>
-PDB1: 1ba2.pdb <br>
-PDB2: 2dri.pdb <br>
-MSA: 1ba2-search/0.a3m (MSA file should be in a folder) <br>
+PDB1: 2ybe_A.pdb <br>
+PDB2: 2xe7_A.pdb <br>
+MSA: 2ybe_A-search/0.a3m (MSA file should be in a folder) <br>
 
 * Generated output files:
 
