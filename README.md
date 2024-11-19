@@ -16,7 +16,7 @@ Installation process including localcolabfold, dependencies, and Foldseek is don
 wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
 bash install_colabbatch_linux.sh
 
-** A bash script in install folder 
+** Or use a bash script in install folder 
 bash install_colabbatch_linux.sh
 ```
 <br>
