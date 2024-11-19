@@ -48,21 +48,19 @@ if __name__ == "__main__":
     parser.add_argument("--pdb1", type=str, help='PDB structure for the target crystal structure (target to be predicted)')
     parser.add_argument("--pdb2", type=str, help='PDB structure for the alternative crystal structure')
     parser.add_argument("--fname", type=str, help='put folder name after colabsearch' )
+    parser.add_argument("--pname", type=str, help='temporary name for predicting blind mode' )
     parser.add_argument("--option", type=str, help='select prediction mode AC and FS e.g. AC = alterantive conformation or FS = fold-switching')
     args = parser.parse_args()
 
 
-    if args.pdb1 is not None:
-        pdb1 = args.pdb1; pdb2 = args.pdb2
-    else:
-        blind_pdb_name= args.fname
 
-
-
-    if args.pdb1 is None:
-        pdb1_name = blind_pdb_name[:3]
+    if args.pdb1 is None and args.pname == "blind":
+        pdb1_name = args.pname
+    elif args.pdb1 is None:
+        pdb1_name = args.fname
     else:
         pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
+     
 
 
     pwd = os.getcwd() + '/'
