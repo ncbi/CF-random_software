@@ -82,7 +82,7 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
-_If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br><br>
+_If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
 * TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
 * TM-score plot of fold-switching region: TMscore_full-MSA_2oug_C.png <br>
 * TM-score plot of fold-switching region with label of prediction rank: TMscore_fs-region_full-MSA_2oug_C_label.png <br> 
