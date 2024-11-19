@@ -54,13 +54,20 @@ if __name__ == "__main__":
 
 
 
-    if args.pdb1 is None and args.pname == "blind":
-        pdb1_name = args.pname
+    if args.option == "blind":
+        if args.pdb1 is None:
+            pdb1_name = args.pname
+            print("work name:", pdb1_name)
+        else:
+            pdb1_name = args.fname
+            pdb1_name = pdb1_name.replace('/','')
+            print("work name:", pdb1_name)
     elif args.pdb1 is None:
         pdb1_name = args.fname
     else:
+        pdb1 = args.pdb1; pdb2 = args.pdb2
         pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
-     
+
 
 
     pwd = os.getcwd() + '/'
