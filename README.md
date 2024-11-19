@@ -87,7 +87,6 @@ For this mode, ribose binding protein (RBP) would be predicted with two referenc
 ```
 python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
 ```
-<br>
 * Used input files: <br>
 PDB1: 1ba2.pdb <br>
 PDB2: 2dri.pdb <br>
@@ -97,9 +96,17 @@ MSA: 1ba2-search/0.a3m (MSA file should be in a folder) <br>
 
 ### For running the CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
+<option 1>
 python main.py --fname folder_containing_MSA/ --option blind
+<option 2>
+python main.py --fname folder_containing_MSA/ --pname Mad2 --option blind
 ```
 <br>
+* Used input files: <br>
+MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
+
+
+* Generated output files:
 
 # How to Cite
 To be updated
