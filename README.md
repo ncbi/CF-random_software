@@ -101,9 +101,9 @@ The difference between 'AC' and 'inAC' is the number of samples. 'inAC' option g
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option inAC
 ```
 ### Used input files: <br>
-* PDB1: .pdb <br>
-* PDB2: .pdb <br>
-* MSA: -search/0.a3m (MSA file should be in a folder) <br>
+* PDB1: 2ybe_A.pdb <br>
+* PDB2: 2xe7_A.pdb <br>
+* MSA: 2ybe_A-search/0.a3m (MSA file should be in a folder) <br>
 * range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
 ### Generated output files: <br>
