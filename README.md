@@ -50,7 +50,7 @@ foldseek databases PDB pdb tmp
  -pname ####    |  project name for running the blind mode (only for blind mode)
  -pdb1  ####    |  dmoninat reference model used to calculate TM-score with predicted models
  -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
- -option ###    |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
+ -option ###    |  AC: predicting alternative conformations of protein with references, inAC: predicting the alternative conformation with the more number of samples, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
 * In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
 * Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
