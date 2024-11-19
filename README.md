@@ -69,9 +69,10 @@ conda activate <your localfolabfold environment>
 # Examples
 We provide some examples how users can run the CF-random with different modes.
 
-### For running the fold-switching (i.e. RfaH) default mode. <br>
+### For running the fold-switching default mode. <br>
+For this example, RfaH would be predicted with two reference structures (i.e., 2oug_C.pdb and 6c6s_D.pdb) and a MSA file.
 ```
-python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
+python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --option FS
 ```
 * Used input files: <br>
 PDB1: 2oug_C.pdb <br>
@@ -82,10 +83,17 @@ MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 
 
 ### For executing the alternative confroamtion mode. <br>
+For this mode, ribose binding protein (RBP) would be predicted with two reference structures (i.e., 1ba2.pdb and 2dri.pdb) and a MSA file.
 ```
 python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option AC
 ```
 <br>
+* Used input files: <br>
+PDB1: 1ba2.pdb <br>
+PDB2: 2dri.pdb <br>
+MSA: 1ba2-search/0.a3m (MSA file should be in a folder) <br>
+
+* Generated output files:
 
 ### For running the CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
