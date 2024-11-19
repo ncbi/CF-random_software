@@ -75,10 +75,10 @@ For this example, RfaH would be predicted with two reference structures (i.e., 2
 python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --option FS
 ```
 ### Used input files: <br>
-PDB1: 2oug_C.pdb <br>
-PDB2: 6c6s_D.pdb <br>
-MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
-range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
+* PDB1: 2oug_C.pdb <br>
+* PDB2: 6c6s_D.pdb <br>
+* MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
+* range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
