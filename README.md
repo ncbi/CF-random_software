@@ -84,8 +84,8 @@ range_fs_pairs_all.txt (This file is required for reading the fold-switching reg
 TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
 TM-score plot of fold-switching region: TMscore_full-MSA_2oug_C.png <br>
 TM-score plot of fold-switching region with label of prediction rank: TMscore_fs-region_full-MSA_2oug_C_label.png <br> 
-plDDT scores of predictions with deep MSA plddt_full-MSA_2oug_C.csv <br>
-plDDT scores of predictions with random MSAs plddt_random-MSA_2oug_C.csv <br>
+plDDT scores of predictions with deep MSA: plddt_full-MSA_2oug_C.csv <br>
+plDDT scores of predictions with random MSAs: plddt_random-MSA_2oug_C.csv <br>
 plDDT scores of ensemble generation: plddt_additional-MSA_2oug_C.csv <br>
 TM-scores of whole structure from predictions with deep MSA: TMScore_full-MSA_2oug_C.csv <br>
 TM-scores of whole structure from predictions with random MSAs: TMScore_random-MSA_2oug_C.csv <br>
