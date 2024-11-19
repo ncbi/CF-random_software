@@ -63,7 +63,7 @@ The name of conda environment would be the installed directory.
 conda activate <your localfolabfold environment>
 ** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda <br>
 ```
-<br><br>
+<br>
 
 # Examples
 We provide some examples how users can run the CF-random with different modes.
