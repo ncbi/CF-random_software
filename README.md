@@ -99,12 +99,22 @@ For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two refe
 ```
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
 ```
-* Used input files: <br>
-PDB1: 2ybe_A.pdb <br>
-PDB2: 2xe7_A.pdb <br>
-MSA: 2ybe_A-search/0.a3m (MSA file should be in a folder) <br>
+### Used input files: <br>
+* PDB1: .pdb <br>
+* PDB2: .pdb <br>
+* MSA: -search/0.a3m (MSA file should be in a folder) <br>
+* range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
-* Generated output files:
+### Generated output files: <br>
+_Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
+_If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
+* TM-score plot of whole structure:  <br>
+* TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_.csv <br>
+* TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_.csv <br>
+* TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_.csv
+  - TM-scores of whole structure were saved in TMs_plDDT~ file with ensembles. <br>
+* Selection of random MSA: selected_MSA-size_2oug_C.csv (When CF-random finds the MSA depth)
+  - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 ## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
