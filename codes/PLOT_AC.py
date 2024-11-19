@@ -108,7 +108,7 @@ class plot_2D_scatter_AC():
         plt.yticks(fontsize=15)
         
         plt.xlabel('TM-Score similar to fold1(' + pdb1_name + ')', fontsize=15); plt.ylabel('TM-score similar to fold2(' + pdb2_name + ')', fontsize=15)
-        plt.savefig('sample-TMscore_' + full_cate  + '_' + pdb1_name +  '.png')
+        plt.savefig('TMscore_' + full_cate  + '_' + pdb1_name +  '.png')
 
 
 
