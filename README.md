@@ -101,10 +101,8 @@ python main.py --fname folder_containing_MSA/ --option blind
 <option 2>
 python main.py --fname folder_containing_MSA/ --pname Mad2 --option blind
 ```
-<br>
 * Used input files: <br>
 MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
-
 
 * Generated output files:
 
