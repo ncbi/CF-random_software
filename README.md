@@ -69,18 +69,18 @@ conda activate <your localfolabfold environment>
 # Examples
 We provide some examples how users can run the CF-random with different modes.<br>
 First two modes such as fold-switching and alternative conformation are default modes of CF-random and the last one is a blind mode.
-### For CF-random with fold-switching mode. <br>
+## For CF-random with fold-switching mode. <br>
 For this example, RfaH would be predicted with two reference structures (i.e., 2oug_C.pdb and 6c6s_D.pdb) and a MSA file.
 ```
 python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --option FS
 ```
-* Used input files: <br>
+### Used input files: <br>
 PDB1: 2oug_C.pdb <br>
 PDB2: 6c6s_D.pdb <br>
 MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
-* Generated output files: <br>
+### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
 _If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br><br>
 * TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
