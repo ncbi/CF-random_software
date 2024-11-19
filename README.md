@@ -62,6 +62,9 @@ The name of conda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
 ** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda
+
+
+# Examples
 ```
 <br>
 
@@ -83,15 +86,11 @@ python main.py --fname folder_containing_MSA/ --option blind
 ```
 <br>
 
-# Examples
-To be updated
-<br><br>
-
 # How to Cite
 To be updated
 <br><br>
 
-# Lincese
+# License
 To be updated
 
 
