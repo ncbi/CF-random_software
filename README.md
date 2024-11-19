@@ -74,10 +74,10 @@ We provide some examples how users can run the CF-random with different modes.
 python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
 ```
 <br>
-Used input files:
-PDB1: 2oug_C.pdb
-PDB2: 6c6s_D.pdb
-MSA: 2oug_C-search/0.a3m (MSA file should be in a folder)
+Used input files: <br>
+PDB1: 2oug_C.pdb <br>
+PDB2: 6c6s_D.pdb <br>
+MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 
 Generated output files:
 
