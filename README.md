@@ -47,6 +47,7 @@ foldseek databases PDB pdb tmp
 
 ```
  -fname ####    |  folder name having a multiple sequence alignment (MSA)
+ -pname ####    |  project name for running the blind mode (only for blind mode)
  -pdb1  ####    |  dmoninat reference model used to calculate TM-score with predicted models
  -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
  -option ###    |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
