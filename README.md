@@ -61,10 +61,11 @@ Before running the CF-random, please check out your conda environment.<br>
 The name of conda environment would be the installed directory.
 ```
 conda activate <your localfolabfold environment>
-** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda
+** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda <br>
 
 
 # Examples
+
 ```
 <br>
 
