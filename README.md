@@ -84,7 +84,7 @@ range_fs_pairs_all.txt (This file is required for reading the fold-switching reg
 
 
 ### For executing the alternative confroamtion mode. <br>
-For this mode, Phosphoglycerate kinase 1 would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and a MSA file.
+For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and a MSA file.
 ```
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
 ```
