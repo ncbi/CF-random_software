@@ -92,6 +92,7 @@ python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb 
 PDB1: 1ba2.pdb <br>
 PDB2: 2dri.pdb <br>
 MSA: 1ba2-search/0.a3m (MSA file should be in a folder) <br>
+
 * Generated output files:
 
 ### For running the CF-random with blind mode covering both fold-switching and alternative conformation. <br>
