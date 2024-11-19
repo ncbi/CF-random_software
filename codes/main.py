@@ -23,12 +23,16 @@ import argparse
 from pred_cal_tmscore_FS import *
 from pred_cal_tmscore_blind import *
 from pred_cal_tmscore_AC import *
+from pred_cal_tmscore_AC_increased import *
 from additional_pred_FS import * 
 from additional_pred_AC import *
+from additional_pred_AC_increased import *
 from foldseek_run import *
 from CF_random_blind import *
 from cal_plddt_ACFS import *
+from cal_plddt_ACFS_increased import *
 from PLOT_AC import *
+from PLOT_AC_increased import *
 from PLOT_FS import *
 
 if __name__ == "__main__":
@@ -49,7 +53,7 @@ if __name__ == "__main__":
     parser.add_argument("--pdb2", type=str, help='PDB structure for the alternative crystal structure')
     parser.add_argument("--fname", type=str, help='put folder name after colabsearch' )
     parser.add_argument("--pname", type=str, help='temporary name for predicting blind mode' )
-    parser.add_argument("--option", type=str, help='select prediction mode AC and FS e.g. AC = alterantive conformation or FS = fold-switching')
+    parser.add_argument("--option", type=str, help='select prediction mode inAC, AC and FS e.g. AC = alterantive conformation or FS = fold-switching or inAC = increased sampling for predicting alternative conformation')
     args = parser.parse_args()
 
 
@@ -67,7 +71,6 @@ if __name__ == "__main__":
     else:
         pdb1 = args.pdb1; pdb2 = args.pdb2
         pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
-
 
 
     pwd = os.getcwd() + '/'
@@ -176,8 +179,183 @@ if __name__ == "__main__":
         plot_2D_scatter_AC(full, random, addition, pdb1, pdb1_name, pdb2, pdb2_name)
 
 
+        ######################################################################################################
+        ##### merging the plDDT and TM-scores.
+        TMs_whole_full = 'TMScore_full-MSA_' + pdb1_name + '.csv'
+        TMs_whole_addi = 'TMScore_additional-MSA_' + pdb1_name + '.csv'
+        TMs_whole_rand = 'TMScore_random-MSA_' + pdb1_name + '.csv'
+        plDDT_full = 'plddt_full-MSA_' + pdb1_name + '.csv'
+        plDDT_rand = 'plddt_random-MSA_' + pdb1_name + '.csv'
+        plDDT_addi = 'plddt_additional-MSA_' + pdb1_name + '.csv'
+
+        ## deep MSA
+        f = open(TMs_whole_full); text = f.read(); f.close()
+        f = open(TMs_whole_full, 'w'); f.write("## TM-score of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_full); text = f.read(); f.close()
+        f = open(plDDT_full, 'w'); f.write("## plDDT of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_full + ' ' + plDDT_full + ' > TMs_plDDT_full_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_full = 'rm ' + TMs_whole_full; rm_plDDT_full = 'rm ' + plDDT_full
+        os.system(rm_TMs_whole_full); os.system(rm_plDDT_full)
 
 
+        ## random MSAs
+        f = open(TMs_whole_rand); text = f.read(); f.close()
+        f = open(TMs_whole_rand, 'w'); f.write("## TM-score of whole structure from random MSAs\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_rand); text = f.read(); f.close()
+        f = open(plDDT_rand, 'w'); f.write("## plDDT of whole structure from random MSAs\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_rand + ' ' + plDDT_rand + ' > TMs_plDDT_rand_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_rand = 'rm ' + TMs_whole_rand; rm_plDDT_rand = 'rm ' + plDDT_rand
+        os.system(rm_TMs_whole_rand); os.system(rm_plDDT_rand)
+
+
+        ## ensemble generation
+        f = open(TMs_whole_addi); text = f.read(); f.close()
+        f = open(TMs_whole_addi, 'w'); f.write("## TM-score of whole structure from ensemble generation\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_addi); text = f.read(); f.close()
+        f = open(plDDT_addi, 'w'); f.write("## plDDT of whole structure from deep generation\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_addi + ' ' + plDDT_addi + ' > TMs_plDDT_addi_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_addi = 'rm ' + TMs_whole_addi; rm_plDDT_addi = 'rm ' + plDDT_addi
+        os.system(rm_TMs_whole_addi); os.system(rm_plDDT_addi)
+
+
+
+
+
+
+
+    elif args.option == "inAC":
+        print("Predicting alternative conformations with the increased number of samples")
+        ######################################################################################################
+        ###### running prediction using full- and shallow random-MSA
+        if os.path.exists(success + '/' + pdb1_name) and succ_dir_count >= 8:
+            print("Predictions including full- and random-MSA were already done")
+        else:
+            pred_1st_all = prediction_all_AC(pdb1, pdb1_name, pdb2, pdb2_name, search_dir)
+            shallow_MSA_size = []
+            shallow_MSA_size = np.append(shallow_MSA_size, pred_1st_all.size_selection)
+            print("               ")
+            print("Specific size of shallow random MSA is similar to full-MSA")
+            print(shallow_MSA_size)
+            np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
+
+        ######################################################################################################
+        ###### additional prediction based on selected size
+        add_dir = 'additional_sampling/'
+        shallow_MSA_size = genfromtxt("selected_MSA-size_" + pdb1_name + ".csv")
+
+        add_pred_dir = add_dir + pdb1_name
+
+        if os.path.isdir( add_pred_dir ):
+            print("Checking predictions of ensembles after selection")
+            num_files = len([f for f in os.listdir(add_pred_dir)if os.path.isfile(os.path.join(add_pred_dir, f))])
+            print(num_files)
+
+            if num_files > 200:
+                print("Predictions were already done")
+            else:
+                additional_prediction_AC(search_dir, pdb1, pdb1_name, pdb2, pdb2_name, pwd, shallow_MSA_size)
+
+        else:
+            additional_prediction_AC(search_dir, pdb1, pdb1_name, pdb2, pdb2_name, pwd, shallow_MSA_size)
+
+        ######################################################################################################
+        ##### calculate plddt including initial and additional predictions
+        if os.path.exists( pwd + add_dir ):
+            list_org_samplings = glob.glob( str(pwd) + str(success) + '/' + str(pdb1_name) + '/*full_rand*/')
+            list_ran_samplings = glob.glob( str(pwd) + str(success) + '/' + str(pdb1_name) + '/*max*/')
+            list_add_samplings = glob.glob( str(pwd) + str(add_dir) + str(pdb1_name))
+
+            full = 'full-MSA'
+            random = 'random-MSA'
+            addition = 'additional-MSA'
+            plddt_cal(list_org_samplings, full, pdb1_name)
+            plddt_cal(list_ran_samplings, random, pdb1_name)
+            plddt_cal(list_add_samplings, addition, pdb1_name)
+
+        ######################################################################################################
+        ##### plot the 2D-scatter plot of TM-scores with pLDDT
+        plot_2D_scatter_AC(full, random, addition, pdb1, pdb1_name, pdb2, pdb2_name)
+
+
+        ######################################################################################################
+        ##### merging the plDDT and TM-scores.
+        TMs_whole_full = 'TMScore_full-MSA_' + pdb1_name + '.csv'
+        TMs_whole_addi = 'TMScore_additional-MSA_' + pdb1_name + '.csv'
+        TMs_whole_rand = 'TMScore_random-MSA_' + pdb1_name + '.csv'
+        plDDT_full = 'plddt_full-MSA_' + pdb1_name + '.csv'
+        plDDT_rand = 'plddt_random-MSA_' + pdb1_name + '.csv'
+        plDDT_addi = 'plddt_additional-MSA_' + pdb1_name + '.csv'
+
+        ## deep MSA
+        f = open(TMs_whole_full); text = f.read(); f.close()
+        f = open(TMs_whole_full, 'w'); f.write("## TM-score of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_full); text = f.read(); f.close()
+        f = open(plDDT_full, 'w'); f.write("## plDDT of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_full + ' ' + plDDT_full + ' > TMs_plDDT_full_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_full = 'rm ' + TMs_whole_full; rm_plDDT_full = 'rm ' + plDDT_full
+        os.system(rm_TMs_whole_full); os.system(rm_plDDT_full)
+
+
+        ## random MSAs
+        f = open(TMs_whole_rand); text = f.read(); f.close()
+        f = open(TMs_whole_rand, 'w'); f.write("## TM-score of whole structure from random MSAs\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_rand); text = f.read(); f.close()
+        f = open(plDDT_rand, 'w'); f.write("## plDDT of whole structure from random MSAs\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_rand + ' ' + plDDT_rand + ' > TMs_plDDT_rand_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_rand = 'rm ' + TMs_whole_rand; rm_plDDT_rand = 'rm ' + plDDT_rand
+        os.system(rm_TMs_whole_rand); os.system(rm_plDDT_rand)
+
+
+        ## ensemble generation
+        f = open(TMs_whole_addi); text = f.read(); f.close()
+        f = open(TMs_whole_addi, 'w'); f.write("## TM-score of whole structure from ensemble generation\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_addi); text = f.read(); f.close()
+        f = open(plDDT_addi, 'w'); f.write("## plDDT of whole structure from deep generation\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_addi + ' ' + plDDT_addi + ' > TMs_plDDT_addi_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_addi = 'rm ' + TMs_whole_addi; rm_plDDT_addi = 'rm ' + plDDT_addi
+        os.system(rm_TMs_whole_addi); os.system(rm_plDDT_addi)
 
 
 
@@ -241,7 +419,79 @@ if __name__ == "__main__":
         plot_2D_scatter(full, random, addition, pdb1, pdb1_name, pdb2, pdb2_name)
 
 
+        ######################################################################################################
+        ##### merging the plDDT and TM-scores.
+        TMs_whole_full = 'TMScore_full-MSA_' + pdb1_name + '.csv'
+        TMs_whole_addi = 'TMScore_additional-MSA_' + pdb1_name + '.csv'
+        TMs_whole_rand = 'TMScore_random-MSA_' + pdb1_name + '.csv'
+        TMs_fs_full = 'TMScore_fs_full-MSA_' + pdb1_name + '.csv'
+        TMs_fs_addi = 'TMScore_fs_additional-MSA_' + pdb1_name + '.csv'
+        TMs_fs_rand = 'TMScore_fs_random-MSA_' + pdb1_name + '.csv'
+        plDDT_full = 'plddt_full-MSA_' + pdb1_name + '.csv'
+        plDDT_rand = 'plddt_random-MSA_' + pdb1_name + '.csv'
+        plDDT_addi = 'plddt_additional-MSA_' + pdb1_name + '.csv'
 
+        ## deep MSA
+        f = open(TMs_whole_full); text = f.read(); f.close()
+        f = open(TMs_whole_full, 'w'); f.write("## TM-score of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        f = open(TMs_fs_full); text = f.read(); f.close()
+        f = open(TMs_fs_full, 'w'); f.write("## TM-score of fold-switching region from deep MSA\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_full); text = f.read(); f.close()
+        f = open(plDDT_full, 'w'); f.write("## plDDT of whole structure from deep MSA\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_full + ' ' + TMs_fs_full + ' ' + plDDT_full + ' > TMs_plDDT_full_all_' + pdb1_name + '.csv' 
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_full = 'rm ' + TMs_whole_full; rm_TMs_fs_full = 'rm ' + TMs_fs_full; rm_plDDT_full = 'rm ' + plDDT_full
+        os.system(rm_TMs_whole_full); os.system(rm_TMs_fs_full); os.system(rm_plDDT_full)
+
+
+        ## random MSAs 
+        f = open(TMs_whole_rand); text = f.read(); f.close()
+        f = open(TMs_whole_rand, 'w'); f.write("## TM-score of whole structure from random MSAs\n")
+        f.write(text); f.close()
+
+        f = open(TMs_fs_rand); text = f.read(); f.close()
+        f = open(TMs_fs_rand, 'w'); f.write("## TM-score of fold-switching region from random MSAs\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_rand); text = f.read(); f.close()
+        f = open(plDDT_rand, 'w'); f.write("## plDDT of whole structure from random MSAs\n")
+        f.write(text); f.close()
+        
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_rand + ' ' + TMs_fs_rand + ' ' + plDDT_rand + ' > TMs_plDDT_rand_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_rand = 'rm ' + TMs_whole_rand; rm_TMs_fs_rand = 'rm ' + TMs_fs_rand; rm_plDDT_rand = 'rm ' + plDDT_rand
+        os.system(rm_TMs_whole_rand); os.system(rm_TMs_fs_rand); os.system(rm_plDDT_rand)
+
+        
+        ## ensemble generation
+        f = open(TMs_whole_addi); text = f.read(); f.close()
+        f = open(TMs_whole_addi, 'w'); f.write("## TM-score of whole structure from ensemble generation\n")
+        f.write(text); f.close()
+
+        f = open(TMs_fs_addi); text = f.read(); f.close()
+        f = open(TMs_fs_addi, 'w'); f.write("## TM-score of fold-switching region from enselble generation\n")
+        f.write(text); f.close()
+
+        f = open(plDDT_addi); text = f.read(); f.close()
+        f = open(plDDT_addi, 'w'); f.write("## plDDT of whole structure from deep generation\n")
+        f.write(text); f.close()
+
+        # merge seprated files as one file
+        deep_output = 'cat ' + TMs_whole_addi + ' ' + TMs_fs_addi + ' ' + plDDT_addi + ' > TMs_plDDT_addi_all_' + pdb1_name + '.csv'
+        os.system(deep_output)
+        # delete the separated files
+        rm_TMs_whole_addi = 'rm ' + TMs_whole_addi; rm_TMs_fs_addi = 'rm ' + TMs_fs_addi; rm_plDDT_addi = 'rm ' + plDDT_addi
+        os.system(rm_TMs_whole_addi); os.system(rm_TMs_fs_addi); os.system(rm_plDDT_addi)
 
 
 
