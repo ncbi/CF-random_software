@@ -91,6 +91,7 @@ python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb 
 PDB1: 1ba2.pdb <br>
 PDB2: 2dri.pdb <br>
 MSA: 1ba2-search/0.a3m (MSA file should be in a folder) <br>
+range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.)
 
 * Generated output files:
 
