@@ -87,6 +87,14 @@ TM-score plot of fold-switching region with label of prediction rank: TMscore_fs
 plDDT scores of predictions with deep MSA plddt_full-MSA_2oug_C.csv <br>
 plDDT scores of predictions with random MSAs plddt_random-MSA_2oug_C.csv <br>
 plDDT scores of ensemble generation: plddt_additional-MSA_2oug_C.csv <br>
+TM-scores of whole structure from predictions with deep MSA:  <br>
+TM-scores of whole structure from predictions with random MSAs:  <br>
+TM-scores of whole structure from ensemble generation:  <br>
+TM-scores of fold-switching region from predictions with deep MSA:  <br>
+TM-scores of fold-switching region from predictions with random MSAs:  <br>
+TM-scores of fold-switching region from ensemble generation:  <br>
+Selection of random MSA: selected_MSA-size_2oug_C.csv (When CF-random finds the MSA depth) <br>
+  - MSA depth information (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 
 ### For CF-random with alternative confroamtion mode. <br>
