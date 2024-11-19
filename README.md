@@ -81,6 +81,12 @@ MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
 * Generated output files:
+TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
+TM-score plot of fold-switching region: TMscore_full-MSA_2oug_C.png <br>
+TM-score plot of fold-switching region with label of prediction rank: TMscore_fs-region_full-MSA_2oug_C_label.png <br> 
+plDDT scores of predictions with deep MSA plddt_full-MSA_2oug_C.csv <br>
+plDDT scores of predictions with random MSAs plddt_random-MSA_2oug_C.csv <br>
+plDDT scores of ensemble generation: plddt_additional-MSA_2oug_C.csv <br>
 
 
 ### For CF-random with alternative confroamtion mode. <br>
