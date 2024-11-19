@@ -69,11 +69,18 @@ conda activate <your localfolabfold environment>
 # Examples
 We provide some examples how users can run the CF-random with different modes.
 
-### For running the fold-switching default mode. <br>
+### For running the fold-switching (i.e. RfaH) default mode. <br>
 ```
 python main.py --fname folder_containing_MSA/ --pdb1 fold1.pdb --pdb2 fold2.pdb --option FS
 ```
 <br>
+Used input files:
+PDB1: 2oug_C.pdb
+PDB2: 6c6s_D.pdb
+MSA: 2oug_C-search/0.a3m (MSA file should be in a folder)
+
+Generated output files:
+
 
 ### For executing the alternative confroamtion mode. <br>
 ```
