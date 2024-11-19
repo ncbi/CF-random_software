@@ -69,7 +69,7 @@ conda activate <your localfolabfold environment>
 # Examples
 We provide some examples how users can run the CF-random with different modes.<br>
 First two modes such as fold-switching and alternative conformation are default modes of CF-random and the last one is a blind mode.
-## For CF-random with fold-switching mode. <br>
+## 1. For CF-random with fold-switching mode. <br>
 For this example, RfaH would be predicted with two reference structures (i.e., 2oug_C.pdb and 6c6s_D.pdb) and a MSA file.
 ```
 python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --option FS
@@ -94,7 +94,7 @@ _If CF-random fails to find the selected random MSA, all generated files will be
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 
-### For CF-random with alternative confroamtion mode. <br>
+## 2. For CF-random with alternative confroamtion mode. <br>
 For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and a MSA file.
 ```
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
@@ -106,7 +106,7 @@ MSA: 2ybe_A-search/0.a3m (MSA file should be in a folder) <br>
 
 * Generated output files:
 
-### For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
+## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
 <option 1>
 python main.py --fname folder_containing_MSA/ --option blind
