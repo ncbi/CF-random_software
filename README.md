@@ -127,6 +127,7 @@ python main.py --pname Mad2_test --fname 2vfx_L-search/ --option blind
 MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
 
 ### Generated output files: <br>
+_Predicted files from deep and random MSAs are deposited in 'blind_prediction' directory._ <br>
 * List of prediction files, foldseek searched pdb name, TM-score, and foldseek score: 2vfx_L.csv
 * Best hits of alternative conformations: 2vfx_L_best_hits.txt
 * Cluster analysis result as an image file: 2vfx_L.png
