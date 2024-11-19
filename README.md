@@ -119,14 +119,17 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 ## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
 <option 1>
-python main.py --fname folder_containing_MSA/ --option blind
+python main.py --fname 2vfx_L-search/ --option blind
 <option 2>
-python main.py --fname folder_containing_MSA/ --pname Mad2 --option blind
+python main.py --pname Mad2_test --fname 2vfx_L-search/ --option blind
 ```
-* Used input files: <br>
+### Used input files: <br>
 MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
 
-* Generated output files:
+### Generated output files: <br>
+* List of prediction files, foldseek searched pdb name, TM-score, and foldseek score
+* Best hits of alternative conformations
+* Cluster analysis result as an image file
 
 # How to Cite
 To be updated
