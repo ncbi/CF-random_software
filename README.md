@@ -67,8 +67,8 @@ conda activate <your localfolabfold environment>
 <br>
 
 # Examples
-We provide some examples how users can run the CF-random with different modes.
-Following two modes including fold-switching and alternative conformation are default mode and last mode is a blind mode.
+We provide some examples how users can run the CF-random with different modes.<br>
+First two modes such as fold-switching and alternative conformation are default modes of CF-random and the last one is a blind mode.
 ### For CF-random with fold-switching mode. <br>
 For this example, RfaH would be predicted with two reference structures (i.e., 2oug_C.pdb and 6c6s_D.pdb) and a MSA file.
 ```
