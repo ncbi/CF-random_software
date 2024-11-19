@@ -86,15 +86,9 @@ If CF-random fails to find the selected random MSA, all generated files will be 
 TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
 TM-score plot of fold-switching region: TMscore_full-MSA_2oug_C.png <br>
 TM-score plot of fold-switching region with label of prediction rank: TMscore_fs-region_full-MSA_2oug_C_label.png <br> 
-plDDT scores of predictions with deep MSA: plddt_full-MSA_2oug_C.csv <br>
-plDDT scores of predictions with random MSAs: plddt_random-MSA_2oug_C.csv <br>
-plDDT scores of ensemble generation: plddt_additional-MSA_2oug_C.csv <br>
-TM-scores of whole structure from predictions with deep MSA: TMScore_full-MSA_2oug_C.csv <br>
-TM-scores of whole structure from predictions with random MSAs: TMScore_random-MSA_2oug_C.csv <br>
-TM-scores of whole structure from ensemble generation: TMScore_additional-MSA_2oug_C.csv <br>
-TM-scores of fold-switching region from predictions with deep MSA: TMScore_fs_full-MSA_2oug_C.csv <br>
-TM-scores of fold-switching region from predictions with random MSAs: TMScore_fs_random-MSA_2oug_C.csv <br>
-TM-scores of fold-switching region from ensemble generation: TMScore_fs_additional-MSA_2oug_C.csv <br>
+TM-scores (whole structure and fold-switching region) and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_2oug_C.csv <br>
+TM-scores (whole structure and fold-switching region) and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_2oug_C.csv <br>
+TM-scores (whole structure and fold-switching region) and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_2oug_C.csv <br>
 Selection of random MSA: selected_MSA-size_2oug_C.csv (When CF-random finds the MSA depth)
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
