@@ -105,10 +105,10 @@ The difference between 'AC' and 'inAC' is the number of samples. 'inAC' option g
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
 ```
 ### Used input files: <br>
-* PDB1: 2ybe_A.pdb <br>
-* PDB2: 2xe7_A.pdb <br>
-* MSA: 2ybe_A-search/0.a3m (MSA file should be in a folder) <br>
-* range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
+* PDB1: 3drh_A.pdb <br>
+* PDB2: 3drf_A.pdb <br>
+* MSA: 3drh_A-search/0.a3m (MSA file should be in a folder) <br>
+
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
@@ -118,7 +118,7 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 * TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_.csv <br>
 * TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_.csv
   - TM-scores of whole structure were saved in TMs_plDDT~ file with ensembles. <br>
-* Selection of random MSA: selected_MSA-size_2oug_C.csv (When CF-random finds the MSA depth)
+* Selection of random MSA: selected_MSA-size_.csv (When CF-random finds the MSA depth)
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 ## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
