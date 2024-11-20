@@ -96,8 +96,8 @@ _If CF-random fails to find the selected random MSA, all generated files will be
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 
-## 2. For CF-random with alternative confroamtion mode. <br>
-For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and a MSA file. <br>
+## 2. For CF-random with alternative conformation mode. <br>
+For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and an MSA file. <br>
 The difference between 'AC' and 'inAC' is the number of samples. 'inAC' option generates ~6x more number of samples at each of MSAs and ensemble generations than 'AC' mode.
 ```
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option inAC
@@ -135,6 +135,8 @@ _If user uses the option '--pname', the name of output files would be entered '-
 * List of prediction files, foldseek searched pdb name, TM-score, and foldseek score: Mad2_test.csv
 * Best hits of alternative conformations: Mad2_test_best_hits.txt
 * Cluster analysis result as an image file: Mad2_test.png
+
+*This takes 45 Minutes to run on an A100 GPU (generates 200 structures total).* <br>
 
 # How to Cite
 To be updated
