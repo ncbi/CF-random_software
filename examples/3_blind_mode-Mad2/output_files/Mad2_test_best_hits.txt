@@ -1,0 +1,6 @@
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_64_ext_128/0_unrelaxed_rank_004_alphafold2_ptm_model_3_seed_000.pdb 2vfx-G                         1.04 0.96 0.0804
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_64_ext_128/0_unrelaxed_rank_008_alphafold2_ptm_model_3_seed_002.pdb 2vfx-E                         1.04 0.96 0.0743
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_8_ext_16/0_unrelaxed_rank_020_alphafold2_ptm_model_5_seed_004.pdb 2v64-H                         0.71 0.68 0.0249
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_8_ext_16/0_unrelaxed_rank_022_alphafold2_ptm_model_2_seed_001.pdb 1go4-C                         0.65 0.67 -0.0177
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_4_ext_8/0_unrelaxed_rank_004_alphafold2_ptm_model_5_seed_001.pdb 2v64-F                         0.66 0.66 0.0014
+blind_prediction/Mad2_test/Mad2_test_predicted_models_rand_83_max_4_ext_8/0_unrelaxed_rank_015_alphafold2_ptm_model_2_seed_003.pdb 3gmh-L                         0.78 0.67 0.1123
