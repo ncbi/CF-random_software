@@ -39,18 +39,18 @@ foldseek databases PDB pdb tmp
 
 
 # Usage
-* CF-random provides the different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
-* To execute all modes of CF-random, a multiple sequence alignment (MSA) is required (Essential). To avoid the overwriting the output files, we would recommend to use different folder name having MSA. <br>
-* PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require the PDB files, but default fold-switching and alternative conformation modes require the PDB.<br>
+* CF-random has different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
+* To execute all modes of CF-random, a multiple sequence alignment (MSA) is required. To avoid the overwriting the output files, we recommend using a different folder containing MSA. <br>
+* PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require PDB files, but default fold-switching and alternative conformation modes do.<br>
 * ### All required PDB files and MSA file should be in same directory with provided Python scripts.
 * Please make sure that a PDB file should have a single chain, not multiple chains. If PDB file has multiple chains, CF-random would be stopped. <Pbr>
 
 ```
  -fname ####    |  folder name having a multiple sequence alignment (MSA)
- -pname ####    |  project name for running the blind mode (only for blind mode)
- -pdb1  ####    |  dmoninat reference model used to calculate TM-score with predicted models
- -pdb2  ####    |  alternative refernece model used to calculate TM-score with predicted models
- -option ###    |  AC: predicting alternative conformations of protein with references, inAC: predicting the alternative conformation with the more number of samples, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
+ -pname ####    |  project name for running blind mode (only for blind mode)
+ -pdb1  ####    |  dominant reference model used to calculate TM-score with predicted models
+ -pdb2  ####    |  alternative reference model used to calculate TM-score with predicted models
+ -options ###    |  AC: predicting alternative conformations of protein with references, inAC: predicting the alternative conformation with the more number of samples, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
 * In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
 * Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
@@ -79,6 +79,8 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 * PDB2: 6c6s_D.pdb <br>
 * MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 * range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
+
+*This takes 90 Minutes to run on an A100 GPU (generates 300 structures total).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
