@@ -99,9 +99,9 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 
 
 ## 2. For CF-random with alternative conformation mode. <br>
-For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and an MSA file. <br>
+For this mode, Lactococcal OppA would be predicted with two reference structures (i.e., 3drh.pdb and 3drf.pdb) and an MSA file. <br>
 ```
-python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
+python main.py --fname 3drh_A-search/ --pdb1 3drh_A.pdb --pdb2 3drf_A.pdb --option AC
 ```
 ### Used input files: <br>
 * PDB1: 3drh_A.pdb <br>
