@@ -68,7 +68,7 @@ if __name__ == "__main__":
             print("work name:", pdb1_name)
     elif args.pdb1 is None:
         pdb1_name = args.fname
-    else:
+    elif args.pdb1 is not None and args.pdb2 is not None:
         pdb1 = args.pdb1; pdb2 = args.pdb2
         pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
 
