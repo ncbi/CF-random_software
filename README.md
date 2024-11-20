@@ -100,7 +100,6 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 
 ## 2. For CF-random with alternative conformation mode. <br>
 For this mode, Phosphoglycerate kinase 1 (PGK1) would be predicted with two reference structures (i.e., 2ybe.pdb and 2xe7.pdb) and an MSA file. <br>
-The difference between 'AC' and 'inAC' is the number of samples. 'inAC' option generates ~6x more number of samples at each of MSAs and ensemble generations than 'AC' mode.
 ```
 python main.py --fname 2ybe_A-search/ --pdb1 2ybe_A.pdb --pdb2 2xe7_A.pdb --option AC
 ```
