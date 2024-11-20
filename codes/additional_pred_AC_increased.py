@@ -86,7 +86,7 @@ class additional_prediction_AC_inc():
         pred_dir = 'additional_sampling/' + pdb1_name + '/'
         print(pred_dir)
 
-        MSA_additional_TMscore = TM_score(pred_dir, pdb1, pdb1_name, pdb2, pdb2_name)
+        MSA_additional_TMscore = TM_score_inc(pred_dir, pdb1, pdb1_name, pdb2, pdb2_name)
         TMscore_add_all = np.append(TMscore_add_all, MSA_additional_TMscore.tmscores)
         print(TMscore_add_all)
 
