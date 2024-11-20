@@ -289,9 +289,9 @@ if __name__ == "__main__":
             full = 'full-MSA'
             random = 'random-MSA'
             addition = 'additional-MSA'
-            plddt_cal(list_org_samplings, full, pdb1_name)
-            plddt_cal(list_ran_samplings, random, pdb1_name)
-            plddt_cal(list_add_samplings, addition, pdb1_name)
+            plddt_cal_inc(list_org_samplings, full, pdb1_name)
+            plddt_cal_inc(list_ran_samplings, random, pdb1_name)
+            plddt_cal_inc(list_add_samplings, addition, pdb1_name)
 
         ######################################################################################################
         ##### plot the 2D-scatter plot of TM-scores with pLDDT
