@@ -142,6 +142,7 @@ python main.py --pname Mad2_test --fname 2vfx_L-search/ --option blind
 ### Used input files: <br>
 MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
 
+
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'blind_prediction' directory._ <br>
 _If user uses the option '--pname', the name of output files would be entered '--pname'._<br>
@@ -149,7 +150,7 @@ _If user uses the option '--pname', the name of output files would be entered '-
 * Best hits of alternative conformations: Mad2_test_best_hits.txt
 * Cluster analysis result as an image file: Mad2_test.png
 
-*This takes 45 Minutes to run on an A100 GPU (generates 200 structures total).* <br>
+*This takes <70 Minutes to run on an A100 GPU (generates 200 structures total + 200 foldseek files).* <br>
 
 # How to Cite
 To be updated
