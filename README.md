@@ -111,22 +111,22 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 ## 2. For CF-random with alternative conformation mode. <br>
 For this mode, Lactococcal OppA would be predicted with two reference structures (i.e., 3drh.pdb and 3drf.pdb) and an MSA file. <br>
 ```
-python main.py --fname 3drh_A-search/ --pdb1 3drh_A.pdb --pdb2 3drf_A.pdb --option AC
+python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --nMSA 5 --nENS 5
 ```
 ### Used input files: <br>
-* PDB1: 3drh_A.pdb <br>
-* PDB2: 3drf_A.pdb <br>
-* MSA: 3drh_A-search/0.a3m (MSA file should be in a folder) <br>
+* PDB1: 5olw_A.pdb <br>
+* PDB2: 5olx_A.pdb <br>
+* MSA: 5olw_A-search/0.a3m (MSA file should be in a folder) <br>
 
-*This takes 2-2.5 hrs to run on an A100 GPU (generates 300 structures total; protein is large: ~600 residues).* <br>
+*This takes xxx hrs to run on an A100 GPU (generates 175 structures total; protein is large: ~250 residues).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
 _If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
-* TM-score plot of whole structure: TMscore_full-MSA_3drh_A.png <br>
-* TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_3drh_A.csv <br>
-* TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_3drh_A.csv <br>
-* TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_3drh_A.csv
+* TM-score plot of whole structure: TMscore_full-MSA_5olw_A.png <br>
+* TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_5olw_A.csv <br>
+* TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_5olw_A.csv <br>
+* TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_5olw_A.csv
   - TM-scores of whole structure were saved in TMs_plDDT~ file with ensembles. <br>
 * Selection of random MSA: selected_MSA-size_3drh_A.csv (When CF-random finds the MSA depth)
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
