@@ -22,14 +22,22 @@ bash install_colabbatch_linux.sh
 <br>
 
 
-After the installation of localcolabfold, activate conda environment.<br>
-Conda name would be "installed localcolabfold directory", e.g.) "current directory" + /localcolabfold/colabfold-conda <br>
+After the installation of localcolabfold, add the localcolabfold path to your .bashrc file:.<br>
 ```
-conda activate " current directory "/localcolabfold/colabfold-conda
+export PATH="/path/to/your/localcolabfold/colabfold-conda/bin:$PATH"
+```
+<br>
+
+Then reactivate your .bashrc file <br>
+
+Now create a conda new conda environment: 
+```
+conda create --name CF-random python=3.10
+conda activate CF-random
 pip install textalloc tmtools adjustText thefuzz mdtraj
 pip3 install -U scikit-learn
 ```
-Once finalize the dependencies, install the Foldseek.
+Once the dependencies are installed, install Foldseek.
 <br>
 ```
 conda install -c conda-forge -c bioconda foldseek
