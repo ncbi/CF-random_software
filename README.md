@@ -67,7 +67,7 @@ foldseek databases PDB pdb tmp
 * In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
 * Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
  examples) pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX <br>
-* --nMSA can be applied for all options, but --nESN cannot use for blind mode.
+* --nMSA can be applied for all options, but --nESN cannot be used for blind mode.
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
 
