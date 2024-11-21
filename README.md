@@ -45,7 +45,7 @@ foldseek databases PDB pdb tmp
 ```
 <br>
 
-We recommend running the foldseek databases command in a directory where the libraries can be stored. <br>
+### We recommend running the foldseek databases command in a directory where the libraries can be stored. <br>
 
 
 # Usage
@@ -73,8 +73,8 @@ We recommend running the foldseek databases command in a directory where the lib
 Before running the CF-random, please check out your conda environment.<br>
 The name of conda environment would be the installed directory.
 ```
-conda activate <your localfolabfold environment>
-** examples of generated localcolabfold name would be "directory of installed the localcolabfold"/localcolabfold/colabfold-conda <br>
+e.g.) conda activate <your conda environment name>
+conda activate CF-random
 ```
 <br>
 
