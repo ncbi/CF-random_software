@@ -72,7 +72,6 @@ foldseek databases PDB pdb tmp
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
 
 * Before running the CF-random, please check out your conda environment.<br>
-* The name of conda environment would be the installed directory.
 ```
 e.g.) conda activate <your conda environment name>
 conda activate CF-random
