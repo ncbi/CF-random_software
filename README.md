@@ -116,6 +116,7 @@ python main.py --fname 3drh_A-search/ --pdb1 3drh_A.pdb --pdb2 3drf_A.pdb --opti
 * PDB2: 3drf_A.pdb <br>
 * MSA: 3drh_A-search/0.a3m (MSA file should be in a folder) <br>
 
+*This takes 2-2.5 hrs to run on an A100 GPU (generates 300 structures total; protein is large: ~600 residues).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
