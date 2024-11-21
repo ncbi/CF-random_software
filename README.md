@@ -43,7 +43,9 @@ Once the dependencies are installed, install Foldseek.
 conda install -c conda-forge -c bioconda foldseek
 foldseek databases PDB pdb tmp
 ```
+<br>
 
+We recommend running the foldseek databases command in a directory where the libraries can be stored. <br>
 
 
 # Usage
@@ -133,6 +135,9 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 ```
 python main.py --pname Mad2_test --fname 2vfx_L-search/ --option blind
 ```
+
+*Before running this code, make a symbolic link to the foldseek pdb in the directory where you run the command above.*
+
 ### Used input files: <br>
 MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
 
