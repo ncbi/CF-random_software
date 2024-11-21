@@ -71,9 +71,8 @@ foldseek databases PDB pdb tmp
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
 
-* Before running the CF-random, please check out your conda environment.<br>
+* Before running the CF-random, ensure that the CF-random conda environment is activated:<br>
 ```
-e.g.) conda activate <your conda environment name>
 conda activate CF-random
 ```
 <br>
