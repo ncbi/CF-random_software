@@ -131,9 +131,6 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 
 ## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
 ```
-<option 1>
-python main.py --fname 2vfx_L-search/ --option blind
-<option 2>
 python main.py --pname Mad2_test --fname 2vfx_L-search/ --option blind
 ```
 ### Used input files: <br>
