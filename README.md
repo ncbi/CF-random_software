@@ -90,7 +90,7 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 * MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 * range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
-*This takes 90 Minutes to run on an A100 GPU (generates 300 structures total).* <br>
+*This takes <30 Minutes to run on an A100 GPU (generates 300 structures total).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
