@@ -112,12 +112,12 @@ python main.py --fname 3drh_A-search/ --pdb1 3drh_A.pdb --pdb2 3drf_A.pdb --opti
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
 _If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
-* TM-score plot of whole structure:  <br>
-* TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_.csv <br>
-* TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_.csv <br>
-* TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_.csv
+* TM-score plot of whole structure: TMscore_full-MSA_3drh_A.png <br>
+* TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_3drh_A.csv <br>
+* TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_3drh_A.csv <br>
+* TM-scores and and plDDT scores of predictions with ensembles: TMs_plDDT_addi_all_3drh_A.csv
   - TM-scores of whole structure were saved in TMs_plDDT~ file with ensembles. <br>
-* Selection of random MSA: selected_MSA-size_.csv (When CF-random finds the MSA depth)
+* Selection of random MSA: selected_MSA-size_3drh_A.csv (When CF-random finds the MSA depth)
   - MSA depth information (e.g. # = max-seq:max-seq-extra) (0 = 1:2, 1 = 2:4, 2 = 4:8, 3 = 8:16, 4 = 16:32, 5 = 32:64, 6 = 64:128) <br>
 
 ## 3. For CF-random with blind mode covering both fold-switching and alternative conformation. <br>
