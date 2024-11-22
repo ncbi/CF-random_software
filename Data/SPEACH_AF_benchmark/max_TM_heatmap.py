@@ -85,18 +85,19 @@ max_all_f2 = np.concatenate((max_ref_Mc_f2, max_CF_f2), axis=1)
 y_values = np.arange(0.5, 14.5, 1)
 x_values = np.arange(0.5, 2.5, 1)
 x_label = ['SPEACH-AF', 'CF-random']
-
+plt.figure(figsize=(7,5))
+plt.rcParams["font.family"] = "Helvetica"
 
 f,(ax1,ax2,axcb) = plt.subplots(1,3, 
             gridspec_kw={'width_ratios':[1,1, 0.08]})
 
 g1 = sns.heatmap(data=max_all_f1, annot=True, vmin=0.7, vmax=1, cbar=False, cmap="rocket_r", ax = ax1)
-g1.set_yticks(y_values, ref_name)
+g1.set_yticks(y_values, ref_name, fontsize = 13)
 g1.set_yticklabels(ref_name, rotation = 0)
 g1.set_xticks([])
 g1.set_xlabel("Fold1", fontsize = 13)
 g1.xaxis.set_label_position('top')
-g1.set_xticks(x_values, x_label)
+g1.set_xticks(x_values, x_label, fontsize = 13)
 g1.xaxis.set_tick_params(bottom = False)
 g2 = sns.heatmap(data=max_all_f2, annot=True, vmin=0.7, vmax=1, cmap="rocket_r", ax = ax2, cbar_ax=axcb)
 g2.set_ylabel('')
@@ -104,8 +105,8 @@ g2.set_xticks([])
 g2.set_yticks([])
 g2.set_xlabel("Fold2", fontsize = 13)
 g2.xaxis.set_label_position('top')
-g2.figure.axes[-1].set_ylabel('TM-score', size=12, rotation = 270, labelpad = 15)
-g2.set_xticks(x_values, x_label)
+g2.figure.axes[-1].set_ylabel('TM-score', size=15, rotation = 270, labelpad = 15)
+g2.set_xticks(x_values, x_label, fontsize = 13)
 g2.xaxis.set_tick_params(bottom = False)
 #g2.set_ylabel("Fold2", fontsize = 15, rotation = 270, labelpad = 15)
 #g2.yaxis.set_label_position('right')
@@ -114,5 +115,5 @@ g2.xaxis.set_tick_params(bottom = False)
 
 
 plt.tight_layout()
-plt.savefig('heatmap-max TMscore comparison.png',dpi=600)
+plt.savefig('heatmap-max TMscore comparison.png',dpi=600, transparent=True)
 
