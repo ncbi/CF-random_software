@@ -117,7 +117,7 @@ python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --optio
 * PDB2: 5olx_A.pdb <br>
 * MSA: 5olw_A-search/0.a3m (MSA file should be in a folder) <br>
 
-*This takes xxx hrs to run on an A100 GPU (generates 175 structures total; protein is large: ~250 residues).* <br>
+*This takes <70 Minutes to run on an A100 GPU (generates 175 structures total; protein is large: ~250 residues).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
