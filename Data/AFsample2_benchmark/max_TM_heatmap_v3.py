@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.font_manager
 from numpy import genfromtxt
 from matplotlib import pyplot as plt
 from adjustText import adjust_text
@@ -92,15 +93,15 @@ for model1, model2 in zip(pdb1_name, pdb2_name):
 
 
     #### model2 part
-    if np.max(model1_full[0, :]) > np.max(model1_addi[0:20, :]):
-        model2_f1[i] = np.max(model1_full[0, :])
+    if np.max(model2_full[0, :]) > np.max(model2_addi[0:20, :]):
+        model2_f1[i] = np.max(model2_full[0, :])
     else:
-        model2_f1[i] = np.max(model1_addi[0:20, :])
+        model2_f1[i] = np.max(model2_addi[0:20, :])
 
-    if np.max(model1_full[1, :]) > np.max(model1_addi[20:40, :]):
-        model2_f2[i] = np.max(model1_full[1, :])
+    if np.max(model2_full[1, :]) > np.max(model2_addi[20:40, :]):
+        model2_f2[i] = np.max(model2_full[1, :])
     else:
-        model2_f2[i] = np.max(model1_addi[20:40, :])
+        model2_f2[i] = np.max(model2_addi[20:40, :])
 
 
 
@@ -130,10 +131,11 @@ x_values = np.arange(0.5, 2.5, 1)
 x_label = ['Fold1', 'Fold2']
 
 
-plt.figure(figsize=(7,12))
+plt.figure(figsize=(7,5))
+plt.rcParams["font.family"] = "Helvetica"
 hm = sns.heatmap(data=max_all,
                        annot=True, vmin=0.5, vmax=1, cmap="rocket_r", cbar_kws={'label': 'TM-score'})
-hm.figure.axes[-1].set_ylabel('TM-score', size=20, rotation = 270, labelpad = 13)
+hm.figure.axes[-1].set_ylabel('TM-score', size=15, rotation = 270, labelpad = 15)
 hm.figure.axes[-1].tick_params(labelsize=15)
 
 
@@ -148,5 +150,5 @@ plt.tick_params(
 
 
 plt.tight_layout()
-plt.savefig('heatmap-max TMscore comparison.png',dpi=600)
+plt.savefig('heatmap-max TMscore comparison.png',dpi=600, transparent=True)
 
