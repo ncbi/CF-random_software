@@ -1,7 +1,7 @@
 # Data and code for CF-random
 General installation and usage guidance of CF-random for predicting the alternative conformation and fold-switching proteins.<br>
-To run CF-random in a Colab notebook, please use following [link](https://colab.research.google.com/drive/1LsSFe8FxJaLfNGUcE5HMgxxwGGlLfexk?usp=sharing).<br><br>
-<a target="_blank" href="https://colab.research.google.com/drive/1LsSFe8FxJaLfNGUcE5HMgxxwGGlLfexk?usp=sharing">
+To run CF-random in a Colab notebook, please use following [link](https://colab.research.google.com/drive/16pD2tUMkUx1gwDxZXcSr9WOosYp0ZU6j?authuser=0).<br><br>
+<a target="_blank" href="https://colab.research.google.com/drive/16pD2tUMkUx1gwDxZXcSr9WOosYp0ZU6j?authuser=0">
  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open CF-random Colab"/>
 </a>
 
