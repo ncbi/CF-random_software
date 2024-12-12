@@ -56,7 +56,8 @@ if __name__ == "__main__":
 
 
     if args.option == "blind":
-        if args.pdb1 is None:
+        if args.pname is not None:
+        #if args.pdb1 is None: 
             pdb1_name = args.pname
             print("work name:", pdb1_name)
         else:
