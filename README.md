@@ -34,7 +34,7 @@ Now create a conda new conda environment:
 ```
 conda create --name CF-random python=3.10
 conda activate CF-random
-pip install textalloc tmtools adjustText thefuzz mdtraj biopython
+pip install textalloc tmtools adjustText thefuzz mdtraj biopython seaborn
 pip3 install -U scikit-learn
 ```
 Once the dependencies are installed, install Foldseek.
