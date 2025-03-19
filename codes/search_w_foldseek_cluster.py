@@ -217,7 +217,8 @@ class blind_screening():
             print("removed from analysis: ",file.replace("-self.foldseek",".pdb"))
         files = files[~mask]
         files = sorted(files)
-        files_pdb = [file.replace('/','-')[3:].replace("-self.foldseek",".pdb") for file in files]
+        #files_pdb = [file.replace('/','-')[3:].replace("-self.foldseek",".pdb") for file in files]
+        files_pdb = [file.replace('/','-')[17::].replace("-self.foldseek","") for file in files]
         corr_mtx = []
     
         df = {}
