@@ -144,9 +144,9 @@ MSA: 2vfx_L-search/0.a3m (MSA file should be in a folder) <br>
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'blind_prediction' directory._ <br>
 _If user uses the option '--pname', the name of output files would be entered '--pname'._<br>
-* List of prediction files, foldseek searched pdb name, TM-score, and foldseek score: Mad2_test.csv
-* Best hits of alternative conformations: Mad2_test_best_hits.txt
-* Cluster analysis result as an image file: Mad2_test.png
+* List of prediction files: Mad2-structures_of_interest.csv
+* The best hit list of alternative conformations: Mad2-structures_of_interest.csv
+* Cluster analysis result as an image file: Mad2-cluster.png
 
 *This takes <70 Minutes to run on an A100 GPU (generates 200 structures total + 200 foldseek files).* <br>
 
