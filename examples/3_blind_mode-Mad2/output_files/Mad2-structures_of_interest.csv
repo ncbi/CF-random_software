@@ -1,0 +1,6 @@
+0, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_2_ext_4/0_unrelaxed_rank_008_alphafold2_ptm_model_4_seed_003-self.foldseek, -2.6447987740074352, 1.5839157781013558
+0, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_8_ext_16/0_unrelaxed_rank_004_alphafold2_ptm_model_5_seed_000-self.foldseek, 1.7602499722088105, 0.23619436127453572
+0, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_64_ext_128/0_unrelaxed_rank_021_alphafold2_ptm_model_1_seed_003-self.foldseek, 3.652528222672772, -0.13740598781504187
+1, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_1_ext_2/0_unrelaxed_rank_011_alphafold2_ptm_model_3_seed_002-self.foldseek, -4.347263959548305, -0.9682667677281261
+1, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_4_ext_8/0_unrelaxed_rank_014_alphafold2_ptm_model_5_seed_004-self.foldseek, -2.8388547006425306, 0.8759791084352988
+1, blind_prediction/Mad2/Mad2_predicted_models_rand_30_max_32_ext_64/0_unrelaxed_rank_012_alphafold2_ptm_model_4_seed_002-self.foldseek, 3.513124560651657, -0.20624585497392778
