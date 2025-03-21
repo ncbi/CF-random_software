@@ -31,16 +31,16 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 
 
 ## 2. For CF-random with alternative conformation mode. <br>
-For this mode, Lactococcal OppA would be predicted with two reference structures (i.e., 3drh.pdb and 3drf.pdb) and an MSA file. <br>
+For this mode, Beta-phosphoglucomutase would be predicted with two reference structures (i.e., 2wfa.pdb and 2wf5.pdb) and an MSA file. <br>
 ```
-python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --nMSA 5 --nENS 5
+python main.py --fname P71447-search --pdb1 2wfa_A.pdb --pdb2 2wf5_A.pdb --option AC --nMSA 15
 ```
 ### Used input files: <br>
-* PDB1: 5olw_A.pdb <br>
-* PDB2: 5olx_A.pdb <br>
+* PDB1: 2wfa_A.pdb <br>
+* PDB2: 2wf5_A.pdb <br>
 * MSA: 5olw_A-search/0.a3m (MSA file should be in a folder) <br>
 
-*This takes <70 Minutes to run on an A100 GPU (generates 175 structures total; protein is large: ~250 residues).* <br>
+*This takes <90 Minutes to run on an A100 GPU (generates 800 structures total; protein is large: ~250 residues).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
