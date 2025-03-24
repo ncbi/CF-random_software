@@ -61,7 +61,6 @@ foldseek databases PDB pdb tmp
  --pdb1  ####    |  dominant reference model used to calculate TM-score with predicted models
  --pdb2  ####    |  alternative reference model used to calculate TM-score with predicted models
  --nMSA  ####    |  the number of additional samples for predicting the structure with MSAs, default = 0
- --nESN  ####    |  the number of additional samples for ensenble generation, default = 0
  --type  ####    |  can choose the model type of Colabfold. e.g.) ptm, monomer, and multimer
  --options ###   |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
@@ -92,7 +91,7 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 * MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
 * range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
 
-*This takes <30 Minutes to run on an A100 GPU (generates 300 structures total).* <br>
+*This takes <30 Minutes to run on an A100 GPU (generates 200 structures total).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
@@ -111,14 +110,14 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 ## 2. For CF-random with alternative conformation mode. <br>
 For this mode, Lactococcal OppA would be predicted with two reference structures (i.e., 3drh.pdb and 3drf.pdb) and an MSA file. <br>
 ```
-python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --nMSA 5 --nENS 5
+python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --nMSA 5
 ```
 ### Used input files: <br>
 * PDB1: 5olw_A.pdb <br>
 * PDB2: 5olx_A.pdb <br>
 * MSA: 5olw_A-search/0.a3m (MSA file should be in a folder) <br>
 
-*This takes <70 Minutes to run on an A100 GPU (generates 175 structures total; protein is large: ~250 residues).* <br>
+*This takes <70 Minutes to run on an A100 GPU (generates 350 structures total; protein is large: ~250 residues).* <br>
 
 ### Generated output files: <br>
 _Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory, and ensembles were in 'additional_sampling' folder._ <br>
