@@ -116,6 +116,10 @@ if __name__ == "__main__":
         model_type = "alphafold2_ptm"
     elif args.type == "monomer":
         model_type = "alphafold2"
+    elif args.type == "multimer" and args.option == "blind":
+        model_type = "alphafold2_multimer_v3"
+        if not os.path.exists(multi):
+            os.mkdir(multi)     
     elif args.type == "multimer":
         ### check how many chains in a multimer
         TER_count = 0 
