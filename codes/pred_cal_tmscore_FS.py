@@ -305,6 +305,7 @@ class prediction_all():
                 elif np.any(fs_TMscore[1, :] >= 0.5) and np.any(full_TMscore[1, :] >= 0.5):
                     ref_name = pdb2_name; alt_name = pdb1_name
                 else:
+                    fin_pred_dir = pwd + pdb1_name + '_predicted_models_*'
                     print("Prediction with deep MSA was failed"); gen_dir = 'failed_prediction/' + pdb1_name
                     os.makedirs(gen_dir)
                     mv_command = 'mv ' + fin_pred_dir + ' failed_prediction/' + pdb1_name
@@ -315,6 +316,7 @@ class prediction_all():
                 elif np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
                     ref_name = pdb1_name; alt_name = pdb2_name
                 else:
+                    fin_pred_dir = pwd + pdb1_name + '_predicted_models_*'
                     print("Prediction with deep MSA was failed"); gen_dir = 'failed_prediction/' + pdb1_name
                     os.makedirs(gen_dir)
                     mv_command = 'mv ' + fin_pred_dir + ' failed_prediction/' + pdb1_name
