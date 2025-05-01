@@ -307,7 +307,7 @@ class prediction_all():
                 else:
                     fin_pred_dir = pwd + pdb1_name + '_predicted_models_*'
                     print("Prediction with deep MSA was failed"); gen_dir = 'failed_prediction/' + pdb1_name
-                    os.makedirs(gen_dir)
+                    os.makedirs(gen_dir); os.system(mv_command)
                     mv_command = 'mv ' + fin_pred_dir + ' failed_prediction/' + pdb1_name
                     sys.exit()
             else:
@@ -318,7 +318,7 @@ class prediction_all():
                 else:
                     fin_pred_dir = pwd + pdb1_name + '_predicted_models_*'
                     print("Prediction with deep MSA was failed"); gen_dir = 'failed_prediction/' + pdb1_name
-                    os.makedirs(gen_dir)
+                    os.makedirs(gen_dir); os.system(mv_command)
                     mv_command = 'mv ' + fin_pred_dir + ' failed_prediction/' + pdb1_name
                     sys.exit()
 
