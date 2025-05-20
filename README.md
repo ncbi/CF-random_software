@@ -156,6 +156,5 @@ To be updated
 
 # License
 Please see the LICENSE.md file.
-To be updated
 
 
