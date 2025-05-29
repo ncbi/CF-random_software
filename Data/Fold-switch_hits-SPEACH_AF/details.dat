@@ -1,0 +1,37 @@
+# details on which set of predictions were used
+# to generate the PyMol session files
+
+A1AT:
+1kct_252_263,3t1p_275_286
+all_folds1.pse
+
+capsid_protein:
+3j7w_32_43,3j7v_17_28
+both_folds_2.pse
+both_folds.pse
+
+componentC3:
+2a73_836_847,2a73_818_829
+both_folds.pse
+most_like_fold1.pse
+
+FUS_HENDH:
+1wp8_1_12, 5ejb_132_143
+all_folds2.pse
+all_like_fold1.pse
+
+RfAH:
+2oug_136_147,6c6s_138_149
+all_fold2.pse
+both_folds.pse
+
+OxyR:
+4y0m_132_143,4xws_105_116
+all_folds1.pse
+both_folds.pse
+
+KSHV_protease:
+3njq_7_18,2pbk_21_32
+all_fold1s.pse
+most_like_fold2.pse
+
