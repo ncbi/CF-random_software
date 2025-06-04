@@ -235,9 +235,14 @@ class CF_MSA_var():
         print("TMscore fold-switching region in multimer:"); print(TMscore_multi_fs)
 
         if np.any(TMscore_multi > 0.4) and np.any(TMscore_multi_fs > 0.4):
-            for ii in range(0, int(TMscore_multi.shape[0] - 1)):
-                TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
-                TMscore_multi_fs_average[ii] = np.average(TMscore_multi_fs[ii])
+            #for ii in range(0, int(TMscore_multi.shape[0] - 1)):
+            tmp_cnt = 0
+            for i in range(0, 13, 2):
+                #TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
+                #TMscore_multi_fs_average[ii] = np.average(TMscore_multi_fs[ii])
+                TMscore_multi_average[tmp_cnt] = np.average(TMscore_multi[ii])
+                TMscore_multi_fs_average[tmp_cnt] = np.average(TMscore_multi_fs[ii])
+                tmp_cnt = tmp_cnt + 1
 
             location = np.argmax(np.max(TMscore_multi_average, axis=1))
             print("The selected size of shallow random MSA is: ", np.argmax(np.max(TMscore_multi_fs_average, axis=1)))
@@ -338,22 +343,20 @@ class prediction_all_multimer_FS():
         TMscore_monomer_fs = np.array(run_fs_TMscore.tmscores_fs)
         TMscore_monomer_fs = TMscore_monomer_fs.reshape(2, num_seeds * 5); print(TMscore_monomer_fs)
 
-        if np.any(TMscore_monomer[0, :] >= 0.4) and np.any(TMscore_monomer_fs[0, :] >= 0.4):
+        if np.any(TMscore_monomer[0, :] >= 0.5) and np.any(TMscore_monomer_fs[0, :] >= 0.4):
             pred_dir = pdb1_name + '_predicted_models_full_rand_' + str(random_seed_full_MSA) + '/'
             mv_folder_cmd = 'mv ' + pred_dir + ' multimer_prediction/' + pdb1_name
             print(mv_folder_cmd); os.system(mv_folder_cmd)
             np.savetxt('TMScore_full-MSA_' + pdb1_name + '.csv', TMscore_monomer, fmt='%2.3f')
 
-            print("Selecting the depth of shallow random MSA...")
-            #self, pdb1_name, pdb2_name, search_dir, output_dir, rseed
-            #TMscore_multi_selection = MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name, num_seeds, search_dir_update, output_dir, random_seed, pdb1, pdb2)
-            MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name_multi, num_seeds, search_dir_update, output_dir, random_seed, pdb1, pdb2)
+            MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name_multi, num_seeds, search_dir_update, output_dir, random_seed, pdb1, output_file_name)
+            #TMscore_multi_selection = MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name_multi, num_seeds, search_dir_update, output_dir, random_seed, pdb1, output_file_name)
             print(MSA_var.size_selection); self.size_selection = MSA_var.size_selection
 
 
 
         else:
-            pred_dir = pdb1_name + '_predicted_models_full_rand_' + str(random_seed_full_MSA) + '/'
+            pred_dir = pdb1_name + '_predicted_models*_rand_*/'
             mv_command = 'mv ' + pred_dir + ' failed_prediction/'; 
             print(mv_command); os.system(mv_command)
             print("Deep MSA cannot find the monomer")

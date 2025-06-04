@@ -189,7 +189,7 @@ class CF_MSA_var():
         
        
 
-    def cal_TM_score_multi(self, pdb1_name, pdb2_name, num_seeds, search_dir, output_dir, rseed, pdb1, pdb2):
+    def cal_TM_score_multi(self, pdb1_name, pdb2_name, num_seeds, search_dir, output_dir, rseed):
 
         max_msa = 1; ext_msa = 2
         multi_size = 0; random_seed = rseed
@@ -207,7 +207,6 @@ class CF_MSA_var():
                 print("The TMscore list is empty")
                 tmp = np.zeros((1, 25))
                 TMscore_multi = np.append(TMscore_multi, tmp)
-                TMscore_multi_fs = np.append(TMscore_multi_fs, tmp)
             else:
                 run_TMscore_multi = TM_score_multimer(fin_pred_dir, pdb1_name, pdb2_name)
                 TMscore_multi = np.append(TMscore_multi, run_TMscore_multi.tmscores_multimer); print(TMscore_multi)
@@ -221,20 +220,23 @@ class CF_MSA_var():
 
         TMscore_multi = TMscore_multi.reshape(7 * 2, num_seeds * 5)
         np.savetxt('TMScore_random-MSA_' + pdb1_name  + '.csv', TMscore_multi, fmt='%2.3f')
-        TMscore_multi = TMscore_multi[::2]
+        #TMscore_multi = TMscore_multi[::2]
 
 
 
         print("TMscore multimer:"); print(TMscore_multi)
 
-
-        if np.any(TMscore_multi > 0.45):
-            for ii in range(0, int(TMscore_multi.shape[0] - 1)):
-                TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
+        if np.any(TMscore_multi > 0.4):
+            #for ii in range(0, int(TMscore_multi.shape[0] - 1)):
+            tmp_cnt = 0
+            for i in range(0, 13, 2):
+                #TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
+                TMscore_multi_average[tmp_cnt] = np.average(TMscore_multi[i])
+                tmp_cnt = tmp_cnt + 1
 
 
             location = np.argmax(np.max(TMscore_multi_average, axis=1))
-            print("The selected size of shallow random MSA is: ", np.argmax(np.max(TMscore_multi_fs_average, axis=1)))
+            print("The selected size of shallow random MSA is: ", np.argmax(np.max(TMscore_multi_average, axis=1)))
             self.size_selection = int(location)
 
             mv_command = 'mv ' + fin_pred_dir_all + ' multimer_prediction/' + pdb1_name
@@ -316,13 +318,13 @@ class prediction_all_multimer():
             print(mv_folder_cmd); os.system(mv_folder_cmd)
             np.savetxt('TMScore_full-MSA_' + pdb1_name + '.csv', TMscore_monomer, fmt='%2.3f')
 
-            print("Selecting the depth of shallow random MSA...")
-            #self, pdb1_name, pdb2_name, search_dir, output_dir, rseed
-            TMscore_multi_selection = MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name, num_seeds, search_dir_update, output_dir, random_seed)
-            print(TMscore_multi_selection.size_selection); self.size_selection = TMscore_multi_selection.size_selection
+            #size_selection
+            #TMscore_multi_selection = MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name, num_seeds, search_dir_update, output_dir, random_seed)
+            MSA_var.cal_TM_score_multi(pdb1_name, pdb2_name, num_seeds, search_dir_update, output_dir, random_seed)
+            print(MSA_var.size_selection); self.size_selection = MSA_var.size_selection
 
         else:
-            pred_dir = pdb1_name + '_predicted_models_full_rand_' + str(random_seed_full_MSA) + '/'
+            pred_dir = pdb1_name + '_predicted_models*_rand_*/'
             mv_command = 'mv ' + pred_dir + ' failed_prediction/'; 
             print(mv_command); os.system(mv_command)
             print("Deep MSA cannot find the monomer")
