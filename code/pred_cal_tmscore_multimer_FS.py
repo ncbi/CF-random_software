@@ -237,7 +237,8 @@ class CF_MSA_var():
         if np.any(TMscore_multi > 0.4) and np.any(TMscore_multi_fs > 0.4):
             #for ii in range(0, int(TMscore_multi.shape[0] - 1)):
             tmp_cnt = 0
-            for i in range(0, 13, 2):
+            for i in range(0, int(TMscore_multi.shape[0] - 1)):
+            #for i in range(0, 13, 2):
                 #TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
                 #TMscore_multi_fs_average[ii] = np.average(TMscore_multi_fs[ii])
                 TMscore_multi_average[tmp_cnt] = np.average(TMscore_multi[i])
