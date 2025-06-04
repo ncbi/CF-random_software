@@ -240,8 +240,8 @@ class CF_MSA_var():
             for i in range(0, 13, 2):
                 #TMscore_multi_average[ii] = np.average(TMscore_multi[ii])
                 #TMscore_multi_fs_average[ii] = np.average(TMscore_multi_fs[ii])
-                TMscore_multi_average[tmp_cnt] = np.average(TMscore_multi[ii])
-                TMscore_multi_fs_average[tmp_cnt] = np.average(TMscore_multi_fs[ii])
+                TMscore_multi_average[tmp_cnt] = np.average(TMscore_multi[i])
+                TMscore_multi_fs_average[tmp_cnt] = np.average(TMscore_multi_fs[i])
                 tmp_cnt = tmp_cnt + 1
 
             location = np.argmax(np.max(TMscore_multi_average, axis=1))
