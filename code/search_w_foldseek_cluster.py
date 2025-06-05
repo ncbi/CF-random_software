@@ -274,7 +274,7 @@ class blind_screening():
         viridis = plt.get_cmap('viridis',len(files_of_interest))
         largest_group_num = max(files_of_interest, key=lambda x: x[1])
         pymol.cmd.load(files[0].replace('-self.foldseek','.pdb'), 'Dominant')
-        with open(pdb1_name + "-structures_of_interest.csv", "w") as file:
+        with open(blind_path + '/' + pdb1_name + "-structures_of_interest.csv", "w") as file:
             file.write("group, file, pca_1, pca_2\n")
     
         with open(blind_path + '/' + pdb1_name + "-structures_of_interest.csv", "a") as file:
