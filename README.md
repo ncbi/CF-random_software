@@ -148,7 +148,7 @@ _If user uses the option '--pname', the name of output files would be entered '-
 *This takes <70 Minutes to run on an A100 GPU (generates 200 structures total + 200 foldseek files).* <br>
 
 # How to Cite
-To be updated
+Lee, M., Schafer, J.W., Prabakaran, J. et al. Large-scale predictions of alternative protein conformations by AlphaFold2-based sequence association. Nat Commun 16, 5622 (2025). https://doi.org/10.1038/s41467-025-60759-5
 <br><br>
 
 # License
