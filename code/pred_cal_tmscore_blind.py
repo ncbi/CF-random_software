@@ -6,19 +6,10 @@ Created on Wed Feb 21 14:51:00 2024
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
 import os
-from os import listdir
-from os.path import isfile, join
-import sys
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
-import matplotlib.pyplot as plt
-import glob
 import random
-import argparse
+
+import numpy as np
 
 
 class CF_MSA_max:
@@ -35,7 +26,11 @@ class CF_MSA_max:
             + output_dir
         )
         print(command)
-        os.system(command)
+        result = os.system(command)
+        if result != 0:
+            print(f"Warning: colabfold_batch failed with exit code {result}")
+            print("Skipping move operation for this prediction")
+            return
 
 
 class CF_MSA_var:
@@ -84,13 +79,14 @@ class CF_MSA_var:
 
             if not os.path.exists(gen_dir):
                 os.makedirs(gen_dir)
-                mv_command = "mv " + fin_pred_dir + " blind_prediction/" + pdb1_name
-                print(mv_command)
-                os.system(mv_command)
-            else:
-                mv_command = "mv " + fin_pred_dir + " blind_prediction/" + pdb1_name
-                print(mv_command)
-                os.system(mv_command)
+            
+            mv_command = "mv " + fin_pred_dir + " blind_prediction/" + pdb1_name
+            print(mv_command)
+            result = os.system(mv_command)
+            if result != 0:
+                print(f"Warning: Failed to move prediction directory (exit code {result})")
+                print("The prediction directory may not have been created successfully.")
+                print("Check colabfold_batch output above for errors.")
 
 
 class prediction_all_blind:
@@ -115,9 +111,17 @@ class prediction_all_blind:
             os.mkdir(gen_dir)
 
         pred_dir = pdb1_name + "_predicted_models_full_rand_" + str(random_seed) + "/"
-        mv_folder_cmd = "mv " + pred_dir + " blind_prediction/" + pdb1_name
-        print(mv_folder_cmd)
-        os.system(mv_folder_cmd)
+        
+        # Check if prediction directory was created before trying to move it
+        if os.path.exists(pred_dir):
+            mv_folder_cmd = "mv " + pred_dir + " blind_prediction/" + pdb1_name
+            print(mv_folder_cmd)
+            result = os.system(mv_folder_cmd)
+            if result != 0:
+                print(f"Warning: Failed to move prediction directory (exit code {result})")
+        else:
+            print(f"Warning: Prediction directory {pred_dir} was not created")
+            print("This usually means colabfold_batch failed. Check error messages above.")
 
         ##### check out varied-MSA with (msa-max: 1, 2, 4, 8, 16, 32, 64) (msa-extra: 2, 4, 8, 16, 32, 64, 128)
         output_dir = " " + pdb1_name + "_predicted_models_rand_"

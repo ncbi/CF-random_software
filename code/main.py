@@ -6,30 +6,24 @@ Created on Tue Jan  9 14:51:00 2024
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
-import os
-from os import listdir
-from os.path import isfile, join
-import sys
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
-import matplotlib.pyplot as plt
-import glob
 import argparse
+import glob
+import os
+import sys
 import warnings
+
+import numpy as np
 
 warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
 
-    from pred_cal_tmscore_FS import *
-    from pred_cal_tmscore_blind import *
-    from pred_cal_tmscore_AC import *
     from cal_plddt_ACFS import *
     from PLOT_AC import *
     from PLOT_FS import *
+    from pred_cal_tmscore_AC import *
+    from pred_cal_tmscore_blind import *
+    from pred_cal_tmscore_FS import *
     from search_w_foldseek_cluster import *
 
     ######################################################################################################
@@ -156,71 +150,56 @@ if __name__ == "__main__":
     pwd = os.getcwd() + "/"
     search_dir = " " + pwd + args.fname
 
-    if not os.path.exists(fail):
-        os.mkdir(fail)
-    else:
-        fail_dir_count = 0
-        for root_dir, cur_dir, files in os.walk(pwd + fail + "/" + pdb1_name + "/"):
-            fail_dir_count += len(cur_dir)
-
-    if os.path.exists(fail + "/" + pdb1_name):
-        if fail_dir_count >= 8:
-            print("Prediction was already done")
-        else:
-            print("Folder is already created and cleaning existed subfolders")
-            rm_pre_folders = "rm -rf " + fail + "/" + pdb1_name + "/"
-            os.system(rm_pre_folders)
-    else:
-        pass
-
-    if not os.path.exists(multi):
-        os.mkdir(multi)
-    else:
-        succ_dir_count = 0
-        for root_dir, cur_dir, files in os.walk(pwd + multi + "/" + pdb1_name + "/"):
-            succ_dir_count += len(cur_dir)
-
-    if os.path.exists(multi + "/" + pdb1_name):
-        if succ_dir_count >= 8:
-            print("Prediction was already done")
-        else:
-            print("Folder is already created and cleaning existed subfolders")
-            rm_pre_folders = "rm -rf " + multi + "/" + pdb1_name + "/"
-            os.system(rm_pre_folders)
-    else:
-        pass
+    # Create main output directories
+    for directory in [fail, success, multi]:
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+    
+    # Ensure subdirectories exist for this prediction
+    fail_pdb_dir = fail + "/" + pdb1_name
+    success_pdb_dir = success + "/" + pdb1_name
+    multi_pdb_dir = multi + "/" + pdb1_name
+    
+    for pdb_dir in [fail_pdb_dir, success_pdb_dir, multi_pdb_dir]:
+        if not os.path.exists(pdb_dir):
+            os.makedirs(pdb_dir, exist_ok=True)
+    
+    # Count existing subdirectories
+    fail_dir_count = 0
+    for root_dir, cur_dir, files in os.walk(pwd + fail_pdb_dir + "/"):
+        fail_dir_count += len(cur_dir)
+    
+    succ_dir_count = 0
+    for root_dir, cur_dir, files in os.walk(pwd + success_pdb_dir + "/"):
+        succ_dir_count += len(cur_dir)
+    
+    # Clean up incomplete predictions if needed
+    if fail_dir_count > 0 and fail_dir_count < 8:
+        print("Folder is already created and cleaning existed subfolders")
+        os.system(f"rm -rf {fail_pdb_dir}/")
+        os.makedirs(fail_pdb_dir, exist_ok=True)
 
     if args.option == "AC":
         print("Predicting alternative conformations")
         ######################################################################################################
         ###### running prediction using full- and shallow random-MSA
-        if not os.path.exists(success):
-            os.mkdir(success)
-        else:
+        # Directories already created above, just check status
+        if succ_dir_count >= 8:
+            print("Prediction was already done")
+        elif succ_dir_count > 0:
+            print("Folder is already created and cleaning existed subfolders")
+            os.system(f"rm -rf {success_pdb_dir}/")
+            os.makedirs(success_pdb_dir, exist_ok=True)
             succ_dir_count = 0
-            for root_dir, cur_dir, files in os.walk(pwd + success + "/" + pdb1_name + "/"):
-                succ_dir_count += len(cur_dir)
 
-        if os.path.exists(success + "/" + pdb1_name):
-            if succ_dir_count >= 8:
-                print("Prediction was already done")
-            else:
-                print("Folder is already created and cleaning existed subfolders")
-                rm_pre_folders = "rm -rf " + success + "/" + pdb1_name + "/"
-                os.system(rm_pre_folders)
-        else:
-            pass
-
-        if os.path.exists(success + "/" + pdb1_name) and succ_dir_count >= 8:
-            print("Predictions including full- and random-MSA were already done")
-        elif os.path.exists(multi + "/" + pdb1_name) and succ_dir_count >= 8:
+        if succ_dir_count >= 8:
             print("Predictions including full- and random-MSA were already done")
         else:
-
-            rm_pre_folders = "rm -rf " + success + "/" + pdb1_name + "/"
-            os.system(rm_pre_folders)
-            rm_pre_folders = "rm -rf " + multi + "/" + pdb1_name + "/"
-            os.system(rm_pre_folders)
+            # Clean and prepare directories
+            os.system(f"rm -rf {success_pdb_dir}/")
+            os.system(f"rm -rf {multi_pdb_dir}/")
+            os.makedirs(success_pdb_dir, exist_ok=True)
+            os.makedirs(multi_pdb_dir, exist_ok=True)
 
             pred_1st_all = prediction_all_AC(
                 pdb1, pdb1_name, pdb2, pdb2_name, search_dir, nMSA, model_type, search_multi_dir
@@ -342,20 +321,24 @@ if __name__ == "__main__":
         ###### check previous predictions were performed or not
         if not os.path.exists(blind):
             os.mkdir(blind)
-        else:
-            blind_dir_count = 0
-            for root_dir, cur_dir, files in os.walk(pwd + blind + "/" + pdb1_name + "/"):
-                blind_dir_count += len(cur_dir)
+        
+        # Create the subdirectory for this prediction
+        blind_pdb_dir = blind + "/" + pdb1_name
+        if not os.path.exists(blind_pdb_dir):
+            os.makedirs(blind_pdb_dir, exist_ok=True)
+        
+        blind_dir_count = 0
+        for root_dir, cur_dir, files in os.walk(pwd + blind_pdb_dir + "/"):
+            blind_dir_count += len(cur_dir)
 
-        if os.path.exists(blind + "/" + pdb1_name):
+        if os.path.exists(blind_pdb_dir):
             if blind_dir_count >= 8:
                 print("Prediction was already done")
             else:
                 print("Folder is already created and cleaning existed subfolders")
-                rm_pre_folders = "rm -rf " + blind + "/" + pdb1_name + "/"
+                rm_pre_folders = "rm -rf " + blind_pdb_dir + "/"
                 os.system(rm_pre_folders)
-        else:
-            pass
+                os.makedirs(blind_pdb_dir, exist_ok=True)
 
         ###### running prediction using full- and shallow random-MSA
         blind_pred_path = "blind_prediction/" + pdb1_name

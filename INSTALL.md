@@ -3,67 +3,111 @@
 ## Requirements
 
 - Python >= 3.10
-- Conda (for installing foldseek and pymol)
-- localcolabfold (see system requirements below)
+- Conda (for managing environment)
+- pip (for Python packages)
 
 ## System Requirements
 
-CF-random currently supports Linux environments. For macOS and Windows, use the [Colab notebook](https://colab.research.google.com/drive/16pD2tUMkUx1gwDxZXcSr9WOosYp0ZU6j?authuser=0).
+CF-random is tested on Linux. For macOS and Windows, use the [Colab notebook](https://colab.research.google.com/drive/16pD2tUMkUx1gwDxZXcSr9WOosYp0ZU6j?authuser=0).
 
-## Installation Steps
+## Installation Steps (Recommended - Using Official ColabFold)
 
-### 1. Set up localcolabfold (Linux)
+### 1. Create a conda environment
 
 ```bash
-wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
-bash install_colabbatch_linux.sh
-```
-
-Then add to your `.bashrc`:
-```bash
-export PATH="/path/to/your/localcolabfold/colabfold-conda/bin:$PATH"
-```
-
-Reactivate bash: `source ~/.bashrc`
-
-### 2. Install foldseek and other dependencies
-
-Create and activate a conda environment:
-```bash
-conda create --name cf-random python=3.10
+conda create --name cf-random python=3.10 -y
 conda activate cf-random
 ```
 
-Install foldseek and pymol:
+### 2. Install CF-random with ColabFold
+
+The easiest way to get started is with the full installation:
+
 ```bash
-conda install -c conda-forge -c bioconda foldseek
-conda install conda-forge::pymol-open-source
+pip install -e ".[colabfold]"
 ```
 
-Set up foldseek databases:
+This installs CF-random and all ColabFold dependencies including:
+- colabfold (official package)
+- alphafold
+- dm-tree
+- All other required Python packages
+
+### 3. Install foldseek and optional visualization tools
+
 ```bash
+# Install foldseek
+conda install -c conda-forge -c bioconda foldseek
+
+# Optional: Install PyMOL for visualization
+conda install conda-forge::pymol-open-source
+
+# Set up foldseek databases (run once)
 foldseek databases PDB pdb tmp
 ```
 
-### 3. Install CF-random as a package
+**Note:** The foldseek databases command should be run in a directory where you want to store the database files.
 
-#### Option A: From source (development mode)
+## Troubleshooting Installation
+
+### If you encounter NumPy compatibility issues:
+
+The official colabfold package requires NumPy < 2.0. If you already have a conflicting NumPy version:
+
 ```bash
-git clone https://github.com/your-repo/cf-random.git
-cd cf-random
+pip install 'numpy<2.0' --force-reinstall --no-cache-dir
+```
+
+### Alternative Installation Methods
+
+#### Option A: Minimal Installation (core only)
+
+If you want to install CF-random without ColabFold:
+
+```bash
 pip install -e .
 ```
 
-#### Option B: From PyPI (when available)
+#### Option B: Development Installation
+
+For developers contributing to CF-random:
+
+```bash
+pip install -e ".[full]"
+```
+
+This includes ColabFold + dev tools (pytest, black, isort, flake8).
+
+#### Option C: From PyPI (when available)
+
+Once published:
+
 ```bash
 pip install cf-random
 ```
 
-#### Option C: Standard installation
+## Verify Installation
+
+Run these commands to verify everything is set up correctly:
+
 ```bash
-cd cf-random
-pip install .
+# Verify CF-random package
+pip show cf-random
+
+# Test the CLI
+cf-random --help
+
+# Test Python import
+python -c "import cf_random; print(f'CF-random version: {cf_random.__version__}')"
+
+# Verify ColabFold is working
+colabfold_batch --help
+
+# Verify foldseek is installed
+which foldseek
 ```
+
+If all commands succeed, you're ready to use CF-random!
 
 ## Usage
 

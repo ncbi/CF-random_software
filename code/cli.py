@@ -7,7 +7,6 @@ Wrapper around main.py functionality
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add the package directory to path for imports

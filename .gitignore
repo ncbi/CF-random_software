@@ -69,3 +69,10 @@ blind_prediction/
 successed_prediction/
 failed_prediction/
 multimer_prediction/
+
+# Foldseek
+pdb*
+pdb_*
+tmp/
+
+test_data/

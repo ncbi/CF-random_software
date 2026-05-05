@@ -1,19 +1,20 @@
 import glob
-import shutil, os, sys, re
+import os
+import re
+import shutil
 import subprocess
-import numpy as np
-import matplotlib.pyplot as plt
+import sys
 
+import matplotlib.pyplot as plt
+import MDAnalysis as mda
+import numpy as np
+from MDAnalysis.analysis.dssp import DSSP
 from scipy import stats
 from scipy.spatial import distance
-
+from sklearn.cluster import HDBSCAN
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-from sklearn.cluster import HDBSCAN
 from sklearn.preprocessing import minmax_scale
-
-import MDAnalysis as mda
-from MDAnalysis.analysis.dssp import DSSP
 
 try:
     import pymol

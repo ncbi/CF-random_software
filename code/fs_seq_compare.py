@@ -1,22 +1,11 @@
-import sys
-import os
-import re
-from os import listdir
-from os.path import isfile, join
-import pandas as pd
-import numpy as np
-import Bio.PDB
-import matplotlib.pyplot as plt
 import glob
-import random
-import argparse
-from Bio import SeqIO
-from Bio.PDB.PDBParser import PDBParser
-from Bio import *
-from Bio.SeqRecord import SeqRecord
+import os
 
+import numpy as np
+import pandas as pd
+from Bio import *
+from Bio.PDB.PDBParser import PDBParser
 from thefuzz import fuzz
-from thefuzz import process
 
 
 class fs_range:

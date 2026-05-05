@@ -1,0 +1,15 @@
+name: cf-random
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - biopython=1.79
+  - numpy
+  - pandas
+  - foldseek
+  - pymol-open-source
+  - pip
+  - pip:
+      - -e .

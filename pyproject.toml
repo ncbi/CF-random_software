@@ -7,11 +7,11 @@ name = "cf-random"
 version = "0.1.0"
 description = "CF-random: Predicting alternative conformations and fold-switching proteins"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.11"
 license = {text = "Public Domain (NCBI)"}
 authors = [
     {name = "Myeongsang (Samuel) Lee"},
-    {name = "Pramesh Sharma"}
+    {name = "Pramesh Sharma"},
 ]
 keywords = ["protein-structure", "fold-switching", "alternative-conformation", "colabfold"]
 classifiers = [
@@ -20,13 +20,11 @@ classifiers = [
     "License :: Public Domain",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
-    "biopython>=1.79",
-    "numpy",
+    "biopython>=1.79,<1.80",
+    "numpy>=1.20,<1.24",
     "matplotlib",
     "seaborn",
     "scikit-learn",
@@ -39,12 +37,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+colabfold = [
+    "colabfold",
+    "alphafold",
+    "dm-tree",
+]
 dev = [
     "pytest>=7.0",
     "black",
     "isort",
     "flake8",
 ]
+full = ["cf-random[colabfold,dev]"]
 
 [project.urls]
 Homepage = "https://github.com/ncbi/CF-random_software"
@@ -52,8 +56,9 @@ Homepage = "https://github.com/ncbi/CF-random_software"
 [project.scripts]
 cf-random = "cf_random.cli:main"
 
-[tool.setuptools]
-packages = ["cf_random"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cf_random*", "code*"]
 
 [tool.setuptools.package-data]
 cf_random = ["data/*"]

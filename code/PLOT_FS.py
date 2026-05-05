@@ -7,18 +7,12 @@ Created on Thu Feb 22 13:40:00 2024
 """
 
 import os
-import sys
-import textalloc as ta
-import seaborn as sns
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
-from matplotlib import pyplot as plt
-from adjustText import adjust_text
-import glob
 
+import numpy as np
 from cal_tmscore_fs_flmsa import *
 from fs_seq_compare import *
+from matplotlib import pyplot as plt
+from numpy import genfromtxt
 
 
 class plot_2D_scatter:

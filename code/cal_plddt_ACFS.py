@@ -2,11 +2,13 @@
 find the average pLDDT score
 """
 
-import sys, re
 import glob
 import json
-import numpy as np
+import re
+import sys
 from pathlib import Path
+
+import numpy as np
 
 # define pattern for regular expression
 

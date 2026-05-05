@@ -21,7 +21,7 @@ setup(
     python_requires=">=3.10",
     install_requires=[
         "biopython>=1.79",
-        "numpy",
+        "numpy<2.0",
         "matplotlib",
         "seaborn",
         "scikit-learn",
@@ -31,7 +31,32 @@ setup(
         "tmtools",
         "adjustText",
         "thefuzz",
+        "colabfold",
+        "alphafold",
+        "dm-tree",
     ],
+    extras_require={
+        "colabfold": [
+            "colabfold",
+            "alphafold",
+            "dm-tree",
+        ],
+        "dev": [
+            "pytest>=7.0",
+            "black",
+            "isort",
+            "flake8",
+        ],
+        "full": [
+            "colabfold",
+            "alphafold",
+            "dm-tree",
+            "pytest>=7.0",
+            "black",
+            "isort",
+            "flake8",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "cf-random=cf_random.cli:main",

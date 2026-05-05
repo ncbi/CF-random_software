@@ -8,19 +8,10 @@ Created on Tue Dec 24 14:51:00 2025
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
-import os
-from os import listdir
-from os.path import isfile, join
-import sys
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
 import glob
-import random
 import linecache
-import argparse
+import os
+from pathlib import Path
 
 
 class split_multi_to_chains:

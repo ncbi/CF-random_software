@@ -8,18 +8,8 @@ Splitting protein chain as each single file
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
-import os
-from os import listdir
-from os.path import isfile, join
-import sys
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
-import glob
-import linecache
 import argparse
+import linecache
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--pdb1", type=str, help="PDB structure for the target crystal structure")

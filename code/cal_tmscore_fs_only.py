@@ -17,26 +17,16 @@ Created on Wed Feb 21 14:51:00 2024
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
+import glob
 import os
-from os import listdir
-from os.path import isfile, join
 import sys
 from pathlib import Path
+
 import numpy as np
-from numpy import genfromtxt
-import matplotlib.pyplot as plt
-import glob
-import random
-import argparse
+from Bio.PDB import PDBParser
 
 # call related modules of tmtools after installation
 from tmtools import tm_align
-from tmtools.io import get_structure, get_residue_data
-from tmtools.testing import get_pdb_path
-import Bio.PDB
-from Bio.PDB import PDBParser, Structure
 
 pdbParser = PDBParser(QUIET=True)
 

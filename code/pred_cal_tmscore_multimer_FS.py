@@ -6,34 +6,27 @@ Created on Wed Feb 21 14:51:00 2024
 @author: Myeongsang (Samuel) Lee
 """
 
-import re
-import Bio
-import os
-from os import listdir
-from os.path import isfile, join
-import sys
-from pathlib import Path
-import numpy as np
-from numpy import genfromtxt
-import matplotlib.pyplot as plt
 import glob
+import os
 import random
-import argparse
+import sys
 
-# call related modules of tmtools after installation
-from tmtools import tm_align
-from tmtools.io import get_structure, get_residue_data
-from tmtools.testing import get_pdb_path
+import numpy as np
+from cal_tmscore_fs_multimer import *
 
 # call calculating TM-scores of fs region
 from cal_tmscore_fs_only import *
-from cal_tmscore_fs_multimer import *
 
 # call converting the multimer as a single chain structure
 from convert_multi_single import *
 
 # call converting the multimer as a separated chains
 from split_multi_single import *
+
+# call related modules of tmtools after installation
+from tmtools import tm_align
+from tmtools.io import get_residue_data, get_structure
+from tmtools.testing import get_pdb_path
 
 
 class TM_score_monomer:
