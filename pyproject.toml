@@ -47,10 +47,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-repo/cf-random"
-Documentation = "https://github.com/your-repo/cf-random"
-Repository = "https://github.com/your-repo/cf-random.git"
-Issues = "https://github.com/your-repo/cf-random/issues"
+Homepage = "https://github.com/ncbi/CF-random_software"
 
 [project.scripts]
 cf-random = "cf_random.cli:main"

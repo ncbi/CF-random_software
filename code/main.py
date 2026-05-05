@@ -1,4 +1,4 @@
-#!/upyMolsr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jan  9 14:51:00 2024
@@ -18,20 +18,19 @@ from numpy import genfromtxt
 import matplotlib.pyplot as plt
 import glob
 import argparse
+import warnings
 
-
-from pred_cal_tmscore_FS import *
-from pred_cal_tmscore_blind import *
-from pred_cal_tmscore_AC import *
-from cal_plddt_ACFS import *
-from PLOT_AC import *
-from PLOT_FS import *
-from search_w_foldseek_cluster import *
+warnings.filterwarnings('ignore')
 
 if __name__ == "__main__":
 
-    import warnings
-    warnings.filterwarnings('ignore')
+    from pred_cal_tmscore_FS import *
+    from pred_cal_tmscore_blind import *
+    from pred_cal_tmscore_AC import *
+    from cal_plddt_ACFS import *
+    from PLOT_AC import *
+    from PLOT_FS import *
+    from search_w_foldseek_cluster import *
 
     ######################################################################################################
     ###### initiallization pdb format (removing HETATM)

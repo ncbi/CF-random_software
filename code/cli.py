@@ -15,7 +15,6 @@ PACKAGE_DIR = Path(__file__).parent.absolute()
 
 def main():
     """Main entry point for cf-random CLI"""
-    # Import main module
     sys.path.insert(0, str(PACKAGE_DIR))
     from main import *
     
