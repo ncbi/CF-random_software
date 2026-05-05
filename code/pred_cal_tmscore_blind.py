@@ -79,7 +79,7 @@ class CF_MSA_var:
 
             if not os.path.exists(gen_dir):
                 os.makedirs(gen_dir)
-            
+
             mv_command = "mv " + fin_pred_dir + " blind_prediction/" + pdb1_name
             print(mv_command)
             result = os.system(mv_command)
@@ -111,7 +111,7 @@ class prediction_all_blind:
             os.mkdir(gen_dir)
 
         pred_dir = pdb1_name + "_predicted_models_full_rand_" + str(random_seed) + "/"
-        
+
         # Check if prediction directory was created before trying to move it
         if os.path.exists(pred_dir):
             mv_folder_cmd = "mv " + pred_dir + " blind_prediction/" + pdb1_name

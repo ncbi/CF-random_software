@@ -154,25 +154,25 @@ if __name__ == "__main__":
     for directory in [fail, success, multi]:
         if not os.path.exists(directory):
             os.mkdir(directory)
-    
+
     # Ensure subdirectories exist for this prediction
     fail_pdb_dir = fail + "/" + pdb1_name
     success_pdb_dir = success + "/" + pdb1_name
     multi_pdb_dir = multi + "/" + pdb1_name
-    
+
     for pdb_dir in [fail_pdb_dir, success_pdb_dir, multi_pdb_dir]:
         if not os.path.exists(pdb_dir):
             os.makedirs(pdb_dir, exist_ok=True)
-    
+
     # Count existing subdirectories
     fail_dir_count = 0
     for root_dir, cur_dir, files in os.walk(pwd + fail_pdb_dir + "/"):
         fail_dir_count += len(cur_dir)
-    
+
     succ_dir_count = 0
     for root_dir, cur_dir, files in os.walk(pwd + success_pdb_dir + "/"):
         succ_dir_count += len(cur_dir)
-    
+
     # Clean up incomplete predictions if needed
     if fail_dir_count > 0 and fail_dir_count < 8:
         print("Folder is already created and cleaning existed subfolders")
@@ -321,12 +321,12 @@ if __name__ == "__main__":
         ###### check previous predictions were performed or not
         if not os.path.exists(blind):
             os.mkdir(blind)
-        
+
         # Create the subdirectory for this prediction
         blind_pdb_dir = blind + "/" + pdb1_name
         if not os.path.exists(blind_pdb_dir):
             os.makedirs(blind_pdb_dir, exist_ok=True)
-        
+
         blind_dir_count = 0
         for root_dir, cur_dir, files in os.walk(pwd + blind_pdb_dir + "/"):
             blind_dir_count += len(cur_dir)
