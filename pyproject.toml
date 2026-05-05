@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cf-random"
+version = "0.1.0"
+description = "CF-random: Predicting alternative conformations and fold-switching proteins"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Public Domain (NCBI)"}
+authors = [
+    {name = "Myeongsang (Samuel) Lee"},
+    {name = "Pramesh Sharma"}
+]
+keywords = ["protein-structure", "fold-switching", "alternative-conformation", "colabfold"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: Public Domain",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "biopython>=1.79",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "scikit-learn",
+    "mdtraj",
+    "MDAnalysis",
+    "textalloc",
+    "tmtools",
+    "adjustText",
+    "thefuzz",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black",
+    "isort",
+    "flake8",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-repo/cf-random"
+Documentation = "https://github.com/your-repo/cf-random"
+Repository = "https://github.com/your-repo/cf-random.git"
+Issues = "https://github.com/your-repo/cf-random/issues"
+
+[project.scripts]
+cf-random = "cf_random.cli:main"
+
+[tool.setuptools]
+packages = ["cf_random"]
+
+[tool.setuptools.package-data]
+cf_random = ["data/*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
