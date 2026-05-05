@@ -7,6 +7,7 @@ Splitting protein chain as each single file
 
 @author: Myeongsang (Samuel) Lee
 """
+
 import re
 import Bio
 import os
@@ -20,34 +21,57 @@ import glob
 import linecache
 import argparse
 
-
 parser = argparse.ArgumentParser()
-parser.add_argument("--pdb1", type=str, help='PDB structure for the target crystal structure')
-args = parser.parse_args() 
+parser.add_argument("--pdb1", type=str, help="PDB structure for the target crystal structure")
+args = parser.parse_args()
 
 
-chain_char = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-        'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+chain_char = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+]
 
-pdb1 = args.pdb1; pdb1_name = pdb1.replace('.pdb','')
+pdb1 = args.pdb1
+pdb1_name = pdb1.replace(".pdb", "")
 
 
 TER_count = 0
-with open(pdb1, 'r') as file:
+with open(pdb1, "r") as file:
     for line in file:
         TER = line.split()
         TER_count += TER.count("TER")
 
 
-
-
-
 line_cnt = 0
 for i in range(0, TER_count):
-    output_file_name = pdb1_name + '_' + chain_char[i] + '.pdb'
+    output_file_name = pdb1_name + "_" + chain_char[i] + ".pdb"
 
     if line_cnt == 0:
-        with open(pdb1, 'r') as infile, open(output_file_name, 'w') as outfile:
+        with open(pdb1, "r") as infile, open(output_file_name, "w") as outfile:
             for line in infile:
                 outfile.write(line)
                 line_cnt = line_cnt + 1
@@ -56,7 +80,7 @@ for i in range(0, TER_count):
                     break
 
     else:
-        with open(pdb1, 'r') as infile, open(output_file_name, 'w') as outfile:
+        with open(pdb1, "r") as infile, open(output_file_name, "w") as outfile:
             for line in infile:
                 linecache.getline(pdb1, line_cnt)
                 outfile.write(linecache.getline(pdb1, line_cnt))
@@ -64,8 +88,3 @@ for i in range(0, TER_count):
                 if linecache.getline(pdb1, line_cnt) == "TER ":
                     line_cnt = line_cnt + 1
                     break
-
-
-
-        
-
