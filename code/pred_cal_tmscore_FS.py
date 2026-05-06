@@ -540,4 +540,3 @@ class prediction_all:
                 pdb1_name, pdb2_name, search_dir, nMSA, model_type, search_multi_dir, pdb1, pdb2
             )
             self.size_selection = MSA_multi.size_selection
-            # sys.exit()
