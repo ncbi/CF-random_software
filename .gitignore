@@ -75,3 +75,4 @@ pdb_*
 tmp/
 
 test_data/
+msa_folder/

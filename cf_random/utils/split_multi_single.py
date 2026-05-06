@@ -44,7 +44,6 @@ class split_multi_to_chains:
             "Z",
         ]
 
-
         files_list = glob.glob(str(pred_path) + "/*_unrelaxed*pdb")
 
         for fl in files_list:

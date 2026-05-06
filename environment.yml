@@ -4,11 +4,10 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - colabfold
   - python=3.10
-  - biopython=1.79
-  - numpy=1.23.5
   - pandas=1.5.3
+  - biopython=1.79
+  - colabfold
   - foldseek
   - pymol-open-source
   - pip

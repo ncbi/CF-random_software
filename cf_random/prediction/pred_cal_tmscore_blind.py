@@ -47,7 +47,6 @@ class CF_MSA_var:
             max_msa = 1
             ext_msa = 2
 
-
             for multi in (1, 2, 2, 2, 2, 2, 2):
                 max_msa = max_msa * multi
                 ext_msa = ext_msa * multi

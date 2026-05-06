@@ -14,13 +14,13 @@ import sys
 import numpy as np
 
 # call calculating TM-scores of fs region
-from cal_tmscore_fs_only import *
+from ..analysis.cal_tmscore_fs_only import TM_score_fs
 
 # call converting the multimer as a single chain structure
-from convert_multi_single import *
+from ..utils.convert_multi_single import convert_m2s
 
 # call colabfold for multimer option
-from pred_cal_tmscore_multimer_FS import *
+from .pred_cal_tmscore_multimer_fs import prediction_all_multimer_FS
 
 # call related modules of tmtools after installation
 from tmtools import tm_align
@@ -225,7 +225,6 @@ class CF_MSA_var:
 
         TMscore_fs_data = TMscores_fs_random_alter
         TMscore_fs_data = TMscores_fs_random_alter.reshape(14, num_seeds * 5)
-
 
         if alt_name == pdb2_name:
             location = (location * 2) + 1

@@ -9,8 +9,6 @@ Created on Thu Feb 22 13:40:00 2024
 import os
 
 import numpy as np
-from cal_tmscore_fs_flmsa import *
-from fs_seq_compare import *
 from matplotlib import pyplot as plt
 from numpy import genfromtxt
 

@@ -146,7 +146,6 @@ class fs_range:
         print(pred1_fs_res_st, pred1_fs_res_ed)
         print(pred2_fs_res_st, pred2_fs_res_ed)
 
-
         ##### perform pydssp and calculate secondary structure similarity
         index = 0
         print(np.size(pred_files))
@@ -237,5 +236,3 @@ class fs_range:
 
             else:
                 index += 1
-
-

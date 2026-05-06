@@ -7,7 +7,7 @@ name = "cf-random"
 version = "0.1.0"
 description = "CF-random: Predicting alternative conformations and fold-switching proteins"
 readme = "README.md"
-requires-python = ">=3.10,<3.11"
+requires-python = ">=3.10"
 license = {text = "Public Domain (NCBI)"}
 authors = [
     {name = "Myeongsang (Samuel) Lee"},
@@ -32,6 +32,7 @@ dependencies = [
     "tmtools",
     "adjustText",
     "thefuzz",
+    "numpy>=1.23.5,<2.0",
 ]
 
 [project.optional-dependencies]
@@ -62,4 +63,4 @@ target-version = ["py310"]
 
 [tool.isort]
 profile = "black"
-line_length = 100
+line_length = 10

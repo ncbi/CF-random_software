@@ -16,15 +16,16 @@ import numpy as np
 
 warnings.filterwarnings("ignore")
 
-if __name__ == "__main__":
+from ..analysis.cal_plddt_ACFS import plddt_cal
+from ..plotting.plot_ac import plot_2D_scatter_AC
+from ..prediction.pred_cal_tmscore_ac import prediction_all_AC
+from ..prediction.pred_cal_tmscore_blind import prediction_all_blind
+from ..prediction.pred_cal_tmscore_fs import prediction_all
+from ..utils.search_foldseek_cluster import blind_screening
+from ..plotting.plot_fc import plot_2D_scatter
 
-    from cal_plddt_ACFS import *
-    from plot_ac import *
-    from pred_cal_tmscore_AC import *
-    from pred_cal_tmscore_blind import *
-    from pred_cal_tmscore_FS import *
-    from search_w_foldseek_cluster import *
 
+def main():
     ######################################################################################################
     ###### initiallization pdb format (removing HETATM)
     # os.system("for i in *pdb;do echo $i;sed -i '/HETATM/d' $i;done")
@@ -377,3 +378,7 @@ if __name__ == "__main__":
 
     else:
         print("Please type correct option")
+
+
+if __name__ == "__main__":
+    main()
