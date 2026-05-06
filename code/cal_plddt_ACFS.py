@@ -39,10 +39,7 @@ def fract_good(score):
     of residue with
     plddt score > 70
     """
-    vals_greater_70 = (score > 70).sum()
-    percent_good = round((vals_greater_70 / score.size) * 100, 2)
     avg_plddt = round(np.average(score), 2)
-    # return percent_good,avg_plddt
     return avg_plddt
 
 

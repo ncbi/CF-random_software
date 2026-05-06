@@ -136,7 +136,6 @@ class TM_score_multimer:
 
 class CF_MSA_max:
     def __init__(self, search_dir, output_dir, pdb_name, rseed, num_seeds, model_type):
-
         command = (
             "colabfold_batch --num-seeds "
             + str(num_seeds)
@@ -185,11 +184,8 @@ class CF_MSA_var:
             os.system(command)
 
     def cal_TM_score_multi(self, pdb1_name, pdb2_name, num_seeds, search_dir, output_dir, rseed):
-
         max_msa = 1
         ext_msa = 2
-        multi_size = 0
-        random_seed = rseed
         TMscore_multi = []
         TMscore_multi_average = np.zeros((7, 1))
 
@@ -253,8 +249,6 @@ class prediction_all_multimer:
     def __init__(self, pdb1_name, pdb2_name, search_dir, nMSA, model_type, search_multi_dir):
         ### note: pdb1_name should be nomomer and pdb2_name should be multimer
         num_seeds = 5 + nMSA
-        TER_count = 0
-        pwd = os.getcwd() + "/"
         rm_converted_pdb = "rm " + pdb2_name + "_rmTER.pdb"
         os.system(rm_converted_pdb)
 

@@ -19,8 +19,7 @@ warnings.filterwarnings("ignore")
 if __name__ == "__main__":
 
     from cal_plddt_ACFS import *
-    from PLOT_AC import *
-    from PLOT_FS import *
+    from plot_ac import *
     from pred_cal_tmscore_AC import *
     from pred_cal_tmscore_blind import *
     from pred_cal_tmscore_FS import *

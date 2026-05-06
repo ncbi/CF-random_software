@@ -10,8 +10,6 @@ Created on Tue Dec 24 14:51:00 2025
 
 import glob
 import linecache
-import os
-from pathlib import Path
 
 
 class split_multi_to_chains:
@@ -46,8 +44,6 @@ class split_multi_to_chains:
             "Z",
         ]
 
-        current_dir = os.getcwd() + "/"
-        data_dir = Path(pred_path)  # Path to the predicted models
 
         files_list = glob.glob(str(pred_path) + "/*_unrelaxed*pdb")
 

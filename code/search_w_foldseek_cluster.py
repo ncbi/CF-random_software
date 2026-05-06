@@ -242,7 +242,6 @@ class blind_screening:
         # files_pdb = [file.replace("-self.foldseek",".pdb") for file in files]
         corr_mtx = []
 
-        df = {}
         for file in files:
             # it is possible for predictions to be so different that it isn't returned with a bit_score
             # in that case we return a zero

@@ -28,7 +28,7 @@ class plot_2D_scatter:
         #################################################################
         ########### getting the TM-score values of fold-switching region
 
-        pwd = os.getcwd() + "/"
+        os.getcwd() + "/"
 
         fs_full_TMs = genfromtxt(
             "TMScore_fs_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" "
@@ -55,7 +55,7 @@ class plot_2D_scatter:
         print(plddt_random)
 
         plddt_random = np.reshape(plddt_random, (7, (nMSA + 5) * 5))
-        TMs_fs_full_resh = np.reshape(TMs_fs_full, ((((nMSA + 5) * 2), 5)))
+        np.reshape(TMs_fs_full, ((((nMSA + 5) * 2), 5)))
 
         plt.figure(0)
 

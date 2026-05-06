@@ -205,7 +205,6 @@ class CF_MSA_var:
         TMscore_data = TMscores_random_alter
         TMscore_data = TMscores_random_alter.reshape(14, num_seeds * 5)
 
-        location_org = location
 
         if alt_name == pdb2_name:
             location = (location * 2) + 1
@@ -236,7 +235,6 @@ class prediction_all_AC:
         self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, nMSA, model_type, search_multi_dir
     ):
         num_seeds = 5 + nMSA
-        pwd = os.getcwd() + "/"
 
         if model_type != "alphafold2_multimer_v3":
 

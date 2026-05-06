@@ -208,8 +208,6 @@ class CF_MSA_var:
 
         max_msa = 1
         ext_msa = 2
-        multi_size = 0
-        random_seed = rseed
         TMscore_multi = []
         TMscore_multi_average = np.zeros((7, 1))
         TMscore_multi_fs = []
@@ -306,7 +304,6 @@ class prediction_all_multimer_FS:
         ### note: pdb1_name should be nomomer and pdb2_name should be multimer
         num_seeds = 5 + nMSA
         TER_count = 0
-        pwd = os.getcwd() + "/"
         rm_converted_pdb = "rm " + pdb2_name + "_rmTER.pdb"
         os.system(rm_converted_pdb)
 

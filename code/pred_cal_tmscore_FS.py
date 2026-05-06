@@ -226,7 +226,6 @@ class CF_MSA_var:
         TMscore_fs_data = TMscores_fs_random_alter
         TMscore_fs_data = TMscores_fs_random_alter.reshape(14, num_seeds * 5)
 
-        location_org = location
 
         if alt_name == pdb2_name:
             location = (location * 2) + 1
@@ -499,7 +498,6 @@ class prediction_all:
                     )
                     size_selection = MSA_var.selection
                     self.size_selection = size_selection
-                    pass
                 else:
                     mv_command = "mv " + fin_pred_dir + " successed_prediction/" + pdb1_name
                     print(mv_command)
@@ -514,7 +512,6 @@ class prediction_all:
                     )
                     size_selection = MSA_var.selection
                     self.size_selection = size_selection
-                    pass
 
             else:
                 gen_dir = "failed_prediction/" + pdb1_name

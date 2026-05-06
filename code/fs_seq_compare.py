@@ -146,9 +146,6 @@ class fs_range:
         print(pred1_fs_res_st, pred1_fs_res_ed)
         print(pred2_fs_res_st, pred2_fs_res_ed)
 
-        pred_dir_add = "additional_sampling/" + pdb1_name + "/"
-        pred_dir_suc = "successed_prediction/" + pdb1_name + "/*/"
-        pred_dir_fal = " failed_prediction/"
 
         ##### perform pydssp and calculate secondary structure similarity
         index = 0
@@ -241,34 +238,4 @@ class fs_range:
             else:
                 index += 1
 
-            # index += 1
 
-        # index = 0
-        # print("         "); print("calculating with pdb2 ", pdb2_name)
-        # for model in pred_files:
-        #    self.pydssp(pdb2, model, index)
-        #    dssp_read_tmp = pd.read_csv('output_' + str(index) + '.log', sep=' ', header = None)
-        #    ## seq1 = crystal structure, seq2 = predicted structure
-        #    print(dssp_read_tmp[0].iloc[0]); seq1 = dssp_read_tmp[0].iloc[0]
-        #    print(dssp_read_tmp[0].iloc[1]); seq2 = dssp_read_tmp[0].iloc[1]
-
-        #    # crystal protein 1 and predictions
-        #    print("     ")
-        #    print(seq1[crys2_fs_res_st:crys2_fs_res_ed])
-        #    print(seq2[pred2_fs_res_st:pred2_fs_res_ed])
-        #    if fuzz.ratio(seq1[crys2_fs_res_st:crys2_fs_res_ed], seq2[pred2_fs_res_st:pred2_fs_res_ed]) > 85:
-        #        print("fs region is correctly predicted")
-        #        break
-        #    elif index == (int(np.size(pred_files)) - 1):
-        #        print("fs region is not correctly predicted")
-
-        #        command = 'mv ' + pred_dir_add + pred_dir_fal
-        #        print(command); os.system(command)
-        #        command = 'mv ' + pred_dir_suc + pred_dir_fal + pdb1_name + '/'
-        #        print(command); os.system(command)
-
-        #        #command = 'rm *' + pdb1_name + '*csv'
-        #        #print(command); os.system(command)
-
-        #    else:
-        #        index += 1

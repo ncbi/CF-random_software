@@ -10,13 +10,10 @@ Created on Tue Dec 24 14:51:00 2025
 
 import glob
 import os
-from pathlib import Path
 
 
 class convert_m2s:
     def __init__(self, pred_path, pdb1_name, pdb2_name):
-        current_dir = os.getcwd() + "/"
-        data_dir = Path(pred_path)  # Path to the predicted models
 
         files_list = glob.glob(str(pred_path) + "/*_unrelaxed*pdb")
         print(files_list)
@@ -65,19 +62,3 @@ class convert_m2s:
                             if "TER " in line:
                                 line_cnt = line_cnt + 1
                                 break
-
-        # line_cnt = 0
-        ##for i in range(0, TER_count):
-        # for i in range(0, 2):
-        #    output_file_name = pdb2_name[0:4] + '_multi.pdb'
-
-        #    if line_cnt == 0:
-        #        with open(pdb2, 'r') as infile, open(output_file_name, 'w') as outfile:
-        #            for line in infile:
-        #                outfile.write(line)
-        #                line_cnt = line_cnt + 1
-        #                if "TER " in line:
-        #                    line_cnt = line_cnt + 1
-        #                    break
-
-        # pdb2_name_multi = output_file_name.replace('.pdb','')

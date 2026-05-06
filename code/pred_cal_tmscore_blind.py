@@ -47,7 +47,6 @@ class CF_MSA_var:
             max_msa = 1
             ext_msa = 2
 
-            TMscores_random = []
 
             for multi in (1, 2, 2, 2, 2, 2, 2):
                 max_msa = max_msa * multi
@@ -101,8 +100,7 @@ class prediction_all_blind:
         print(output_dir)
 
         ##### Perform predction with full-length MSA
-        MSA_full = CF_MSA_max(search_dir, output_dir, pdb1_name, random_seed, num_seeds, model_type)
-        pwd = os.getcwd() + "/"
+        CF_MSA_max(search_dir, output_dir, pdb1_name, random_seed, num_seeds, model_type)
 
         # Directory section
         gen_dir = "blind_prediction/" + pdb1_name
@@ -126,4 +124,4 @@ class prediction_all_blind:
         ##### check out varied-MSA with (msa-max: 1, 2, 4, 8, 16, 32, 64) (msa-extra: 2, 4, 8, 16, 32, 64, 128)
         output_dir = " " + pdb1_name + "_predicted_models_rand_"
         random_seed = random.sample(range(100), 1)
-        MSA_var = CF_MSA_var(pdb1_name, search_dir, output_dir, random_seed, num_seeds, model_type)
+        CF_MSA_var(pdb1_name, search_dir, output_dir, random_seed, num_seeds, model_type)
