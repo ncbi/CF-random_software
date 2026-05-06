@@ -68,11 +68,11 @@ blind_prediction/
 successed_prediction/
 failed_prediction/
 multimer_prediction/
+test_data/
+msa_folder/
+structures_all.csv
 
 # Foldseek
 pdb*
 pdb_*
 tmp/
-
-test_data/
-msa_folder/
