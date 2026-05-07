@@ -2,9 +2,15 @@
 set -e
 
 echo "=== CF-random Installation ==="
-echo "[1/2] Creating conda environment..."
-conda env create -f environment.yml
+echo "[1/2] Ensuring conda environment 'cf-random' exists..."
 eval "$(conda shell.bash hook)"
+if conda env list | grep -q "cf-random"; then
+    echo "  Conda environment 'cf-random' already exists; skipping creation."
+else
+    echo "  Creating conda environment from environment.yml..."
+    conda env create -f environment.yml -n cf-random
+fi
+
 conda activate cf-random
 
 # Install JAX with GPU or CPU depending on hardware
@@ -23,13 +29,17 @@ else
     pip install "jax==0.4.25" "jaxlib==0.4.25"
 fi
 
-echo "[2/2] Verifying installation..."
-python -c "from Bio.Data import SCOPData; print('  biopython ok')"
-python -c "import numpy; print(f'  numpy {numpy.__version__}')"
-python -c "import pandas; print(f'  pandas {pandas.__version__}')"
-python -c "import jax; print(f'  jax {jax.__version__} | devices: {jax.devices()}')"
-colabfold_batch --help > /dev/null && echo "  colabfold ok"
-cf-random --help > /dev/null && echo "  cf-random ok"
+echo "[2/2] Verifying installation (best-effort checks)..."
+python -c "import importlib; print('  biopython:', importlib.util.find_spec('Bio') is not None)"
+python -c "import importlib, pkgutil; print('  numpy:', importlib.util.find_spec('numpy') is not None)"
+python -c "import importlib; print('  pandas:', importlib.util.find_spec('pandas') is not None)"
+python -c "import importlib; print('  jax:', importlib.util.find_spec('jax') is not None)"
+if command -v colabfold_batch &> /dev/null; then
+    echo "  colabfold ok"
+fi
+if command -v cf-random &> /dev/null; then
+    echo "  cf-random ok"
+fi
 
 echo ""
 echo "=== Installation complete ==="

@@ -8,13 +8,27 @@ import sys
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import numpy as np
-from MDAnalysis.analysis.dssp import DSSP
-from scipy import stats
-from scipy.spatial import distance
-from sklearn.cluster import HDBSCAN
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
-from sklearn.preprocessing import minmax_scale
+from MDAnalysis.analysis.dssp import (
+    DSSP,
+)
+from scipy import (
+    stats,
+)
+from scipy.spatial import (
+    distance,
+)
+from sklearn.cluster import (
+    HDBSCAN,
+)
+from sklearn.decomposition import (
+    PCA,
+)
+from sklearn.metrics import (
+    silhouette_score,
+)
+from sklearn.preprocessing import (
+    minmax_scale,
+)
 
 try:
     import pymol
@@ -22,7 +36,7 @@ except ImportError:
     pymol = None
 
 
-class blind_screening:
+class BlindScreening:
     def cluster_structures(X):
         """
         loop through values of k and define best value of k with silhouette_score
@@ -161,9 +175,9 @@ class blind_screening:
             except subprocess.CalledProcessError as e:
                 print("ERROR:\n", e.stderr)
 
-            print("Succes database is up!")
+            print("Success database is up!")
         else:
-            print("found an existing DB")
+            print("Found an existing DB")
 
         # ________________Calculate foldseek self comparison of all predicted structures____________
 
@@ -194,7 +208,7 @@ class blind_screening:
                 except subprocess.CalledProcessError as e:
                     print("foldseek failed to run {:}".format(file))
                     print("Error:", e.stderr)
-                print("{:} succeeded!!!".format(file))
+                print("{:} succeeded!".format(file))
             else:
                 print("{:} already exists".format(file.replace(".pdb", "-self.foldseek")))
 
@@ -273,7 +287,7 @@ class blind_screening:
 
         sklearn_pca = PCA(n_components=4)
         pca = sklearn_pca.fit_transform(norm_corr_mtx)
-        labels = blind_screening.cluster_structures(pca)
+        labels = BlindScreening.cluster_structures(pca)
 
         plt.figure(figsize=(8, 6))
         plt.scatter(pca[:, 0], pca[:, 1], c=labels, cmap="viridis", s=45)
@@ -284,7 +298,7 @@ class blind_screening:
         files_of_interest = []
         pca_of_interest = []
         for l in np.unique(labels):
-            kmed_idx, tot_cost = blind_screening.k_medoids(pca, l, labels)
+            kmed_idx, tot_cost = BlindScreening.k_medoids(pca, l, labels)
             for idx in kmed_idx:
                 files_of_interest.append([files[idx], l])
                 pca_of_interest.append(pca[idx])

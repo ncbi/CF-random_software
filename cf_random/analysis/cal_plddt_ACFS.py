@@ -1,5 +1,7 @@
 # 0_000_scores_rank_001_alphafold2_ptm_model_4_seed_000.json
-pattrn = re.compile(r".*?_scores_rank_(?P<rank>\d+)_alphafold2.*")
+import re
+
+pattern = re.compile(r".*?_scores_rank_(?P<rank>\d+)_alphafold2.*")
 
 # default if pattern doesn't work
 rank = "000"
@@ -15,6 +17,7 @@ def read_plddt(jsonfile):
         numpy.ndarray: Array of pLDDT scores as float64.
     """
     import json
+
     import numpy as np
 
     with open(jsonfile) as json_file:
@@ -40,7 +43,7 @@ def fract_good(score):
     return avg_plddt
 
 
-class plddt_cal:
+class PlddtCal:
     """Calculates average pLDDT scores for protein models across different categories.
 
     This class processes AlphaFold prediction JSON files to extract pLDDT scores
@@ -59,6 +62,7 @@ class plddt_cal:
             model_type (str): Type of AlphaFold model.
         """
         import sys
+
         import numpy as np
 
         if len(sub_list) == 0:
@@ -104,7 +108,10 @@ class plddt_cal:
                    of scores, out_dict_all is dict of key-value pairs, cnt is count.
         """
         import glob
-        from pathlib import Path
+        from pathlib import (
+            Path,
+        )
+
         import numpy as np
 
         out_dict_all = {}
@@ -122,7 +129,7 @@ class plddt_cal:
                     values_all = np.append(values_all, values)
                     jsonfilepath = Path(jsonfile)
                     jsonfilename = jsonfilepath.stem
-                    match = pattrn.match(jsonfilename)
+                    match = pattern.match(jsonfilename)
                     if match:
                         rank = match.group("rank")
 

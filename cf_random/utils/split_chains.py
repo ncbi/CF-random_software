@@ -1,11 +1,8 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 17 09:29:00 2024
+"""Split protein chains into single-chain PDB files.
 
-Splitting protein chain as each single file
-
-@author: Myeongsang (Samuel) Lee
+Simple CLI utility to extract individual chains from a multi-chain PDB.
 """
 
 import argparse

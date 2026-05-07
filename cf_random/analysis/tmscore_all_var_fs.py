@@ -1,14 +1,13 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""TM-score evaluation and MSA orchestration for predicted models.
+"""
+Created on Wed Feb 21 14:51:00 2024
 
-Contains classes used to compute TM-scores for predicted models and to
-orchestrate ColabFold batch commands for varied MSA sizes.
+@author: Myeongsang (Samuel) Lee
 """
 
 import glob
 import os
-import random
 import sys
 
 import numpy as np
@@ -25,19 +24,14 @@ from tmtools.testing import (
     get_pdb_path,
 )
 
-# call calculating TM-scores of fs region
 from ..analysis.cal_tmscore_fs_only import (
     TMScoreFS,
 )
-
-# call converting the multimer as a single chain structure
+from ..prediction.pred_cal_tmscore_multimer import (
+    PredictionAllMultimerFS,
+)
 from ..utils.convert_multi_single import (
     convert_m2s,
-)
-
-# call colabfold for multimer option
-from .pred_cal_tmscore_multimer_fs import (
-    PredictionAllMultimerFS,
 )
 
 
@@ -55,7 +49,7 @@ class TMScore:
             files_list = glob.glob(str(pred_dir) + "/*_unrelaxed*pdb")
             print(files_list)
         else:
-            #### convert the multimer file as a single structure
+            # Convert multimer prediction to single-chain PDBs if needed
             check_files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
             print(check_files_list)
             if not check_files_list:
@@ -66,7 +60,7 @@ class TMScore:
                 files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
                 print(files_list)
 
-        ##### pdb1_name part
+        # Reference: pdb1
         pdb1_dir = pwd + pdb1_name
         r2 = get_structure(get_pdb_path(str(pdb1_dir)))
         coords2, seq2 = get_residue_data(r2)
@@ -76,7 +70,10 @@ class TMScore:
             return tmscores
 
         for model in files_list:
+            # modelpath = Path(model)
+            # model  = str(modelpath.parent) + "/" + modelpath.stem
             model = model.replace(".pdb", "")
+            # model = model.replace('_converted.pdb','_converted')
             model = pwd + model
             s = get_structure(get_pdb_path(model))
             coords1, seq1 = get_residue_data(s)
@@ -88,14 +85,16 @@ class TMScore:
             tmscore = round(res.tm_norm_chain1, 5)  # wrt to model
             tmscores_rev.append(tmscore)
 
-        # print(tmscores[0:5])
-        ##### pdb2_name part
+        # Reference: pdb2
         pdb2_dir = pwd + pdb2_name
         r3 = get_structure(get_pdb_path(str(pdb2_dir)))
         coords2, seq2 = get_residue_data(r3)
 
         for model in files_list:
+            # modelpath = Path(model)
+            # model  = str(modelpath.parent) + "/" + modelpath.stem
             model = model.replace(".pdb", "")
+            # model = model.replace('_converted.pdb','_converted')
             model = pwd + model
             s = get_structure(get_pdb_path(model))
             coords1, seq1 = get_residue_data(s)
@@ -119,64 +118,6 @@ class TMScore:
         print(tmscores)
         self.tmscores = tmscores
 
-
-class CF_MSA_MAX:
-    def __init__(self, search_dir, output_dir, pdb_name, rseed, num_seeds, model_type):
-
-        command = (
-            "colabfold_batch --num-seeds "
-            + str(num_seeds)
-            + " --model-type "
-            + str(model_type)
-            + " --random-seed "
-            + str(rseed)
-            + search_dir
-            + output_dir
-        )
-        print(command)
-        os.system(command)
-
-
-class CF_MSA_VAR:
-    def __init__(
-        self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, output_dir, rseed, num_seeds, model_type
-    ):
-
-        #### shallow MSA section
-        max_msa = 1
-        ext_msa = 2
-        random_seed = np.array(rseed)  ## needed to remove future
-
-        self.pdb1_name = pdb1_name
-
-        TMscores_random = []  ## whole structure
-        TMscores_fs_random = []  ## fold-switching region
-
-        for multi in (1, 2, 2, 2, 2, 2, 2):
-            max_msa = max_msa * multi
-            ext_msa = ext_msa * multi
-
-            #### Colabfold part
-            command = (
-                "colabfold_batch --num-seeds "
-                + str(num_seeds)
-                + " --model-type "
-                + str(model_type)
-                + " --max-seq "
-                + str(max_msa)
-                + " --max-extra-seq "
-                + str(ext_msa)
-                + search_dir
-                + output_dir
-                + str(random_seed)
-                + "_max_"
-                + str(max_msa)
-                + "_ext_"
-                + str(ext_msa)
-            )
-            print(command)
-            os.system(command)
-
     def select_size(
         self,
         TMscores_random_alter,
@@ -192,7 +133,7 @@ class CF_MSA_VAR:
         TMscores_random_locat = np.zeros((7, num_seeds * 5))
         TMscores_fs_random_locat = np.zeros((7, num_seeds * 5))
 
-        #### finding locatnative pdb_name
+        # Determine which entries correspond to the alternative conformation
 
         if alt_name == pdb2_name:
             # for i in 1, 3, 5, 7, 9, 11, 13 in TM_scores:
@@ -232,6 +173,8 @@ class CF_MSA_VAR:
 
         TMscore_fs_data = TMscores_fs_random_alter
         TMscore_fs_data = TMscores_fs_random_alter.reshape(14, num_seeds * 5)
+
+        location_org = location
 
         if alt_name == pdb2_name:
             location = (location * 2) + 1
@@ -286,72 +229,38 @@ class CF_MSA_VAR:
                     break
                 elif jj == (int(TMscore_data.shape[0])) and np.all(TMscore_data[jj, :] < 0.5):
                     print("Predictions are bad")
-                    rm_folder_cmd = "rm -rf successed_prediction/" + self.pdb1_name + "/"
-                    print(rm_folder_cmd)
-                    os.system(rm_folder_cmd)
                     sys.exit()
                 else:
                     print("Predictions are bad")
         else:
             print("Predictions are bad")
             print("Predictions of whole structure are bad")
-            rm_folder_cmd = "rm -rf successed_prediction/" + self.pdb1_name + "/"
-            print(rm_folder_cmd)
-            os.system(rm_folder_cmd)
             sys.exit()
 
 
-class PredictionAll:
-    def __init__(
-        self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, nMSA, model_type, search_multi_dir
-    ):
+class TMScoreCalAllVarFS:
+    def __init__(self, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, option, model_type):
         num_seeds = 5 + nMSA
         pwd = os.getcwd() + "/"
 
         if model_type != "alphafold2_multimer_v3":
-
-            ##### Perform prediction with full-length MSA
-            pre_random_seed = np.random.randint(0, 16, 1)
-            random_seed_full_MSA = "".join(map(str, pre_random_seed))
-            output_dir = (
-                " " + pdb1_name + "_predicted_models_full_rand_" + str(random_seed_full_MSA)
+            # Evaluate TM-scores from predictions using full-length MSAs (whole)
+            pred_dir = (
+                "predictions_all/" + pdb1_name + "/" + pdb1_name + "_predicted_models_full_rand_*"
             )
-            MSA_full = CF_MSA_MAX(
-                search_dir, output_dir, pdb1_name, random_seed_full_MSA, num_seeds, model_type
-            )
-
-            ##### Perform prediction with random shallow MSA
-            ##### check out varied-MSA with (msa-max: 1, 2, 4, 8, 16, 32, 64) (msa-extra: 2, 4, 8, 16, 32, 64, 128)
-            output_dir = " " + pdb1_name + "_predicted_models_rand_"
-            random_seed = random.sample(range(100), 1)
-            random_seed = "".join(map(str, random_seed))
-            MSA_var = CF_MSA_VAR(
-                pdb1,
-                pdb1_name,
-                pdb2,
-                pdb2_name,
-                search_dir,
-                output_dir,
-                random_seed,
-                num_seeds,
-                model_type,
-            )
-
-            ####################################################################
-            ##### check-out TM-scores of prediction with full-length-MSA (whole)
-            pred_dir = pdb1_name + "_predicted_models_full_rand_" + str(random_seed_full_MSA) + "/"
-            print(pred_dir)
             MSA_full_TMscore = TMScore(pred_dir, pdb1, pdb1_name, pdb2, pdb2_name, model_type)
             full_TMscore = np.array(MSA_full_TMscore.tmscores)
             full_TMscore = full_TMscore.reshape(2, num_seeds * 5)
 
-            ##### check-out TM-scores of prediction with full-length-MSA (fs region)
-            pred_path = pwd + pdb1_name + "_predicted_models_full_rand_" + str(random_seed_full_MSA)
+            # Evaluate TM-scores for fold-switching (FS) region from full-length MSAs
+            pred_path = (
+                "predictions_all/" + pdb1_name + "/" + pdb1_name + "_predicted_models_full_rand_*"
+            )
             MSA_fs_TMscore = TMScoreFS(pred_path, pdb1, pdb1_name, pdb2, pdb2_name)
             fs_TMscore = np.array(MSA_fs_TMscore.tmscores_fs)
             fs_TMscore = fs_TMscore.reshape(2, num_seeds * 5)
 
-            ##### check-out the 1st prediction results are good or not
+            # Determine reference vs alternative using full and FS-region TM-scores
             if np.average(full_TMscore[0, :]) > np.average(full_TMscore[1, :]):
                 if np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
                     ref_name = pdb1_name
@@ -360,12 +269,7 @@ class PredictionAll:
                     ref_name = pdb2_name
                     alt_name = pdb1_name
                 else:
-                    fin_pred_dir = pwd + pdb1_name + "_predicted_models_*"
                     print("Prediction with deep MSA was failed")
-                    gen_dir = "failed_prediction/" + pdb1_name
-                    os.makedirs(gen_dir)
-                    os.system(mv_command)
-                    mv_command = "mv " + fin_pred_dir + " failed_prediction/" + pdb1_name
                     sys.exit()
             else:
                 if np.any(fs_TMscore[1, :] >= 0.5) and np.any(full_TMscore[1, :] >= 0.5):
@@ -375,12 +279,7 @@ class PredictionAll:
                     ref_name = pdb1_name
                     alt_name = pdb2_name
                 else:
-                    fin_pred_dir = pwd + pdb1_name + "_predicted_models_*"
                     print("Prediction with deep MSA was failed")
-                    gen_dir = "failed_prediction/" + pdb1_name
-                    os.makedirs(gen_dir)
-                    os.system(mv_command)
-                    mv_command = "mv " + fin_pred_dir + " failed_prediction/" + pdb1_name
                     sys.exit()
 
             print("Reference structure: ", ref_name)
@@ -392,19 +291,18 @@ class PredictionAll:
             np.savetxt("TMScore_fs_full-MSA_" + pdb1_name + ".csv", fs_TMscore, fmt="%2.3f")
 
             # Directory section and save to successed_prediction folder
-            gen_dir = "successed_prediction/" + pdb1_name
+            gen_dir = "predictions_all/" + pdb1_name
 
             if not os.path.exists(gen_dir):
                 os.mkdir(gen_dir)
 
-            mv_folder_cmd = "mv " + pred_dir + " successed_prediction/" + pdb1_name
+            mv_folder_cmd = "mv " + pred_dir + " predictions_all/" + pdb1_name
             print(mv_folder_cmd)
             os.system(mv_folder_cmd)
             print("Full-MSA prediction is tightly aligned to crystal structure")
             print("               ")
 
-            ########################################################################
-            ##### check-out TM-scores of prediction with shallow random MSAs (whole)
+            # Evaluate TM-scores from shallow/random MSAs (whole and FS region)
             max_msa = 1
             ext_msa = 2
             TMscores_random = []
@@ -415,17 +313,16 @@ class PredictionAll:
                 ext_msa = ext_msa * multi
 
                 pred_dir = (
-                    pdb1_name
-                    + "_predicted_models_rand_"
-                    + str(random_seed)
-                    + "_max_"
+                    "predictions_all/"
+                    + pdb1_name
+                    + "/"
+                    + pdb1_name
+                    + "_predicted_models_rand_*_max_"
                     + str(max_msa)
                     + "_ext_"
                     + str(ext_msa)
-                    + "/"
                 )
-
-                ##### TMscore of whole part
+                # TM-score for whole structure (shallow MSA)
                 MSA_shallow_TMscore = TMScore(
                     pred_dir, pdb1, pdb1_name, pdb2, pdb2_name, model_type
                 )
@@ -439,7 +336,9 @@ class PredictionAll:
                 )
                 print(TMscores_fs_random)
 
-            fin_pred_dir = pdb1_name + "_predicted_models_rand_" + str(random_seed) + "_max_*"
+            fin_pred_dir = (
+                "predictions_all/" + pdb1_name + "/" + pdb1_name + "_predicted_models_rand_*_max_*"
+            )
 
             TMscores_random_reshape = TMscores_random.reshape(14, num_seeds * 5)
             TMscores_fs_random_reshape = TMscores_fs_random.reshape(14, num_seeds * 5)
@@ -447,7 +346,7 @@ class PredictionAll:
             TMscores_random_alter = np.zeros((7, num_seeds * 5))
             TMscores_fs_random_alter = np.zeros((7, num_seeds * 5))
 
-            ##### finding the TMscores of alternative conformations for determining the length of shallow random MSAs
+            # Extract TM-scores for alternative conformations to determine shallow MSA length
             if alt_name == pdb2_name:
                 # for i in 1, 3, 5, 7, 9, 11, 13 in TM_scores:
                 tmp_cnt = 0
@@ -467,8 +366,8 @@ class PredictionAll:
                     TMscores_fs_random_alter[tmp_cnt, :] = TMscores_fs_random_reshape[i, :]
                     tmp_cnt = tmp_cnt + 1
 
-            print("                   ")
-            print("Confirming the TM-score with alternative conformation is good or not")
+            print()
+            print("Confirming TM-scores for alternative conformations")
             print(TMscores_random_alter)
             print(
                 "Confirming the TM-score with fs region of alternative conformation is good or not"
@@ -488,61 +387,28 @@ class PredictionAll:
                     fmt="%2.3f",
                 )
 
-                gen_dir = "successed_prediction/" + pdb1_name
-                if not os.path.exists(gen_dir):
-                    os.makedirs(gen_dir)
-                    mv_command = "mv " + fin_pred_dir + " successed_prediction/" + pdb1_name
-                    print(mv_command)
-                    os.system(mv_command)
-                    MSA_var.select_size(
-                        TMscores_random_reshape,
-                        TMscores_fs_random_reshape,
-                        pdb1_name,
-                        pdb2_name,
-                        alt_name,
-                        num_seeds,
-                    )
-                    size_selection = MSA_var.selection
-                    self.size_selection = size_selection
-                else:
-                    mv_command = "mv " + fin_pred_dir + " successed_prediction/" + pdb1_name
-                    print(mv_command)
-                    os.system(mv_command)
-                    MSA_var.select_size(
-                        TMscores_random_reshape,
-                        TMscores_fs_random_reshape,
-                        pdb1_name,
-                        pdb2_name,
-                        alt_name,
-                        num_seeds,
-                    )
-                    size_selection = MSA_var.selection
-                    self.size_selection = size_selection
+                MSA_shallow_TMscore.select_size(
+                    TMscores_random_reshape,
+                    TMscores_fs_random_reshape,
+                    pdb1_name,
+                    pdb2_name,
+                    alt_name,
+                    num_seeds,
+                )
+                size_selection = MSA_shallow_TMscore.selection
+                self.size_selection = size_selection
 
             else:
-                gen_dir = "failed_prediction/" + pdb1_name
-                if not os.path.exists(gen_dir):
-                    os.makedirs(gen_dir)
-                    mv_command = "mv " + fin_pred_dir + " failed_prediction/" + pdb1_name
-                    print(mv_command)
-                    os.system(mv_command)
-                    print(
-                        "Full-MSA prediction is not tightly aligned to crystal structure with additional seeds"
-                    )
-                    print("Predcition is done")
-                    sys.exit()
-
-                else:
-                    mv_command = "mv " + fin_pred_dir + " failed_prediction/" + pdb1_name
-                    print(mv_command)
-                    os.system(mv_command)
-                    print("Predcition is done")
-                    sys.exit()
+                print(
+                    "Full-MSA prediction is not tightly aligned to crystal structure with additional seeds"
+                )
+                print("Predcition is done")
+                sys.exit()
 
         elif model_type == "alphafold2_multimer_v3":
             print("Currently working on")
-            # MSA_multi = PredictionAllMultimerFS(pdb1_name, pdb2_name, search_dir, nMSA, model_type, search_multi_dir)
             MSA_multi = PredictionAllMultimerFS(
                 pdb1_name, pdb2_name, search_dir, nMSA, model_type, search_multi_dir, pdb1, pdb2
             )
             self.size_selection = MSA_multi.size_selection
+            # sys.exit()

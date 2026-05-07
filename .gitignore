@@ -76,3 +76,6 @@ structures_all.csv
 pdb*
 pdb_*
 tmp/
+
+
+params/

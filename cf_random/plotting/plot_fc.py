@@ -9,24 +9,27 @@ Created on Thu Feb 22 13:40:00 2024
 import os
 
 import numpy as np
-from matplotlib import pyplot as plt
-from numpy import genfromtxt
+from matplotlib import (
+    pyplot as plt,
+)
+from numpy import (
+    genfromtxt,
+)
 
 
-class plot_2D_scatter:
+class Plot2DScatter:
     def __init__(self, full_cate, random_cate, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS):
-        ##### load TM-scores both full- and ramdon-MSA
+        # Load TM-scores for full and random MSAs
         TMs_full = genfromtxt("TMScore_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" ")
         TMs_random = genfromtxt("TMScore_" + random_cate + "_" + pdb1_name + ".csv", delimiter=" ")
 
-        ############ load pLDDT scores both full- and ramdon-MSA
+        # Load pLDDT scores for full and random MSAs
         plddt_full = genfromtxt("plddt_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" ")
         plddt_random = genfromtxt("plddt_" + random_cate + "_" + pdb1_name + ".csv", delimiter=" ")
 
-        #################################################################
-        ########### getting the TM-score values of fold-switching region
+        # Load TM-scores for the fold-switching (FS) region
 
-        os.getcwd() + "/"
+        pwd = os.getcwd() + "/"
 
         fs_full_TMs = genfromtxt(
             "TMScore_fs_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" "
@@ -37,7 +40,7 @@ class plot_2D_scatter:
         )
         TMs_fs_random = fs_random_TMs
 
-        ######### plotting the TM-score values as 2D scatter plot
+        # Plot 2D scatter of TM-scores (whole and FS-region)
         print("                                        ")
         print("Size of column: ", TMs_random.shape[-1])
         print("Size of row: ", TMs_random.shape[0])
@@ -53,7 +56,7 @@ class plot_2D_scatter:
         print(plddt_random)
 
         plddt_random = np.reshape(plddt_random, (7, (nMSA + 5) * 5))
-        np.reshape(TMs_fs_full, ((((nMSA + 5) * 2), 5)))
+        TMs_fs_full_resh = np.reshape(TMs_fs_full, ((((nMSA + 5) * 2), 5)))
 
         plt.figure(0)
 

@@ -4,7 +4,9 @@
 Command-line interface for CF-random
 """
 
-from .core.main import main
+from .core.main import (
+    main,
+)
 
 if __name__ == "__main__":
     main()

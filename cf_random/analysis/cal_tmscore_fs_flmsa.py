@@ -1,21 +1,21 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compare predicted protein models with original PDBs for fold-switching regions.
+"""Fold-switching TM-score computation using full MSA predictions.
 
-This module compares predicted AlphaFold models against original PDB structures
-and reports TM-scores for fold-switching regions using full MSA. It requires tmtools 0.0.2.
-
-Installation: https://pypi.org/project/tmtools/
-
-Usage:
-    python3.8 compare_strs_fs_flmsa.py 2k42_A 1cee_B 1cee_B 0_msas_models/
-
-Created on Wed Feb 21 14:51:00 2024
-@author: Myeongsang (Samuel) Lee
+Extracts coordinates for FS regions and computes TM-align scores
+for full-MSA predictions.
 """
 
-from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from pathlib import (
+    Path,
+)
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
+
 import numpy as np
 
 # Amino acid three-letter to one-letter code mapping
@@ -43,29 +43,31 @@ AA3TO1: Dict[str, str] = {
 }
 
 
-class TM_score_fs:
+class TMScoreFS:
     """Calculates TM-scores for fold-switching regions between PDB structures.
-    
+
     Compares predicted protein models against original PDB structures,
-    focusing on fold-switching regions using full MSA predictions. 
+    focusing on fold-switching regions using full MSA predictions.
     Computes TM-align scores for structural alignments.
-    
+
     Attributes:
         tmscores_fs (numpy.ndarray): Array of TM-scores for fold-switching comparisons.
     """
 
-    def get_coords(self, pdbfile: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
+    def get_coords(self, pdbfile: Union[str, Path], FSRange: str) -> Tuple[np.ndarray, str]:
         """Extracts CA coordinates and sequence for fold-switching region from PDB.
 
         Args:
             pdbfile (str or Path): Path to the PDB file.
-            fs_range (str): Residue range for fold-switching region, e.g., "112-162".
+            FSRange (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    (N x 3) and seq is the one-letter amino acid sequence string.
         """
-        from Bio.PDB import PDBParser
+        from Bio.PDB import (
+            PDBParser,
+        )
 
         pdb_parser = PDBParser(QUIET=True)
         struct = pdb_parser.get_structure("x", str(pdbfile))
@@ -73,7 +75,7 @@ class TM_score_fs:
         seq_dict: Dict[int, str] = {}
 
         # Convert string range to residue range
-        start, stop = fs_range.split("-")
+        start, stop = FSRange.split("-")
         res_range = range(int(start), int(stop) + 1)
 
         # Extract CA coordinates and sequence for residues in range
@@ -81,7 +83,7 @@ class TM_score_fs:
             residue = atom.get_parent()
             res_id = residue.get_id()[1]
             resname = residue.get_resname()
-            
+
             if res_id in res_range and atom.get_name() == "CA":
                 x, y, z = atom.get_coord()
                 coords.append([x, y, z])
@@ -96,11 +98,7 @@ class TM_score_fs:
         return coords_np, seq
 
     def get_tmscore(
-        self, 
-        coords1: np.ndarray, 
-        seq1: str, 
-        predfilepath: Union[str, Path], 
-        res_range: str
+        self, coords1: np.ndarray, seq1: str, predfilepath: Union[str, Path], res_range: str
     ) -> List[float]:
         """Calculates TM-scores between reference and predicted structures.
 
@@ -115,11 +113,14 @@ class TM_score_fs:
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
         import glob
-        from tmtools import tm_align
+
+        from tmtools import (
+            tm_align,
+        )
 
         tmscores_ord: List[float] = []
         tmscores_rev: List[float] = []
-        
+
         modelfiles = sorted(glob.glob(str(predfilepath) + "/*_unrelaxed*pdb"))
 
         if len(modelfiles) == 0:
@@ -128,7 +129,7 @@ class TM_score_fs:
         for model in modelfiles:
             modelpath = Path(model)
             coords2, seq2 = self.get_coords(modelpath, res_range)
-            
+
             # Calculate TM-score: coords1 vs coords2
             res = tm_align(coords1, coords2, seq1, seq2)
             tmscore_ord = round(res.tm_norm_chain1, 2)
@@ -154,7 +155,7 @@ class TM_score_fs:
         data_dir: Union[str, Path],
         pred_range: str,
         res_range1: str,
-        res_range2: str
+        res_range2: str,
     ) -> None:
         """Compares predicted models against both original PDB structures.
 
@@ -212,11 +213,7 @@ class TM_score_fs:
         print(tmscores_fs_array)
 
     def __init__(
-        self,
-        pdb1: Union[str, Path],
-        pdb1_name: str,
-        pdb2: Union[str, Path],
-        pdb2_name: str
+        self, pdb1: Union[str, Path], pdb1_name: str, pdb2: Union[str, Path], pdb2_name: str
     ) -> None:
         """Initializes TM-score calculation for full MSA fold-switching analysis.
 
@@ -230,7 +227,6 @@ class TM_score_fs:
             SystemExit: If PDB names are not found in range file.
         """
         import os
-        import sys
 
         current_dir = os.getcwd() + "/"
         pred_dir = pdb1_name + "_predicted_models_full_*"
@@ -254,13 +250,3 @@ class TM_score_fs:
 
         print("Running for pair", pdb1_name, pdb2_name, end="..\n")
         print("comparing predictions of", pdb1_name, end="...\n")
-
-        try:
-            range_pdb1 = fs_res[pdb1_name]
-            range_pdb2 = fs_res[pdb2_name]
-        except KeyError:
-            print("check PDBIDs", pdb1_name, pdb2_name)
-            sys.exit(1)
-
-        range_pred = range_pdb1[1]
-        self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])

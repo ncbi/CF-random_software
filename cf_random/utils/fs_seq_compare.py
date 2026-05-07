@@ -3,12 +3,15 @@ import os
 
 import numpy as np
 import pandas as pd
-from Bio import *
-from Bio.PDB.PDBParser import PDBParser
-from thefuzz import fuzz
+from Bio.PDB.PDBParser import (
+    PDBParser,
+)
+from thefuzz import (
+    fuzz,
+)
 
 
-class fs_range:
+class FSRange:
     def first_res_check(self, pdb1, pdb2):
         # self.pdb1 = pdb1; self.pdb2 = pdb2
 
@@ -94,7 +97,7 @@ class fs_range:
 
     def __init__(self, pdb1, pdb2, pdb1_name, pdb2_name, pred_dir):
         ##### check first residue index of query proteins
-        # fs_check = fs_range(pdb1, pdb2)
+        # fs_check = FSRange(pdb1, pdb2)
         self.first_res_check(pdb1, pdb2)
         print("    ")
         print("checking first residue index")

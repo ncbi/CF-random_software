@@ -13,6 +13,8 @@ __all__ = [
 
 # Import main modules for easier access
 try:
-    from .core import main
+    from .core import (
+        main,
+    )
 except ImportError:
     pass

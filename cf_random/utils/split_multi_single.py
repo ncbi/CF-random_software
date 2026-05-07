@@ -1,18 +1,15 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+"""Split multimer PDBs into single-chain PDB files.
 
-Converting the multimer PDB to a single PDB file
-
-Created on Tue Dec 24 14:51:00 2025
-@author: Myeongsang (Samuel) Lee
+Utility to extract individual chains from multimer prediction files.
 """
 
 import glob
 import linecache
 
 
-class split_multi_to_chains:
+class SplitMultiToChains:
     def __init__(self, pred_path):
 
         chain_char = [

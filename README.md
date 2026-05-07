@@ -10,26 +10,22 @@ To run CF-random in a Colab notebook, please use following [link](https://colab.
 
 # Installation
 
-CF-random uses [ColabFold](https://github.com/sokrypton/ColabFold) (for structure prediction) and [Foldseek](https://github.com/steineggerlab/foldseek) (for structure search) under Linux environment.
+CF-random depends on ColabFold (structure prediction) and Foldseek (structure search). We provide a convenience script `install.sh` to set up the conda environment and common packages.
 
-**For installation details, see [INSTALL.md](INSTALL.md)**
+Quick start (recommended):
 
-Quick start:
+Run the installer (creates/activates a `cf-random` conda env if needed):
+
 ```bash
-conda create --name cf-random python=3.10 -y
-conda activate cf-random
-pip install -e ".[colabfold]"
-conda install -c conda-forge -c bioconda foldseek
-foldseek databases PDB pdb tmp
+bash install.sh
 ```
 
 
 # Usage
-* CF-random has different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
-* To execute all modes of CF-random, a multiple sequence alignment (MSA) is required. To avoid the overwriting the output files, we recommend using a different folder containing MSA. <br>
-* PDB files for both fold1 (dominant conformation) and fold2 (alternative conformation) are required for TM-score measurement with reference files. Blind mode doesn't require PDB files, but default fold-switching and alternative conformation modes do.<br>
-* ### All required PDB files and MSA file should be in same directory with provided Python scripts.
-* Please make sure that a PDB file should have a single chain, not multiple chains. If PDB file has multiple chains, CF-random would be stopped. <Pbr>
+* CF-random supports three main modes: fold-switching (FS), alternative conformation (AC), and blind mode.
+* For FS and AC modes you should provide two reference PDBs (fold1 and fold2). Blind mode does not require reference PDBs.
+* Predictions use MSAs; provide an MSA directory per target. Do not reuse the same output folder for multiple runs.
+* PDB files should contain a single chain; multi-chain PDBs may be converted automatically in some workflows, but providing single-chain PDBs avoids issues.
 
 ```
  --fname ####    |  folder name having a multiple sequence alignment (MSA)
@@ -37,12 +33,11 @@ foldseek databases PDB pdb tmp
  --pdb1  ####    |  dominant reference model used to calculate TM-score with predicted models
  --pdb2  ####    |  alternative reference model used to calculate TM-score with predicted models
  --nMSA  ####    |  the number of additional samples for predicting the structure with MSAs, default = 0
- --type  ####    |  can choose the model type of Colabfold. e.g.) ptm, monomer, and multimer
+ --type  ####    |  can choose the model type of Colabfold. e.g. ptm, monomer, and multimer
  --options ###   |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
-* In default mode (fold-switching and alternative conformation), CF-random produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
-* Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
- examples) pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX (residue range of reference 1, residue range of reference 2, residue range of prediction1, resodie range of prediction2) <br>
+* Output: TM-score CSV/PNG, plDDT values, and selected MSA info. Successful predictions are saved under `successed_prediction/<pdb1_name>/`.
+* For FS runs you must provide `range_fs_pairs_all.txt` describing the FS region ranges. ColabFold uses 1-based residue indexing; ensure ranges match your PDB/sequence.
 * --nMSA can be applied for all options, but --nESN cannot be used for blind mode.
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
@@ -70,8 +65,8 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 *This takes <30 Minutes to run on an A100 GPU (generates 200 structures total).* <br>
 
 ### Generated output files: <br>
-_Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory._ <br>
-_If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
+_Predicted files from deep and random MSAs are deposited in 'predictions_all' directory._ <br>
+_If CF-random fails to find the selected random MSA, all generated files will be in 'predictions_all' directory._ <br>
 * TM-score plot of whole structure: TMscore_fs-region_full-MSA_2oug_C.png <br>
 * TM-score plot of fold-switching region: TMscore_full-MSA_2oug_C.png <br>
 * TM-score plot of fold-switching region with label of prediction rank: TMscore_fs-region_full-MSA_2oug_C_label.png <br> 
@@ -94,8 +89,8 @@ python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --optio
 *This takes <70 Minutes to run on an A100 GPU (generates 200 structures total; protein is large: ~250 residues).* <br>
 
 ### Generated output files: <br>
-_Predicted files from deep and random MSAs are deposited in 'successed_prediction' directory._ <br>
-_If CF-random fails to find the selected random MSA, all generated files will be in 'failed_prediction' directory._ <br>
+_Predicted files from deep and random MSAs are deposited in 'predictions_all' directory._ <br>
+_If CF-random fails to find the selected random MSA, all generated files will be in 'predictions_all' directory._ <br>
 * TM-score plot of whole structure: TMscore_full-MSA_5olw_A.png <br>
 * TM-scores and plDDT scores of predictions with deep MSA: TMs_plDDT_full_all_5olw_A.csv <br>
 * TM-scores and plDDT scores of predictions with random MSAs: TMs_plDDT_rand_all_5olw_A.csv <br>

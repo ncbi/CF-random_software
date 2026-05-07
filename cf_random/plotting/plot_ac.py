@@ -1,19 +1,22 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Feb 22 13:40:00 2024
+"""Plotting utilities for alternative TM-score comparisons.
 
-@author: Myeongsang (Samuel) Lee
+Provides plotting helpers used by the command-line tools.
 """
 
 import os
 
 import numpy as np
-from matplotlib import pyplot as plt
-from numpy import genfromtxt
+from matplotlib import (
+    pyplot as plt,
+)
+from numpy import (
+    genfromtxt,
+)
 
 
-class plot_2D_scatter_AC:
+class Plot2DScatterAC:
     def __init__(
         self, full_cate, random_cate, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type
     ):
@@ -28,7 +31,7 @@ class plot_2D_scatter_AC:
         #################################################################
         ########### getting the TM-score values of fold-switching region
 
-        os.getcwd() + "/"
+        pwd = os.getcwd() + "/"
 
         ######### plotting the TM-score values as 2D scatter plot
         print("                                        ")

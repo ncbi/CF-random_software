@@ -1,20 +1,9 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Compare the predicted models with original PDBs
-report TM-scores for ranked 0 to 4
-input line is pdb1 pdb2 preds_of_pdb dirname
+"""Multimer-aware TM-score calculations for fold-switching regions.
 
-This version requires tmtools 0.0.2 (Python bindings around the TM-align code for structural alignment of proteins)
-check this for local installation
-https://pypi.org/project/tmtools/
-
-Usage:
-
-python3.8 compare_strs_fs.py 2k42_A 1cee_B 1cee_B 0_msas_models/
-
-Created on Wed Feb 21 14:51:00 2024
-@author: Myeongsang (Samuel) Lee
+Provides utilities to compute TM-scores for multimeric predicted models
+and compare fold-switching regions to reference structures.
 """
 
 # convert three letter code to one letter code
@@ -42,7 +31,7 @@ aa3to1 = {
 }
 
 
-class TM_score_fs_multi:
+class TMScoreFSMulti:
     """Calculates TM-scores for fold-switching regions in multimeric protein structures.
 
     This class compares predicted protein models against original PDB structures,
@@ -52,19 +41,22 @@ class TM_score_fs_multi:
     Attributes:
         tmscores_fs (numpy.ndarray): Array of TM-scores for fold-switching comparisons.
     """
-    def get_coords(self, pdbfile, fs_range):
+
+    def get_coords(self, pdbfile, FSRange):
         """Extracts coordinates and sequence for fold-switching region from PDB file.
 
         Args:
             pdbfile (str or Path): Path to the PDB file.
-            fs_range (str): Residue range for fold-switching region, e.g., "112-162".
+            FSRange (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    and seq is the one-letter amino acid sequence.
         """
-        from Bio.PDB import PDBParser
         import numpy as np
+        from Bio.PDB import (
+            PDBParser,
+        )
 
         pdb_parser = PDBParser(QUIET=True)
         seq = ""
@@ -77,7 +69,7 @@ class TM_score_fs_multi:
         # return the coords and the seq
 
         # convert str to residue range for the fs region
-        start, stop = fs_range.split("-")
+        start, stop = FSRange.split("-")
         res_range = range(int(start), int(stop) + 1)
 
         for atom in struct.get_atoms():
@@ -114,8 +106,13 @@ class TM_score_fs_multi:
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
         import glob
-        from pathlib import Path
-        from tmtools import tm_align
+        from pathlib import (
+            Path,
+        )
+
+        from tmtools import (
+            tm_align,
+        )
 
         tmscores = []
         # modelfiles = sorted(glob.glob(str(predfilepath) + "/*_unrelaxed*pdb"))
@@ -152,7 +149,10 @@ class TM_score_fs_multi:
             None: Stores results in self.tmscores_fs attribute.
         """
         import glob
-        from pathlib import Path
+        from pathlib import (
+            Path,
+        )
+
         import numpy as np
 
         # print(res_range1,res_range2)
@@ -198,8 +198,10 @@ class TM_score_fs_multi:
             SystemExit: If PDB names are not found in range file.
         """
         import os
-        from pathlib import Path
         import sys
+        from pathlib import (
+            Path,
+        )
 
         current_dir = os.getcwd() + "/"
         # pred_dir = 'additional_sampling/' + pdb1_name
