@@ -7,11 +7,20 @@ orchestrate ColabFold batch commands for varied MSA sizes.
 """
 
 import glob
+import logging
 import os
 import random
 import sys
+from pathlib import Path
 
 import numpy as np
+from colabfold.batch import (
+    get_queries,
+    run,
+)
+from colabfold.utils import (
+    setup_logging,
+)
 
 # call related modules of tmtools after installation
 from tmtools import (
@@ -122,30 +131,32 @@ class TMScore:
 
 class CF_MSA_MAX:
     def __init__(self, search_dir, output_dir, pdb_name, rseed, num_seeds, model_type):
+        setup_logging(Path(output_dir) / "log.txt")
+        logger = logging.getLogger(__name__)
 
-        command = (
-            "colabfold_batch --num-seeds "
-            + str(num_seeds)
-            + " --model-type "
-            + str(model_type)
-            + " --random-seed "
-            + str(rseed)
-            + search_dir
-            + output_dir
+        queries, is_complex = get_queries(search_dir)
+
+        run(
+            queries=queries,
+            result_dir=output_dir,
+            num_models=5,
+            is_complex=is_complex,
+            model_type=model_type,
+            num_seeds=int(num_seeds),
+            random_seed=int(rseed),
+            data_dir=Path("."),
         )
-        print(command)
-        os.system(command)
 
 
 class CF_MSA_VAR:
     def __init__(
         self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, output_dir, rseed, num_seeds, model_type
     ):
-
         #### shallow MSA section
         max_msa = 1
         ext_msa = 2
-        random_seed = np.array(rseed)  ## needed to remove future
+        pre_random_seed = np.array(rseed)  ## needed to remove future
+        random_seed = "".join(map(str, pre_random_seed))
 
         self.pdb1_name = pdb1_name
 
@@ -156,26 +167,28 @@ class CF_MSA_VAR:
             max_msa = max_msa * multi
             ext_msa = ext_msa * multi
 
-            #### Colabfold part
-            command = (
-                "colabfold_batch --num-seeds "
-                + str(num_seeds)
-                + " --model-type "
-                + str(model_type)
-                + " --max-seq "
-                + str(max_msa)
-                + " --max-extra-seq "
-                + str(ext_msa)
-                + search_dir
-                + output_dir
-                + str(random_seed)
-                + "_max_"
-                + str(max_msa)
-                + "_ext_"
-                + str(ext_msa)
+            output_dir_var = (
+                output_dir + str(random_seed) + "_max_" + str(max_msa) + "_ext_" + str(ext_msa)
             )
-            print(command)
-            os.system(command)
+
+            #### Colabfold part
+            setup_logging(Path(output_dir_var) / "log.txt")
+            logger = logging.getLogger(__name__)
+
+            queries, is_complex = get_queries(search_dir)
+
+            run(
+                queries=queries,
+                result_dir=output_dir_var,
+                num_models=5,
+                is_complex=is_complex,
+                model_type=model_type,
+                num_seeds=int(num_seeds),
+                random_seed=int(random_seed),
+                max_seq=int(max_msa),
+                max_extra_seq=int(ext_msa),
+                data_dir=Path("."),
+            )
 
     def select_size(
         self,
