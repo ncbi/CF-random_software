@@ -53,24 +53,10 @@ class Plot2DScatterAC:
 
         if model_type != "alphafold2_multimer_v3":
             TMs_full_resh = np.reshape(TMs_full, ((((nMSA + 5) * 2), 5)))
-
-            # f1 = np.concatenate((TMs_addition[0:(nENS + 20), :], TMs_full_resh[0:(nMSA + 5), :]), axis=0)
-            # print(f1)
-            # f2 = np.concatenate((TMs_addition[(nENS + 20):(nENS + 20) * 2, :], TMs_full_resh[(nMSA + 5):(nMSA + 5) * 2, :]), axis=0)
-            # print(f2)
         else:
             TMs_full_resh = np.reshape(TMs_full, (((nMSA + 5) * 2), 5))
 
-            # f1 = np.concatenate((TMs_addition[0:(nENS + 20), :], TMs_full_resh[0:(nMSA + 5), :]), axis=0)
-            # print(f1)
-            # f2 = np.concatenate((TMs_addition[(nENS + 20):(nENS + 20) * 2, :], TMs_full_resh[(nMSA + 5):(nMSA + 5) * 2, :]), axis=0)
-            # print(f2)
-
         if model_type != "alphafold2_multimer_v3":
-            # if np.all(f1 > f2) or np.all(f1 < f2):
-            #    print("Prediction is biased"); sys.exit()
-            # else:
-            #    print("Prediction is not biased")
 
             plt.figure(0)
             for ii in range(0, int(TMs_random.shape[0] / 2)):
@@ -115,12 +101,6 @@ class Plot2DScatterAC:
             plt.savefig("TMscore_" + full_cate + "_" + pdb1_name + ".png", transparent=True)
 
         else:
-            ##print("Not determine for the multimer mode")
-            # if np.all(f1 > f2) or np.all(f1 < f2):
-            #    print("Prediction is biased"); sys.exit()
-            # else:
-            #    print("Prediction is not biased")
-
             plt.figure(0)
             for ii in range(0, int(TMs_random.shape[0] / 2)):
                 plt.scatter(
