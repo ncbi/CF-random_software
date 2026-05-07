@@ -30,7 +30,7 @@ from ..plotting.plot_ac import (
 from ..plotting.plot_fc import (
     Plot2DScatter,
 )
-from ..prediction.PredictionAll_var import (
+from ..prediction.prediction_all_var import (
     PredictionAll,
 )
 from ..utils.search_foldseek_cluster import (
@@ -241,9 +241,7 @@ def main():
         PlddtCal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
 
         if model_type == "alphafold2_multimer_v3":
-            Plot2DScatterAC(
-                full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type
-            )
+            Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
         else:
             Plot2DScatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS)
 
