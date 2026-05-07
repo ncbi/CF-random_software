@@ -7,34 +7,14 @@ To run CF-random in a Colab notebook, please use following [link](https://colab.
 
 
 # Installation
-CF-random uses the [localcolabfold](https://github.com/YoshitakaMo/localcolabfold) and [Foldseek](https://github.com/steineggerlab/foldseek) under linux environment.<br>
-For more details about localcolabfold, please visit [here.](https://github.com/YoshitakaMo/localcolabfold) <br>
 We currently not support the Windows and MacOS environment.<br>
-
-Installation process including localcolabfold, dependencies, and Foldseek is done with following commands.
-```
-wget https://raw.githubusercontent.com/YoshitakaMo/localcolabfold/main/install_colabbatch_linux.sh
-bash install_colabbatch_linux.sh
-
-** Or use a bash script in install folder 
-bash install_colabbatch_linux.sh
-```
-<br>
-
-
-After the installation of localcolabfold, add the localcolabfold path to your .bashrc file:.<br>
-```
-export PATH="/path/to/your/localcolabfold/colabfold-conda/bin:$PATH"
-```
-<br>
-
-Then reactivate your .bashrc file <br>
+Installation process including Colabfold, dependencies, and Foldseek is done with following commands.
 
 Now create a conda new conda environment: 
 ```
 conda create --name CF-random python=3.10
 conda activate CF-random
-pip install textalloc tmtools adjustText thefuzz mdtraj biopython seaborn MDAnalysis
+pip install textalloc tmtools adjustText thefuzz mdtraj biopython seaborn MDAnalysis Colabfold
 conda install conda-forge::pymol-open-source
 pip3 install -U scikit-learn
 ```
@@ -42,7 +22,6 @@ Once the dependencies are installed, install Foldseek.
 <br>
 ```
 conda install -c conda-forge -c bioconda foldseek
-foldseek databases PDB pdb tmp
 ```
 <br>
 
