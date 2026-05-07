@@ -10,112 +10,119 @@ import glob
 import os
 import random
 import sys
+from typing import List, Tuple, Union
 
 import numpy as np
 
-# call calculating TM-scores of fs region
-# from ..analysis.cal_tmscore_fs_only import *
-
-# call converting the multimer as a single chain structure
 from ..utils.convert_multi_single import convert_m2s
 
-# call colabfold for multimer option
 from .pred_cal_tmscore_multimer import CF_MSA_max, CF_MSA_var
-
-# call related modules of tmtools after installation
-from tmtools import tm_align
-from tmtools.io import get_residue_data, get_structure
-from tmtools.testing import get_pdb_path
 
 
 class TM_score:
-    def __init__(self, pred_dir, pdb1, pdb1_name, pdb2, pdb2_name, model_type):
+    """Compute TM-scores of predicted models against reference PDBs.
 
-        ## loading reference pdb for TM-score
+    The class finds predicted model files in `pred_dir`, optionally converts
+    multimer outputs to single-chain format, and computes TM-align scores
+    against `pdb1` and `pdb2`.
+    """
+
+    def __init__(
+        self,
+        pred_dir: str,
+        pdb1: str,
+        pdb1_name: str,
+        pdb2: str,
+        pdb2_name: str,
+        model_type: str,
+    ) -> None:
+        """Initialize and compute TM-scores.
+
+        Args:
+            pred_dir: Path to predicted model directory.
+            pdb1: Path or id for reference structure 1.
+            pdb1_name: Name/ID for reference 1 (used for multimer conversion).
+            pdb2: Path or id for reference structure 2.
+            pdb2_name: Name/ID for reference 2.
+            model_type: Model type string; affects multimer handling.
+        """
+        import glob
+        from tmtools import tm_align
+        from tmtools.io import get_residue_data, get_structure
+        from tmtools.testing import get_pdb_path
+
         pwd = os.getcwd() + "/"
-        tmscores = []
-        tmscores_ord = []
-        tmscores_rev = []
 
-        # files_list = sorted(glob.glob(str(pred_dir) + "/*_unrelaxed*pdb"))
+        # Gather predicted model files
         if model_type != "alphafold2_multimer_v3":
             files_list = glob.glob(str(pred_dir) + "/*_unrelaxed*pdb")
-            print(files_list)
         else:
-            #### convert the multimer file as a single structure
             check_files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
-            print(check_files_list)
             if not check_files_list:
                 convert_m2s(pred_dir, pdb1_name, pdb2_name)
-                files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
-                print(files_list)
-            else:
-                files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
-                print(files_list)
-
-        ##### pdb1_name part
-        pdb1_dir = pwd + pdb1_name
-        r2 = get_structure(get_pdb_path(str(pdb1_dir)))
-        coords2, seq2 = get_residue_data(r2)
+            files_list = glob.glob(str(pred_dir) + "/rmTER*_unrelaxed*pdb")
 
         if len(files_list) == 0:
-            tmscores = [0.0, 0.0, 0.0, 0.0, 0.0]
-            return tmscores
+            # No predicted models found; store a default score list
+            self.tmscores = [0.0, 0.0, 0.0, 0.0, 0.0]
+            return
 
-        for model in files_list:
-            # modelpath = Path(model)
-            # model  = str(modelpath.parent) + "/" + modelpath.stem
-            model = model.replace(".pdb", "")
-            # model = model.replace('_converted.pdb','_converted')
-            model = pwd + model
-            s = get_structure(get_pdb_path(model))
-            coords1, seq1 = get_residue_data(s)
-            res = tm_align(coords1, coords2, seq1, seq2)
-            tmscore = round(res.tm_norm_chain1, 5)  # wrt to model
-            tmscores_ord.append(tmscore)
+        # Load reference structures
+        pdb1_dir = pwd + pdb1_name
+        r2 = get_structure(get_pdb_path(str(pdb1_dir)))
+        coords2_ref, seq2_ref = get_residue_data(r2)
 
-            res = tm_align(coords2, coords1, seq2, seq1)
-            tmscore = round(res.tm_norm_chain1, 5)  # wrt to model
-            tmscores_rev.append(tmscore)
-
-        # print(tmscores[0:5])
-        ##### pdb2_name part
         pdb2_dir = pwd + pdb2_name
         r3 = get_structure(get_pdb_path(str(pdb2_dir)))
-        coords2, seq2 = get_residue_data(r3)
+        coords3_ref, seq3_ref = get_residue_data(r3)
 
-        for model in files_list:
-            # modelpath = Path(model)
-            # model  = str(modelpath.parent) + "/" + modelpath.stem
-            model = model.replace(".pdb", "")
-            # model = model.replace('_converted.pdb','_converted')
-            model = pwd + model
-            s = get_structure(get_pdb_path(model))
-            coords1, seq1 = get_residue_data(s)
-            res = tm_align(coords1, coords2, seq1, seq2)
-            tmscore = round(res.tm_norm_chain1, 5)  # wrt to model
-            tmscores_ord.append(tmscore)
+        # Helper to compute scores against a reference
+        def _scores_against(ref_coords, ref_seq) -> Tuple[List[float], List[float]]:
+            ord_list: List[float] = []
+            rev_list: List[float] = []
+            for model in files_list:
+                m = model.replace(".pdb", "")
+                modelpath = pwd + m
+                s = get_structure(get_pdb_path(modelpath))
+                coords1, seq1 = get_residue_data(s)
+                res = tm_align(coords1, ref_coords, seq1, ref_seq)
+                ord_list.append(round(res.tm_norm_chain1, 5))
 
-            res = tm_align(coords2, coords1, seq2, seq1)
-            tmscore = round(res.tm_norm_chain1, 5)  # wrt to model
-            tmscores_rev.append(tmscore)
+                res = tm_align(ref_coords, coords1, ref_seq, seq1)
+                rev_list.append(round(res.tm_norm_chain1, 5))
+            return ord_list, rev_list
 
-        print("normal")
-        print(tmscores_ord)
-        print("reverse")
-        print(tmscores_rev)
+        tmscores_ord1, tmscores_rev1 = _scores_against(coords2_ref, seq2_ref)
+        tmscores_ord2, tmscores_rev2 = _scores_against(coords3_ref, seq3_ref)
+
+        # Combine results and select orientation with higher max
+        tmscores_ord = tmscores_ord1 + tmscores_ord2
+        tmscores_rev = tmscores_rev1 + tmscores_rev2
+
         if np.max(tmscores_ord) > np.max(tmscores_rev):
             tmscores = tmscores_ord
         else:
             tmscores = tmscores_rev
 
-        print(tmscores)
         self.tmscores = tmscores
 
 
 class CF_MSA_max:
-    def __init__(self, search_dir, output_dir, pdb_name, rseed, num_seeds, model_type):
+    """Run ColabFold batch with maximum MSA settings.
 
+    This is a thin wrapper that constructs and executes the `colabfold_batch`
+    command for deep/full MSA generation.
+    """
+
+    def __init__(
+        self,
+        search_dir: str,
+        output_dir: str,
+        pdb_name: str,
+        rseed: Union[int, str],
+        num_seeds: int,
+        model_type: str,
+    ) -> None:
         command = (
             "colabfold_batch --num-seeds "
             + str(num_seeds)
@@ -131,24 +138,37 @@ class CF_MSA_max:
 
 
 class CF_MSA_var:
-    def __init__(
-        self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, output_dir, rseed, num_seeds, model_type
-    ):
+    """Run ColabFold with varying (shallow) MSA sizes.
 
-        #### shallow MSA section
+    This wrapper launches a series of `colabfold_batch` runs with increasing
+    MSA depth and extra-sequence parameters.
+    """
+
+    def __init__(
+        self,
+        pdb1: str,
+        pdb1_name: str,
+        pdb2: str,
+        pdb2_name: str,
+        search_dir: str,
+        output_dir: str,
+        rseed: Union[int, str],
+        num_seeds: int,
+        model_type: str,
+    ) -> None:
+        # shallow MSA section
         max_msa = 1
         ext_msa = 2
-        random_seed = np.array(rseed)  ## needed to remove future
+        # keep original seed representation
+        random_seed = np.array(rseed)
 
         self.pdb1_name = pdb1_name
-
-        TMscores_random = []  ## whole structure
 
         for multi in (1, 2, 2, 2, 2, 2, 2):
             max_msa = max_msa * multi
             ext_msa = ext_msa * multi
 
-            #### Colabfold part
+            # Build and execute ColabFold command for this MSA size
             command = (
                 "colabfold_batch --num-seeds "
                 + str(num_seeds)
@@ -169,70 +189,82 @@ class CF_MSA_var:
             print(command)
             os.system(command)
 
-    def select_size(self, TMscores_random_alter, pdb1_name, pdb2_name, alt_name, num_seeds):
+    def select_size(
+        self,
+        TMscores_random_alter: np.ndarray,
+        pdb1_name: str,
+        pdb2_name: str,
+        alt_name: str,
+        num_seeds: int,
+    ) -> None:
+        """Select the optimal MSA size based on TM-scores.
 
+        Args:
+            TMscores_random_alter: Flattened TM-score array for varied MSA runs.
+            pdb1_name: Name of reference structure 1.
+            pdb2_name: Name of reference structure 2.
+            alt_name: Name of the alternative structure chosen earlier.
+            num_seeds: Number of seeds used per run.
+        """
         TMscores_random_reshape = TMscores_random_alter.reshape(14, num_seeds * 5)
         TMscores_random_locat = np.zeros((7, num_seeds * 5))
 
-        #### finding locatnative pdb_name
-
+        # Extract location-specific rows depending on which alt_name was chosen
         if alt_name == pdb2_name:
-            # for i in 1, 3, 5, 7, 9, 11, 13 in TM_scores:
-            tmp_cnt = 0
-            for i in range(1, 14, 2):
-                print(TMscores_random_reshape[i, :])
-                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
-                tmp_cnt = tmp_cnt + 1
+            rows = list(range(1, 14, 2))
         else:
-            # for i in 0, 2, 4, 6, 8, 10, 12 in TM_scores:
-            tmp_cnt = 0
-            for i in range(0, 13, 2):
-                print(TMscores_random_reshape[i, :])
-                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
-                tmp_cnt = tmp_cnt + 1
+            rows = list(range(0, 14, 2))
 
-        TMscore_data = TMscores_random_locat
+        for tmp_cnt, i in enumerate(rows):
+            TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
+
         TMscore_data = TMscores_random_locat.reshape(7, num_seeds * 5)
-        TMscore_data_sum = np.zeros((7, 1))
+        TMscore_data_sum = TMscore_data.sum(axis=1)
 
-        for ii in range(0, int(TMscore_data.shape[0])):
-            TMscore_data_sum[ii] = np.sum(TMscore_data[ii])
-
-        location = np.argmax(np.max(TMscore_data_sum, axis=1))
+        location = int(np.argmax(TMscore_data_sum))
 
         print("Selecting...")
 
-        TMscore_data = TMscores_random_alter
-        TMscore_data = TMscores_random_alter.reshape(14, num_seeds * 5)
-
+        TMscore_data_full = TMscores_random_alter.reshape(14, num_seeds * 5)
         if alt_name == pdb2_name:
             location = (location * 2) + 1
         else:
             location = location * 2
 
-        if alt_name == pdb2_name and np.any(TMscore_data[location, :] >= 0.5):
-            print(TMscore_data[location, :])
+        if alt_name == pdb2_name and np.any(TMscore_data_full[location, :] >= 0.5):
             selection = int((location - 1) / 2)
             self.selection = selection
-
-        elif alt_name == pdb1_name and np.any(TMscore_data[location, :] >= 0.5):
-            print(TMscore_data[location, :])
+        elif alt_name == pdb1_name and np.any(TMscore_data_full[location, :] >= 0.5):
             selection = int(location / 2)
             self.selection = selection
-
         else:
             print("Predictions are bad")
             print("Predictions of whole structure are bad")
-            rm_folder_cmd = "rm -rf successed_prediction/" + self.pdb1_name + "/"
+            rm_folder_cmd = f"rm -rf successed_prediction/{self.pdb1_name}/"
             print(rm_folder_cmd)
             os.system(rm_folder_cmd)
             sys.exit()
 
 
 class prediction_all_AC:
+    """Orchestrate the full prediction workflow for AC (alternate conformation) analysis.
+
+    This class runs deep (full-MSA) and varied shallow MSA ColabFold predictions,
+    evaluates TM-scores, selects a reference/alternative structure, and
+    determines the optimal shallow-MSA size.
+    """
+
     def __init__(
-        self, pdb1, pdb1_name, pdb2, pdb2_name, search_dir, nMSA, model_type, search_multi_dir
-    ):
+        self,
+        pdb1: str,
+        pdb1_name: str,
+        pdb2: str,
+        pdb2_name: str,
+        search_dir: str,
+        nMSA: int,
+        model_type: str,
+        search_multi_dir: str,
+    ) -> None:
         num_seeds = 5 + nMSA
 
         if model_type != "alphafold2_multimer_v3":
@@ -403,4 +435,3 @@ class prediction_all_AC:
                 pdb1_name, pdb2_name, search_dir, nMSA, model_type, search_multi_dir
             )
             self.size_selection = MSA_multi.size_selection
-            # sys.exit()

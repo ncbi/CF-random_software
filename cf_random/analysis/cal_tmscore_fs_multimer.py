@@ -17,19 +17,6 @@ Created on Wed Feb 21 14:51:00 2024
 @author: Myeongsang (Samuel) Lee
 """
 
-import glob
-import os
-import sys
-from pathlib import Path
-
-import numpy as np
-from Bio.PDB import PDBParser
-
-# call related modules of tmtools after installation
-from tmtools import tm_align
-
-pdbParser = PDBParser(QUIET=True)
-
 # convert three letter code to one letter code
 aa3to1 = {
     "CYS": "C",
@@ -56,18 +43,32 @@ aa3to1 = {
 
 
 class TM_score_fs_multi:
-    def get_coords(self, pdbfile, fs_range):
-        """
-        parameters:
-        pdbfile - path to pdbfile
-        fs_range - range of residues at the fold-switching region, given as string - "112-162"
-        returns:
-        numpy array of coords
-        string of seqs in 1-letter-code
-        """
+    """Calculates TM-scores for fold-switching regions in multimeric protein structures.
 
+    This class compares predicted protein models against original PDB structures,
+    focusing on fold-switching regions. It computes TM-align scores for structural
+    alignments between predicted and reference structures.
+
+    Attributes:
+        tmscores_fs (numpy.ndarray): Array of TM-scores for fold-switching comparisons.
+    """
+    def get_coords(self, pdbfile, fs_range):
+        """Extracts coordinates and sequence for fold-switching region from PDB file.
+
+        Args:
+            pdbfile (str or Path): Path to the PDB file.
+            fs_range (str): Residue range for fold-switching region, e.g., "112-162".
+
+        Returns:
+            tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
+                   and seq is the one-letter amino acid sequence.
+        """
+        from Bio.PDB import PDBParser
+        import numpy as np
+
+        pdb_parser = PDBParser(QUIET=True)
         seq = ""
-        struct = pdbParser.get_structure("x", str(pdbfile))
+        struct = pdb_parser.get_structure("x", str(pdbfile))
         coords = []
         seq_dict = {}
 
@@ -100,16 +101,21 @@ class TM_score_fs_multi:
         return coords_np, seq
 
     def get_tmscore(self, coords1, seq1, predfilepath, res_range):
-        """
-        parameters:
-        coords1, seq1 - the numpy array of PDB coords and its seqs
-        predfilepath - path for predicted files
-        res_range - fs range in predicted models
+        """Calculates TM-scores between reference structure and predicted models.
 
-        returns:
-        tmscore list
+        Args:
+            coords1 (numpy.ndarray): Coordinates of reference structure.
+            seq1 (str): Sequence of reference structure.
+            predfilepath (str or Path): Path to directory containing predicted models.
+            res_range (str): Residue range for fold-switching in predicted models.
 
+        Returns:
+            list: TM-scores for each predicted model (rounded to 2 decimals).
+                  Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
+        import glob
+        from pathlib import Path
+        from tmtools import tm_align
 
         tmscores = []
         # modelfiles = sorted(glob.glob(str(predfilepath) + "/*_unrelaxed*pdb"))
@@ -128,61 +134,50 @@ class TM_score_fs_multi:
 
         return tmscores
 
-    # def run_for_models(self, FH, pdbfile1, pdbfile2, data_dir,pred_range,res_range1,res_range2):
     def run_for_models(self, pdbfile1, pdbfile2, data_dir, pred_range, res_range1, res_range2):
+        """Compares predicted models against both original PDB structures.
+
+        Calculates TM-scores for fold-switching regions by comparing predicted models
+        against both fold states (pdbfile1 and pdbfile2).
+
+        Args:
+            pdbfile1 (str or Path): Path to first PDB structure (Fold1).
+            pdbfile2 (str or Path): Path to second PDB structure (Fold2).
+            data_dir (str or Path): Path to directory containing predicted model subdirectories.
+            pred_range (str): Residue range for fold-switching in predicted models.
+            res_range1 (str): Residue range for fold-switching in pdbfile1.
+            res_range2 (str): Residue range for fold-switching in pdbfile2.
+
+        Returns:
+            None: Stores results in self.tmscores_fs attribute.
         """
-        compare the original PDB
-        with the predicted models, 0 to 5
+        import glob
+        from pathlib import Path
+        import numpy as np
 
-        parameters:
-        FH - filehandle for writing
-        pdbfile1 - path to original PDB, Fold1
-        pdbfile2 - path to alternate PDB, Fold2
-        data_dir - path for the predicted strs
-        res_range1 - fs range in PDB1 and its models
-        res_range2 - fs range in PDB2 and its models
-
-        returns:
-        nothing
-
-        saves the TM-scores in a local file
-        """
         # print(res_range1,res_range2)
 
         # get list of subdirectories
         all_sub_dir_paths = glob.glob(str(data_dir))
         tmscores_fs = []
 
-        ## files found then continue
         if len(all_sub_dir_paths) == 0:
-            pass
+            return
+
+        # Compute coordinates and sequences outside the loop for efficiency
+        coords1, seq1 = self.get_coords(pdbfile1, res_range1)
+        coords2, seq2 = self.get_coords(pdbfile2, res_range2)
 
         for subdir in all_sub_dir_paths:
             preddir = Path(subdir)
-            # predicted dir doesn't exist then continue
             if not preddir.exists():
-                pass
+                continue
 
-            # only comparing on one set of predicted models
-            # but with both PDBs/Folds
-            coords1, seq1 = self.get_coords(pdbfile1, res_range1)
-            tmscore_lst1 = self.get_tmscore(coords1, seq1, preddir, pred_range)  # wrt pdb1
-            tmp_tm_fs = tmscore_lst1
-            tmscores_fs.append(tmp_tm_fs)
+            # Compare against both fold states
+            tmscore_lst1 = self.get_tmscore(coords1, seq1, preddir, pred_range)
+            tmscore_lst2 = self.get_tmscore(coords2, seq2, preddir, pred_range)
 
-        for subdir in all_sub_dir_paths:
-            preddir = Path(subdir)
-
-            # predicted dir doesn't exist then continue
-            if not preddir.exists():
-                pass
-
-            # only comparing on one set of predicted models
-            # but with both PDBs/Folds
-            coords2, seq2 = self.get_coords(pdbfile2, res_range2)
-            tmscore_lst2 = self.get_tmscore(coords2, seq2, preddir, pred_range)  # wrt pdb2
-            tmp_tm_fs = tmscore_lst2
-            tmscores_fs.append(tmp_tm_fs)
+            tmscores_fs.extend([tmscore_lst1, tmscore_lst2])
 
         print("         ")
         tmscores_fs = np.array(tmscores_fs)
@@ -190,11 +185,21 @@ class TM_score_fs_multi:
         self.tmscores_fs = tmscores_fs
 
     def __init__(self, pred_path, pdb1, pdb1_name, pdb2, pdb2_name):
-        # get numpy arrays for coords at the fold-switching region
-        # also return the seq in 1-letter code for the same
+        """Initializes TM-score calculation for fold-switching multimer analysis.
 
-        # input arguments: sys.argv[1] - pdb1, sys.argv[2] - pdb2
-        #                  sys.argv[3] - preds, sys.argv[4] - current directory
+        Args:
+            pred_path (str): Path to directory containing predicted model subdirectories.
+            pdb1 (str or Path): Path to first PDB file.
+            pdb1_name (str): Name/ID of first PDB structure.
+            pdb2 (str or Path): Path to second PDB file.
+            pdb2_name (str): Name/ID of second PDB structure.
+
+        Raises:
+            SystemExit: If PDB names are not found in range file.
+        """
+        import os
+        from pathlib import Path
+        import sys
 
         current_dir = os.getcwd() + "/"
         # pred_dir = 'additional_sampling/' + pdb1_name
@@ -241,21 +246,3 @@ class TM_score_fs_multi:
 
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
-
-
-# if __name__ == "__main__":
-#
-#    import warnings
-#    warnings.filterwarnings('ignore')
-#
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument("--pdb1", type=str, help='PDB structure for the target crystal structure (target to be predicted)')
-#    parser.add_argument("--pdb2", type=str, help='PDB structure for the alternative crystal structure')
-#
-#    args = parser.parse_args()
-#
-#    pdb1 = args.pdb1; pdb2 = args.pdb2
-#    pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
-#
-#    TM_score_fs(pdb1, pdb1_name, pdb2, pdb2_name)
-#
