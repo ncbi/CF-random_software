@@ -25,8 +25,6 @@ conda install -c conda-forge -c bioconda foldseek
 ```
 <br>
 
-### We recommend running the foldseek databases command in a directory where the libraries can be stored. <br>
-
 
 # Usage
 * CF-random has different prediction modes such as fold-switching default, alternative conformation, and blind mode.<br>
