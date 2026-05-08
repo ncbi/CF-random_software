@@ -85,7 +85,6 @@ def main():
 
     blind = "predictions_all"
     success = "predictions_all"
-    fail = "failed_prediction"
     multi = "multimer_prediction"
     pwd = os.getcwd() + "/"
 
@@ -116,7 +115,6 @@ def main():
     nMSA = args.nMSA
     nENS = args.nENS
 
-    # --- Resolve search directories ---
     if args.fname is None:
         print("Error: --fname (MSA folder) is required for all modes")
         sys.exit(1)
@@ -161,18 +159,33 @@ def main():
 
         prediction_option = args.option
         if os.path.exists(success) and succ_dir_count >= 8:
-            print("Predictions including full- and random-MSA were already done")
-            cal_TMscore = TMScoreCalAllVar(
-                pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type
+            print("Predictions including full and random-MSA were already completed.")
+            calculate_tm_score = TMScoreCalAllVar(
+                pdb1,
+                pdb1_name,
+                pdb2,
+                pdb2_name,
+                nMSA,
+                prediction_option,
+                model_type,
+                search_dir,
+                search_multi_dir,
             )
         else:
             PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
-            cal_TMscore = TMScoreCalAllVar(
-                pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type
+            calculate_tm_score = TMScoreCalAllVar(
+                pdb1,
+                pdb1_name,
+                pdb2,
+                pdb2_name,
+                nMSA,
+                prediction_option,
+                model_type,
+                search_dir,
+                search_multi_dir,
             )
 
-        shallow_MSA_size = np.append([], cal_TMscore.size_selection)
-        print("               ")
+        shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
         print("Specific size of shallow random MSA is similar to full-MSA")
         print(shallow_MSA_size)
         np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
@@ -192,7 +205,7 @@ def main():
         Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
 
     elif args.option == "FS":
-        print("Predicting fold-switching models")
+        print("Predicting fold-switching models.")
 
         succ_dir_count = 0
         if not os.path.exists(success):
@@ -207,22 +220,37 @@ def main():
 
         prediction_option = args.option
         if os.path.exists(success) and succ_dir_count >= 8:
-            print("Predictions including full- and random-MSA were already done")
-            cal_TMscore = TMScoreCalAllVarFS(
-                pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type
+            print("Predictions including full and random-MSA were already completed.")
+            calculate_tm_score = TMScoreCalAllVarFS(
+                pdb1,
+                pdb1_name,
+                pdb2,
+                pdb2_name,
+                nMSA,
+                prediction_option,
+                model_type,
+                search_dir,
+                search_multi_dir,
             )
-            shallow_MSA_size = np.append([], cal_TMscore.size_selection)
+            shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
         else:
             PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
             if args.type != "multimer":
-                cal_TMscore = TMScoreCalAllVarFS(
-                    pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type
+                calculate_tm_score = TMScoreCalAllVarFS(
+                    pdb1,
+                    pdb1_name,
+                    pdb2,
+                    pdb2_name,
+                    nMSA,
+                    prediction_option,
+                    model_type,
+                    search_dir,
+                    search_multi_dir,
                 )
-                shallow_MSA_size = np.append([], cal_TMscore.size_selection)
+                shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
             else:
                 shallow_MSA_size = np.array([])
 
-        print("               ")
         print("Specific size of shallow random MSA is similar to full-MSA")
         print(shallow_MSA_size)
         np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
@@ -246,7 +274,7 @@ def main():
             Plot2DScatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS)
 
     elif args.option == "blind":
-        print("Predicting fold-switching proteins without crystal structures")
+        print("Predicting fold-switching proteins without crystal structures.")
 
         if not os.path.exists(blind):
             os.mkdir(blind)
@@ -261,14 +289,14 @@ def main():
                 os.system("rm -rf " + blind_pdb_dir + "/")
 
         blind_pred_path = "predictions_all/" + pdb1_name
-        print(blind_pred_path)
+        print(f"Blind prediction path: {blind_pred_path}")
 
         if os.path.exists(blind_pdb_dir) and blind_dir_count >= 8:
-            print("Predictions including full- and random-MSA were already done")
+            print("Predictions including full and random-MSA were already completed.")
             fseek_file_count = 0
             for _root, _dirs, files in os.walk(pwd + blind_pdb_dir + "/"):
                 fseek_file_count += len(files)
-            print(fseek_file_count)
+            print(f"Number of files in blind prediction path: {fseek_file_count}")
             BlindScreening(pdb1_name, blind_pred_path)
         else:
             PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)

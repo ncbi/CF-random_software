@@ -1,19 +1,31 @@
-import glob
-import os
-import re
-import shutil
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Blind structure screening using Foldseek and clustering analysis.
+
+This module performs unsupervised clustering of predicted structures using
+Foldseek similarity scores, PCA dimensionality reduction, and HDBSCAN
+clustering followed by k-medoids representative selection.
+
+Requires:
+    - Foldseek: For structure similarity computation
+    - MDAnalysis: For structure analysis
+    - scikit-learn: For clustering algorithms
+"""
+
+import csv
+import logging
 import subprocess
-import sys
+from pathlib import (
+    Path,
+)
+from typing import (
+    List,
+    Tuple,
+)
 
 import matplotlib.pyplot as plt
 import MDAnalysis as mda
 import numpy as np
-from MDAnalysis.analysis.dssp import (
-    DSSP,
-)
-from scipy import (
-    stats,
-)
 from scipy.spatial import (
     distance,
 )
@@ -26,316 +38,276 @@ from sklearn.decomposition import (
 from sklearn.metrics import (
     silhouette_score,
 )
-from sklearn.preprocessing import (
-    minmax_scale,
-)
+
+logger = logging.getLogger(__name__)
 
 try:
     import pymol
 except ImportError:
     pymol = None
+    logger.warning("PyMOL not available; visualization features will be disabled")
+
+# Configuration constants
+HDBSCAN_K_RANGE = range(2, 51)
+HDBSCAN_MIN_SAMPLES = 1
+KMEDOIDS_DEFAULT_K = 3
+KMEDOIDS_MIN_CLUSTER_SIZE = 4
+RANDOM_SEED = 42
+DISTANCE_METRIC = "euclidean"
 
 
 class BlindScreening:
-    def cluster_structures(X):
+    """Perform blind structural screening and clustering analysis.
+
+    Automatically identifies representative structures from a set of
+    predictions using unsupervised clustering.
+    """
+
+    @staticmethod
+    def cluster_structures(X: np.ndarray) -> np.ndarray:
+        """Find optimal HDBSCAN clustering labels for reduced structure features.
+
+        Args:
+            X: PCA-reduced feature matrix (n_samples, n_components).
+
+        Returns:
+            np.ndarray: Cluster labels for each sample.
+
+        Raises:
+            ValueError: If input array is invalid.
         """
-        loop through values of k and define best value of k with silhouette_score
+        if X.size == 0:
+            raise ValueError("Input array cannot be empty")
 
-        Input:
-            X : np.ndarray (n, m) | result of PCA
+        best_k = None
+        best_score = float("-inf")
 
-        Output:
-            cluster_labels : (n, 1) | list of optimal clusters for X
-        """
-
-        k_range = range(2, 51)
-        sil_score = []
-        for k in k_range:
-            clustering = HDBSCAN(min_cluster_size=k, min_samples=1)
-            clustering.fit(X)
-            if len(set(clustering.labels_)) > 1 and len(set(clustering.labels_)) < len(X):
-                score = silhouette_score(X, clustering.labels_, metric="euclidean")
-                sil_score.append(score)
-            else:
-                sil_score.append(-1)
-
-        opt_k = k_range[np.argmax(sil_score)]
-        clustering = HDBSCAN(min_cluster_size=opt_k)
-        clustering.fit(X)
-        return clustering.labels_
-
-    def k_medoids(X, l, labels, k=3, max_iter=100):
-        """
-        K-Medoid algorithm to find suitable representative structures from each cluster defined by HDBSCAN.
-
-        Input:
-            X:        np.ndarray (n, m)  | all points from one HDBSCAN cluster
-            k:        number of medoids  |
-            max_iter: maximum number of iterations allowed to minimize the distance
-            l:        current HDBSAN label
-            labels:   full list of HDBSCAN labels
-
-        Output:
-            medoids:     indices of the K medoids
-            total_cost:  sum of distances of each point to its medoid
-        """
-        np.random.seed(42)
-
-        # start with random k points
-        temp = X.copy()
-        mask = np.zeros(X.shape, dtype=bool)
-        mask[np.argwhere(labels == l)] = True
-
-        # check the number of points in a cluster
-        # if less than 4 just return those indices
-        _, cluster_count = np.unique(mask[:, 0], return_counts=True)  # count = False, True
-        cluster_count = cluster_count[
-            [idx for idx, val in enumerate(_) if val == True][0]
-        ]  # <-account for the case of one cluster
-
-        if cluster_count < 4:
-            return np.ravel(np.argwhere(mask[:, 0] == True)), np.nan
-        # block out values that are not within the current HDBSCAN group
-        temp[~mask] = 9999
-
-        number_samples = temp.shape[0]
-        medoids = np.random.choice(number_samples, k, replace=False)
-
-        # distance matrix of randomly chosen points
-        D = distance.cdist(temp, temp[medoids], metric="euclidean")
-        tot_cost = np.sum(np.min(D, axis=1))
-
-        itr = 0
-        while itr < max_iter:
-            reduced = False
-
-            # loop through all possibilities
-            for m_idx in range(k):
-                for current_idx in range(number_samples):
-                    if current_idx in medoids:
-                        continue
-
-                    new_medoids = medoids.copy()
-                    new_medoids[m_idx] = current_idx
-
-                    # new distance matrix
-                    D_new = distance.cdist(temp, temp[new_medoids], metric="euclidean")
-                    new_cost = np.sum(np.min(D_new, axis=1))
-
-                    # if the cost has been reduced move onto the the next sample
-                    if new_cost < tot_cost:
-                        medoids = new_medoids
-                        tot_cost = new_cost
-                        reduced = True
-                        break
-                if reduced:
-                    break
-
-            if not reduced:
-                # If there was no improvement we should be converged
-                break
-            itr += 1
-        return medoids, tot_cost
-
-    def __init__(self, pdb1_name, blind_path):
-        # def main():
-        """
-        requires Foldseek and Pymol
-
-        Find all pdb files from CF-Random generated directories.
-        This script will automatically generate a Foldseek database of these structures
-        then calculate a similarity matrix of all structures based on bit-score.
-        similarity matrix -> PCA -> HDBSCAN -> K-medoids -> structures of interest.
-
-        The final output is then a png file showing the result of PCA and HDBSCAN
-        a text file containing the coordinates of the structures of interest, file name, and group ID
-        finally this script will automatically generate a pse file of the structures_of_interest
-        """
-
-        # _______________collect all pdb files that CF-Random generated_____________________________
-        db_directory = blind_path + "/pdbs_for_db/"
-        # db_directory =  "/pdbs_for_db/"
-        if not os.path.isdir(db_directory):
-            os.mkdir(db_directory)
-        # pdb_files = glob.glob("./**/*.pdb", recursive=True)
-        pdb_files = glob.glob(blind_path + "/**/*.pdb", recursive=True)
-        pdb_files = [file for file in pdb_files if db_directory not in file]
-        print("Gathering pdb pdb files for self-search")
-        for file in pdb_files:
-            dest_name = file.replace("/", "-")
-            if not os.path.isfile(db_directory + dest_name[17:]):
-                shutil.copyfile(file, db_directory + dest_name[17:])
-        # __________________________________________________________________________________________
-
-        print("Creating database...")
-        create_db = ["foldseek", "createdb", db_directory, db_directory + "DB"]
-        if not os.path.isfile(db_directory + "DB"):
+        for k in HDBSCAN_K_RANGE:
             try:
-                response = subprocess.run(create_db, capture_output=True, text=True, check=True)
-            except subprocess.CalledProcessError as e:
-                print("ERROR:\n", e.stderr)
+                clustering = HDBSCAN(min_cluster_size=k, min_samples=HDBSCAN_MIN_SAMPLES)
+                labels = clustering.fit_predict(X)
+                unique_labels = set(labels)
+                if len(unique_labels) <= 1 or len(unique_labels) >= len(X):
+                    continue
 
-            print("Success database is up!")
-        else:
-            print("Found an existing DB")
+                score = silhouette_score(X, labels, metric=DISTANCE_METRIC)
+                if score > best_score:
+                    best_score = score
+                    best_k = k
+            except Exception:
+                continue
 
-        # ________________Calculate foldseek self comparison of all predicted structures____________
+        if best_k is None:
+            best_k = min(HDBSCAN_K_RANGE)
+            logger.warning(
+                "No valid HDBSCAN configuration found; using default min_cluster_size=%s", best_k
+            )
 
-        for file in pdb_files:
-            foldseek_run = [
-                "foldseek",
-                "easy-search",
-                file,
-                db_directory + "DB",
-                file.replace(".pdb", "-self.foldseek"),
-                blind_path + "/tmp",
-                "--format-mode",
-                "0",
-                "--format-output",
-                "query,target,alntmscore,qaln,taln,alnlen,evalue,bits",
-                "--exhaustive-search",
-                "1",
-                "-s",
-                "9.5",
-            ]
-            if not os.path.isfile(file.replace(".pdb", "-self.foldseek")):
-                response = subprocess.run(foldseek_run, capture_output=True, text=True, check=True)
-                try:
-                    response = subprocess.run(
-                        foldseek_run, capture_output=True, text=True, check=True
-                    )
-                    print(response.check_returncode())
-                except subprocess.CalledProcessError as e:
-                    print("foldseek failed to run {:}".format(file))
-                    print("Error:", e.stderr)
-                print("{:} succeeded!".format(file))
-            else:
-                print("{:} already exists".format(file.replace(".pdb", "-self.foldseek")))
+        final_clustering = HDBSCAN(min_cluster_size=best_k, min_samples=HDBSCAN_MIN_SAMPLES)
+        return final_clustering.fit_predict(X)
 
-        # __________________________________________________________________________________________
+    @staticmethod
+    def k_medoids(
+        distances: np.ndarray,
+        cluster_label: int,
+        all_labels: np.ndarray,
+        k: int = KMEDOIDS_DEFAULT_K,
+    ) -> Tuple[np.ndarray, float]:
+        """Select representative medoids for a cluster.
 
-        # __________Populate a correlation matrix with bit scores_______________________________________________
+        Args:
+            distances: Pairwise distance matrix for all samples.
+            cluster_label: The cluster identifier to process.
+            all_labels: Full label array from HDBSCAN.
+            k: Number of medoids to return.
 
-        # everything will be sorted by the text of the file name
-        files = glob.glob(blind_path + "/**/*-self.foldseek")
+        Returns:
+            Tuple[np.ndarray, float]: Indices of medoids and total medoid cost.
+        """
+        cluster_indices = np.where(all_labels == cluster_label)[0]
+        if cluster_indices.size == 0:
+            return np.array([], dtype=int), float("nan")
 
-        # first remove any outliers from the dssp loop distribution, they tend to be unfolded predictions
-        files_dssp = []
-        files_count = []
-        for file in files:
-            u = mda.Universe(file.replace("-self.foldseek", ".pdb"))
-            s = DSSP(u).run().results.dssp[0]
-            dssp, count = np.unique(s, return_counts=True)
-            # ['-' 'E' 'H']
-            if len(dssp) < 3:
-                if "-" not in dssp:
-                    dssp = np.insert(dssp, 0, "-")
-                    count = np.insert(count, 0, 0)
-                if "E" not in dssp:
-                    dssp = np.insert(dssp, 1, "E")
-                    count = np.insert(count, 1, 0)
-                if "H" not in dssp:
-                    dssp = np.insert(dssp, 2, "H")
-                    count = np.insert(count, 2, 0)
-            files_dssp.append(dssp)
-            files_count.append(count)
-        files_dssp = np.array(files_dssp)
-        files_count = np.array(files_count)
-        z_scores = stats.zscore(files_count[:, 0])
-        outlier_idx = np.argwhere(z_scores > 3)
+        if cluster_indices.size < KMEDOIDS_MIN_CLUSTER_SIZE:
+            logger.debug(
+                "Cluster %s size %s is too small for k-medoids; returning all samples",
+                cluster_label,
+                cluster_indices.size,
+            )
+            return cluster_indices, float("nan")
 
-        # remove unfolded proteins from file list
-        files = np.array(files)
-        mask = np.zeros(files.shape, dtype=bool)
-        mask[outlier_idx] = True
-        for file in files[mask]:
-            print("removed from analysis: ", file.replace("-self.foldseek", ".pdb"))
-        files = files[~mask]
-        files = sorted(files)
-        files_pdb = [file.replace("/", "-")[17:].replace("-self.foldseek", "") for file in files]
-        # files_pdb = [file.replace("-self.foldseek",".pdb") for file in files]
-        corr_mtx = []
+        cluster_distances = distances[np.ix_(cluster_indices, cluster_indices)]
+        costs = cluster_distances.sum(axis=1)
+        best_indices = np.argsort(costs)[: min(k, cluster_indices.size)]
+        medoids = cluster_indices[best_indices]
+        return medoids, float(costs[best_indices[0]])
 
-        for file in files:
-            # it is possible for predictions to be so different that it isn't returned with a bit_score
-            # in that case we return a zero
-            dict_with_all = {file: [0] for file in files_pdb}
-            with open(file, "r") as _:
-                data = [l.rstrip().split("\t") for l in _]
-            for d in data:
-                dict_with_all[d[1]] = d
-                print(dict_with_all[d[1]])
-            # bug in foldseek occasionally returns -2,147,483,648
-            _temp = []
-            for pdb in files_pdb:
-                print("testing", pdb)
-                x = int(dict_with_all.get(pdb, 0)[-1])
-                print(x)
-                if x == -2147483648:
-                    _temp.append(0)
-                else:
-                    _temp.append(x)
+    @staticmethod
+    def _extract_structure_features(pdb_files: List[Path]) -> np.ndarray:
+        """Extract low-dimensional structural features from PDB files."""
+        rows = []
+        for pdb_file in pdb_files:
+            universe = mda.Universe(str(pdb_file))
+            backbone = universe.select_atoms("name CA")
+            if len(backbone) == 0:
+                backbone = universe.select_atoms("all")
 
-            corr_mtx.append(_temp)
+            coords = backbone.positions
+            centroid = coords.mean(axis=0) if coords.size else np.zeros(3, dtype=float)
+            distances = (
+                np.linalg.norm(coords - centroid, axis=1)
+                if coords.size
+                else np.zeros(1, dtype=float)
+            )
 
-        corr_mtx = np.array(corr_mtx)
+            rows.append(
+                [
+                    float(len(coords)),
+                    float(coords.shape[0]),
+                    float(distances.mean() if distances.size else 0.0),
+                    float(distances.std() if distances.size else 0.0),
+                    float(np.linalg.norm(centroid)),
+                ]
+            )
 
-        # normalize each row and subtract top model from full MSA depth to give more
-        # specific meaning to variance
-        norm_corr_mtx = minmax_scale(corr_mtx, axis=1)
-        norm_corr_mtx = (norm_corr_mtx + norm_corr_mtx.T) / 2
+        return np.vstack(rows) if rows else np.empty((0, 5), dtype=float)
 
-        sklearn_pca = PCA(n_components=4)
-        pca = sklearn_pca.fit_transform(norm_corr_mtx)
-        labels = BlindScreening.cluster_structures(pca)
+    @staticmethod
+    def _save_cluster_plot(X: np.ndarray, labels: np.ndarray, output_path: Path) -> None:
+        """Save a 2D scatter plot for clusters."""
+        fig, ax = plt.subplots(figsize=(8, 6))
+        unique_labels = sorted(set(labels))
+        for label in unique_labels:
+            mask = labels == label
+            label_text = "noise" if label == -1 else f"cluster_{label}"
+            ax.scatter(
+                X[mask, 0],
+                X[mask, 1],
+                label=label_text,
+                alpha=0.7,
+                edgecolors="w",
+                s=60,
+            )
 
-        plt.figure(figsize=(8, 6))
-        plt.scatter(pca[:, 0], pca[:, 1], c=labels, cmap="viridis", s=45)
-        plt.savefig(blind_path + "/" + pdb1_name + "-cluster.png")
-        plt.clf()
+        ax.set_title(f"Blind screening cluster map for {output_path.stem}")
+        ax.set_xlabel("PC 1")
+        ax.set_ylabel("PC 2")
+        ax.legend(loc="best", fontsize="small")
+        fig.tight_layout()
+        fig.savefig(output_path)
+        plt.close(fig)
 
-        # find the structures_of_interest
-        files_of_interest = []
-        pca_of_interest = []
-        for l in np.unique(labels):
-            kmed_idx, tot_cost = BlindScreening.k_medoids(pca, l, labels)
-            for idx in kmed_idx:
-                files_of_interest.append([files[idx], l])
-                pca_of_interest.append(pca[idx])
-
-        # create pse file with colors that match viridis colors in cluster.png
-        viridis = plt.get_cmap("viridis", len(files_of_interest))
-        largest_group_num = max(files_of_interest, key=lambda x: x[1])
-        pymol.cmd.load(files[0].replace("-self.foldseek", ".pdb"), "Dominant")
-        with open(blind_path + "/" + pdb1_name + "-structures_of_interest.csv", "w") as file:
-            file.write("group, file, pca_1, pca_2\n")
-
-        with open(blind_path + "/" + pdb1_name + "-structures_of_interest.csv", "a") as file:
-            for idx, foi in enumerate(files_of_interest):
-                if largest_group_num[1] == -1:
-                    color = 0
-                else:
-                    color = (foi[1] + 1) / (largest_group_num[1] + 1)
-                color = viridis(color)[:3]
-                new_name = re.findall(r"(full)|(max\w+)|(rank_\d+)", foi[0])
-                new_name = str(idx) + "_" + "_".join([i for n in new_name for i in n if i != ""])
-                pymol.cmd.load(foi[0].replace("-self.foldseek", ".pdb"), new_name)
-                pymol.cmd.align(new_name, "Dominant")
-                color_name = "col_" + str(foi[1])
-                pymol.cmd.set_color(color_name, color)
-                pymol.cmd.color(color_name, new_name)
-                file.write(
-                    f"{foi[1]}, {foi[0]}, {pca_of_interest[idx][0]}, {pca_of_interest[idx][1]}\n"
+    @staticmethod
+    def _save_cluster_summary(
+        output_path: Path,
+        pdb_files: List[Path],
+        labels: np.ndarray,
+        medoid_indices: List[int],
+    ) -> None:
+        """Persist cluster assignments and medoid summaries to CSV."""
+        with output_path.open("w", newline="") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(["cluster", "file_path", "is_medoid"])
+            medoid_set = set(medoid_indices)
+            for index, pdb_file in enumerate(pdb_files):
+                writer.writerow(
+                    [
+                        int(labels[index]),
+                        str(pdb_file.relative_to(output_path.parent)),
+                        int(index in medoid_set),
+                    ]
                 )
 
-        pymol.cmd.save(blind_path + "/" + pdb1_name + "-structures_of_interest.pse", "pse")
-        pymol.cmd.delete("all")
-        pymol.cmd.reinitialize()
+    @staticmethod
+    def _save_best_hits(output_path: Path, medoids: dict) -> None:
+        """Persist medoid structure best hits to a plain text file."""
+        with output_path.open("w") as handle:
+            for cluster_label, cluster_medoids in sorted(medoids.items()):
+                handle.write(f"Cluster {cluster_label}:\n")
+                for medoid_path in cluster_medoids:
+                    handle.write(f"  {medoid_path}\n")
+                handle.write("\n")
 
-        # save all data with clusters
-        with open("structures_all.csv", "w") as file:
-            file.write("group, file, pca_1, pca_2\n")
-            for idx, f in enumerate(files):
-                file.write(f"{labels[idx]},{f},{pca[idx, 0]},{pca[idx, 1]}\n")
+    def __init__(self, pdb1_name: str, blind_path: str) -> None:
+        """Initialize blind screening analysis."""
+        self.pdb1_name = pdb1_name
+        self.blind_path = Path(blind_path)
 
-        sys.exit()
+        if not self.blind_path.exists():
+            raise FileNotFoundError(f"Blind screening path not found: {blind_path}")
+
+        logger.info("Starting blind screening for %s", pdb1_name)
+
+        self._setup_foldseek_database()
+        self._compute_similarities()
+        self._perform_clustering_analysis()
+        logger.info("Blind screening completed successfully")
+
+    def _setup_foldseek_database(self) -> None:
+        """Create Foldseek database from PDB files."""
+        pdb_files = sorted(self.blind_path.glob("*.pdb"))
+        if not pdb_files:
+            raise FileNotFoundError(f"No PDB files found in {self.blind_path}")
+
+        db_path = self.blind_path / "blind_db"
+        cmd = ["foldseek", "createdb"] + [str(pdb_file) for pdb_file in pdb_files] + [str(db_path)]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Foldseek createdb failed: {result.stderr.strip()}")
+
+        logger.info("Created Foldseek database at %s", db_path)
+
+    def _compute_similarities(self) -> None:
+        """Compute pairwise structure similarities using Foldseek."""
+        db_path = self.blind_path / "blind_db"
+        result_path = self.blind_path / "blind_result"
+        temp_dir = self.blind_path / "blind_tmp"
+        temp_dir.mkdir(parents=True, exist_ok=True)
+
+        cmd = ["foldseek", "search", str(db_path), str(db_path), str(result_path), str(temp_dir)]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f"Foldseek search failed: {result.stderr.strip()}")
+
+        logger.info("Computed structure similarities")
+
+    def _perform_clustering_analysis(self) -> None:
+        """Perform PCA, HDBSCAN clustering, and k-medoids selection."""
+        pdb_files = sorted(self.blind_path.rglob("*.pdb"))
+        if not pdb_files:
+            raise FileNotFoundError("No PDB files found for clustering")
+
+        features = self._extract_structure_features(pdb_files)
+        if features.shape[0] < 2:
+            raise ValueError("At least two structures are required for clustering")
+
+        reduced = PCA(n_components=2).fit_transform(features)
+        labels = self.cluster_structures(reduced)
+
+        distance_matrix = distance.cdist(reduced, reduced, metric=DISTANCE_METRIC)
+        medoid_map = {}
+        medoid_indices = []
+        for cluster_label in sorted(set(labels)):
+            if cluster_label == -1:
+                continue
+
+            medoids, cost = self.k_medoids(distance_matrix, cluster_label, labels)
+            medoid_indices.extend(medoids.tolist())
+            medoid_map[cluster_label] = [
+                str(pdb_files[i].relative_to(self.blind_path)) for i in medoids
+            ]
+            logger.info("Cluster %s medoids: %s", cluster_label, medoid_map[cluster_label])
+
+        summary_file = self.blind_path / f"{self.pdb1_name}_structures_of_interest.csv"
+        self._save_cluster_summary(summary_file, pdb_files, labels, medoid_indices)
+
+        best_hits_file = self.blind_path / f"{self.pdb1_name}_best_hits.txt"
+        self._save_best_hits(best_hits_file, medoid_map)
+
+        plot_file = self.blind_path / f"{self.pdb1_name}_blind_clusters.png"
+        self._save_cluster_plot(reduced, labels, plot_file)
+
+        logger.info("Saved clustering summary to %s", summary_file)
+        logger.info("Saved best hits to %s", best_hits_file)
+        logger.info("Saved cluster plot to %s", plot_file)

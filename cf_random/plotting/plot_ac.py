@@ -31,7 +31,7 @@ class Plot2DScatterAC:
         #################################################################
         ########### getting the TM-score values of fold-switching region
 
-        pwd = os.getcwd() + "/"
+        os.getcwd() + "/"
 
         ######### plotting the TM-score values as 2D scatter plot
         print("                                        ")

@@ -14,19 +14,21 @@ fi
 conda activate cf-random
 
 # Install JAX with GPU or CPU depending on hardware
+JAX_VERSION=0.4.28
 if command -v nvidia-smi &> /dev/null; then
     CUDA_VERSION=$(nvidia-smi | grep -oP "CUDA Version: \K[0-9]+" | head -1)
     echo "  GPU detected (CUDA $CUDA_VERSION), installing GPU-enabled JAX..."
     if [ "$CUDA_VERSION" -ge 12 ]; then
-        pip install "jax[cuda12_pip]==0.4.25" \
+        pip install "jax[cuda12_pip]==${JAX_VERSION}" \
             -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
     else
-        pip install "jax[cuda11_pip]==0.4.25" \
+        pip install "jax[cuda11_pip]==${JAX_VERSION}" \
             -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
     fi
 else
     echo "  No GPU detected, installing CPU-only JAX..."
-    pip install "jax==0.4.25" "jaxlib==0.4.25"
+    pip install "jax[cpu]==${JAX_VERSION}" \
+        -f https://storage.googleapis.com/jax-releases/jax_releases.html
 fi
 
 echo "[2/2] Verifying installation (best-effort checks)..."

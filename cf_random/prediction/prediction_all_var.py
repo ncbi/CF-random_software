@@ -7,131 +7,74 @@ multiple ColabFold runs with different MSA settings.
 """
 
 import logging
-import os
-import random
 from pathlib import (
     Path,
 )
 
 import numpy as np
-from colabfold.batch import (
-    get_queries,
-    run,
+
+from .base import (
+    MSAMaxRunner,
+    MSAVariableRunner,
 )
-from colabfold.utils import (
-    setup_logging,
-)
-
-
-class CF_MSA_MAX:
-    def __init__(self, search_dir, output_dir, pdb_name, rseed, num_seeds, model_type) -> str:
-        print(search_dir)
-
-        setup_logging(Path(output_dir) / "log.txt")
-        logger = logging.getLogger(__name__)
-
-        queries, is_complex = get_queries(search_dir)
-
-        run(
-            queries=queries,
-            result_dir=output_dir,
-            num_models=5,
-            is_complex=is_complex,
-            model_type=model_type,
-            num_seeds=int(num_seeds),
-            random_seed=int(rseed),
-            data_dir=Path("."),
-        )
-
-
-class CF_MSA_VAR:
-    def __init__(self, pdb1_name, search_dir, output_dir, rseed, num_seeds, model_type):
-        #### shallow MSA section
-        #### Global viarlable
-        max_msa = 1
-        ext_msa = 2
-        pre_random_seed = np.array(rseed)  ## needed to remove future
-        random_seed = "".join(map(str, pre_random_seed))
-
-        self.pdb1_name = pdb1_name
-
-        max_msa = 1
-        ext_msa = 2
-
-        TMscores_random = []
-
-        for multi in (1, 2, 2, 2, 2, 2, 2):
-            max_msa = max_msa * multi
-            ext_msa = ext_msa * multi
-
-            output_dir_var = (
-                output_dir + str(random_seed) + "_max_" + str(max_msa) + "_ext_" + str(ext_msa)
-            )
-
-            setup_logging(Path(output_dir_var) / "log.txt")
-            logger = logging.getLogger(__name__)
-
-            queries, is_complex = get_queries(search_dir)
-
-            run(
-                queries=queries,
-                result_dir=output_dir_var,
-                num_models=5,
-                is_complex=is_complex,
-                model_type=model_type,
-                num_seeds=int(num_seeds),
-                random_seed=int(random_seed),
-                max_seq=int(max_msa),
-                max_extra_seq=int(ext_msa),
-                data_dir=Path("."),
-            )
-
-        fin_pred_dir = pdb1_name + "_predicted_models_rand_" + str(random_seed) + "_max_*"
-        gen_dir = "predictions_all/" + pdb1_name
-
-        if not os.path.exists(gen_dir):
-            os.makedirs(gen_dir)
-            mv_command = "mv " + fin_pred_dir + " predictions_all/" + pdb1_name
-            print(mv_command)
-            os.system(mv_command)
-        else:
-            mv_command = "mv " + fin_pred_dir + " predictions_all/" + pdb1_name
-            print(mv_command)
-            os.system(mv_command)
 
 
 class PredictionAll:
-    def __init__(self, pdb1_name, search_dir, search_multi_dir, nMSA, model_type):
+    """High-level orchestration for full and variable MSA predictions."""
 
-        num_seeds = 5 + nMSA
+    def __init__(
+        self,
+        pdb1_name: str,
+        search_dir: str,
+        search_multi_dir: str,
+        nMSA: int,
+        model_type: str,
+    ) -> None:
+        """Run the full and varied MSA prediction pipeline.
 
-        pre_random_seed = np.random.randint(0, 16, 1)
-        random_seed = "".join(map(str, pre_random_seed))
-        output_dir = pdb1_name + "_predicted_models_full_rand_" + str(random_seed)
+        Args:
+            pdb1_name: Name of the target protein.
+            search_dir: Path to the single-chain MSA folder.
+            search_multi_dir: Path to the multimer MSA folder.
+            nMSA: Number of additional MSA seeds to add to the default 5.
+            model_type: ColabFold model type.
+        """
+        self.pdb1_name = pdb1_name
+        self.search_dir = search_dir
+        self.search_multi_dir = search_multi_dir
+        self.model_type = model_type
 
-        ##### Perform predction with full-length MSA
-        MSA_full = CF_MSA_MAX(search_dir, output_dir, pdb1_name, random_seed, num_seeds, model_type)
-        pwd = os.getcwd() + "/"
+        self.base_output_dir = Path("predictions_all") / pdb1_name
+        self.base_output_dir.mkdir(parents=True, exist_ok=True)
 
-        # Directory section
-        gen_dir = "predictions_all/" + pdb1_name
+        num_seeds = nMSA + 5
+        random_seed = int(np.random.randint(0, 100, 1))
 
-        if not os.path.exists(gen_dir):
-            os.mkdir(gen_dir)
+        full_output_dir = (
+            self.base_output_dir / f"{pdb1_name}_predicted_models_full_rand_{random_seed}"
+        )
+        logging.info("Running full MSA prediction: %s", full_output_dir)
+        MSAMaxRunner(
+            self.search_dir,
+            str(full_output_dir),
+            self.pdb1_name,
+            random_seed,
+            num_seeds,
+            self.model_type,
+        )
 
-        pred_dir = pdb1_name + "_predicted_models_full_rand_" + str(random_seed) + "/"
-        mv_folder_cmd = "mv " + pred_dir + " predictions_all/" + pdb1_name
-        print(mv_folder_cmd)
-        os.system(mv_folder_cmd)
-
-        ##### check out varied-MSA with (msa-max: 1, 2, 4, 8, 16, 32, 64) (msa-extra: 2, 4, 8, 16, 32, 64, 128)
-        output_dir = pdb1_name + "_predicted_models_rand_"
-        random_seed = random.sample(range(100), 1)
-        if model_type != "alphafold2_multimer_v3":
-            MSA_var = CF_MSA_VAR(
-                pdb1_name, search_dir, output_dir, random_seed, num_seeds, model_type
-            )
+        if self.model_type == "alphafold2_multimer_v3":
+            variable_search_dir = self.search_multi_dir
         else:
-            MSA_var = CF_MSA_VAR(
-                pdb1_name, search_multi_dir, output_dir, random_seed, num_seeds, model_type
-            )
+            variable_search_dir = self.search_dir
+
+        variable_output_dir = self.base_output_dir / f"{pdb1_name}_predicted_models_rand_"
+        logging.info("Running variable MSA predictions under: %s", variable_output_dir)
+        MSAVariableRunner(
+            variable_search_dir,
+            str(variable_output_dir),
+            self.pdb1_name,
+            random_seed,
+            num_seeds,
+            self.model_type,
+        )

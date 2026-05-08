@@ -75,7 +75,6 @@ class PlddtCal:
 
         if category == "full-MSA":
             cnt = int(cnt / 5)
-        # For additional-MSA and others, cnt remains as is
 
         print(cnt)
         print(values_all)
@@ -92,7 +91,6 @@ class PlddtCal:
         elif category == "random-MSA":
             values_all_resh = values_all.reshape((nMSA + 5) * 7, 5)
 
-        print("                ")
         print("Calculated pLDDT")
         print(values_all_resh)
         np.savetxt("plddt_" + category + "_" + pdb_name + ".csv", values_all_resh, fmt="%2.3f")

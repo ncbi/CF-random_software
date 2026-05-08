@@ -226,7 +226,7 @@ class TMScoreFS:
         import os
 
         current_dir = os.getcwd() + "/"
-        data_dir = Path(pred_path)
+        Path(pred_path)
 
         # Read fold-switching ranges from file
         range_file = current_dir + "range_fs_pairs_all.txt"
