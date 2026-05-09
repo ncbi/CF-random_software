@@ -1,44 +1,51 @@
-# 0_000_scores_rank_001_alphafold2_ptm_model_4_seed_000.json
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""pLDDT score calculation for AlphaFold predictions."""
+
+import json
+import logging
 import re
+from pathlib import (
+    Path,
+)
+from typing import (
+    Dict,
+    List,
+)
 
-pattern = re.compile(r".*?_scores_rank_(?P<rank>\d+)_alphafold2.*")
+import numpy as np
 
-# default if pattern doesn't work
-rank = "000"
+logger = logging.getLogger(__name__)
+
+# Regex pattern for parsing AlphaFold JSON filenames
+RANK_PATTERN = re.compile(r".*?_scores_rank_(?P<rank>\d+)_alphafold2.*")
 
 
-def read_plddt(jsonfile):
+def read_plddt(jsonfile: str) -> np.ndarray:
     """Reads pLDDT scores from an AlphaFold prediction JSON file.
 
     Args:
-        jsonfile (str): Path to the JSON file containing prediction scores.
+        jsonfile: Path to the JSON file containing prediction scores.
 
     Returns:
-        numpy.ndarray: Array of pLDDT scores as float64.
+        Array of pLDDT scores as float64.
     """
-    import json
-
-    import numpy as np
-
     with open(jsonfile) as json_file:
         data = json.load(json_file)
 
-    plddt_scores = np.array(data["plddt"], dtype="float64")
-
+    plddt_scores = np.array(data["plddt"], dtype=np.float64)
     return plddt_scores
 
 
-def fract_good(score):
+def calculate_average_plddt(score: np.ndarray) -> float:
     """Calculates the average pLDDT score from an array of scores.
 
     Args:
-        score (numpy.ndarray): Array of pLDDT scores.
+        score: Array of pLDDT scores.
 
     Returns:
-        float: Average pLDDT score rounded to 2 decimal places.
+        Average pLDDT score rounded to 2 decimal places.
     """
-    import numpy as np
-
     avg_plddt = round(np.average(score), 2)
     return avg_plddt
 
@@ -50,34 +57,37 @@ class PlddtCal:
     and computes average scores for different MSA categories and model types.
     """
 
-    def __init__(self, sub_list, category, pdb_name, nMSA, nENS, model_type):
+    def __init__(
+        self,
+        sub_list: List[str],
+        category: str,
+        pdb_name: str,
+        nMSA: int,
+        nENS: int,
+        model_type: str,
+    ) -> None:
         """Initializes pLDDT calculation for given subdirectories and parameters.
 
         Args:
-            sub_list (list): List of subdirectory paths to process.
-            category (str): MSA category ('full-MSA', 'additional-MSA', 'random-MSA').
-            pdb_name (str): Name of the PDB structure.
-            nMSA (int): Number of MSA sequences.
-            nENS (int): Number of ensemble models.
-            model_type (str): Type of AlphaFold model.
+            sub_list: List of subdirectory paths to process.
+            category: MSA category ('full-MSA', 'additional-MSA', 'random-MSA').
+            pdb_name: Name of the PDB structure.
+            nMSA: Number of MSA sequences.
+            nENS: Number of ensemble models.
+            model_type: Type of AlphaFold model.
         """
-        import sys
+        if not sub_list:
+            raise ValueError("No subdirectories provided for pLDDT calculation")
 
-        import numpy as np
-
-        if len(sub_list) == 0:
-            sys.exit(1)
-
-        print("working...")
-        print(sub_list)
+        logger.info("Processing pLDDT scores for %d subdirectories", len(sub_list))
+        logger.debug("Subdirectories: %s", sub_list)
 
         values_all, out_dict_all, cnt = self._process_subdirs(sub_list)
 
         if category == "full-MSA":
             cnt = int(cnt / 5)
 
-        print(cnt)
-        print(values_all)
+        logger.debug("Processed %d files", cnt)
 
         # Reshape based on category and model_type
         if category == "full-MSA":
@@ -90,51 +100,50 @@ class PlddtCal:
             values_all_resh = values_all.reshape((nMSA + 5) * 7, 5)
         elif category == "random-MSA":
             values_all_resh = values_all.reshape((nMSA + 5) * 7, 5)
+        else:
+            raise ValueError(f"Unknown category/model_type combination: {category}/{model_type}")
 
-        print("Calculated pLDDT")
-        print(values_all_resh)
-        np.savetxt("plddt_" + category + "_" + pdb_name + ".csv", values_all_resh, fmt="%2.3f")
+        logger.info("Calculated pLDDT scores")
+        output_file = f"plddt_{category}_{pdb_name}.csv"
+        np.savetxt(output_file, values_all_resh, fmt="%2.3f")
+        logger.info("Saved pLDDT results to %s", output_file)
 
-    def _process_subdirs(self, sub_list):
+    def _process_subdirs(self, sub_list: List[str]) -> tuple[np.ndarray, Dict[str, float], int]:
         """Processes subdirectories to extract pLDDT scores.
 
         Args:
-            sub_list (list): List of subdirectory paths.
+            sub_list: List of subdirectory paths.
 
         Returns:
-            tuple: (values_all, out_dict_all, cnt) where values_all is numpy array
-                   of scores, out_dict_all is dict of key-value pairs, cnt is count.
+            Tuple of (values_all, out_dict_all, cnt) where values_all is numpy array
+            of scores, out_dict_all is dict of key-value pairs, cnt is count.
         """
-        import glob
-        from pathlib import (
-            Path,
-        )
-
-        import numpy as np
-
-        out_dict_all = {}
+        out_dict_all: Dict[str, float] = {}
         values_all = np.array([])
         cnt = 0
 
         for subdir in sub_list:
-            if Path(subdir).is_dir():
-                subdir_name = Path(subdir).name
-                jsonfiles = glob.glob(str(subdir) + "/*_scores*json")
+            subdir_path = Path(subdir)
+            if not subdir_path.is_dir():
+                logger.warning("Skipping non-directory: %s", subdir)
+                continue
 
-                for jsonfile in jsonfiles:
-                    plddt_score = read_plddt(jsonfile)
-                    values = fract_good(plddt_score)
-                    values_all = np.append(values_all, values)
-                    jsonfilepath = Path(jsonfile)
-                    jsonfilename = jsonfilepath.stem
-                    match = pattern.match(jsonfilename)
-                    if match:
-                        rank = match.group("rank")
+            subdir_name = subdir_path.name
+            jsonfiles = list(subdir_path.glob("*_scores*json"))
 
-                    key_pair = subdir_name + ":" + rank
-                    if key_pair not in out_dict_all:
-                        out_dict_all[key_pair] = values
+            for jsonfile in jsonfiles:
+                plddt_score = read_plddt(str(jsonfile))
+                values = calculate_average_plddt(plddt_score)
+                values_all = np.append(values_all, values)
 
-                    cnt += 1
+                jsonfilename = jsonfile.stem
+                match = RANK_PATTERN.match(jsonfilename)
+                rank = match.group("rank") if match else "000"
+
+                key_pair = f"{subdir_name}:{rank}"
+                if key_pair not in out_dict_all:
+                    out_dict_all[key_pair] = values
+
+                cnt += 1
 
         return values_all, out_dict_all, cnt

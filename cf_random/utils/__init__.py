@@ -10,9 +10,6 @@ from .convert_multi_single import (
     ConvertM2S,
     convert_m2s,
 )
-from .fs_seq_compare import (
-    compare_fs_sequences,
-)
 from .search_foldseek_cluster import (
     BlindScreening,
 )
@@ -27,7 +24,6 @@ __all__ = [
     "ConvertM2S",
     "convert_m2s",
     "BlindScreening",
-    "compare_fs_sequences",
     "split_chains",
     "split_multi_single",
 ]

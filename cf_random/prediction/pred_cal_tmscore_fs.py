@@ -271,8 +271,3 @@ class MSAVariableFoldSwitch(MSAVariableRunner):
             model_type,
         )
         logger.info(f"Completed varied MSA predictions for {pdb1_name}")
-
-
-# Backward compatibility aliases
-CF_MSA_MAX = MSAMaxFoldSwitch
-CF_MSA_VAR = MSAVariableFoldSwitch

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """TM-score analysis for fold-switching prediction workflows."""
 
-import logging
 import shutil
 from pathlib import (
     Path,
@@ -24,93 +23,24 @@ from tmtools.testing import (
     get_pdb_path,
 )
 
-from ..analysis.cal_tmscore_fs_only import (
-    TMScoreFS,
-)
 from ..prediction.pred_cal_tmscore_multimer import (
     PredictionAllMultimerFS,
 )
-from ..utils.convert_multi_single import (
-    convert_m2s,
+from .base import (
+    MULTIMER_MODEL_TYPE,
+    BaseTMScore,
+    logger,
 )
-
-logger = logging.getLogger(__name__)
+from .cal_tmscore_fs_flmsa import (
+    TMScoreFS,
+)
 
 PREDICTIONS_ROOT = Path("predictions_all")
 FAILED_ROOT = Path("failed_prediction")
-MULTIMER_MODEL_TYPE = "alphafold2_multimer_v3"
-ZERO_TM_SCORES = [0.0, 0.0, 0.0, 0.0, 0.0]
 
 
-def _resolve_path(pattern: str) -> List[Path]:
-    return sorted(Path().glob(pattern))
-
-
-class TMScore:
+class TMScore(BaseTMScore):
     """Compute whole-structure TM-scores for a prediction set."""
-
-    def __init__(
-        self,
-        pred_dir: str,
-        pdb1: str,
-        pdb1_name: str,
-        pdb2: str,
-        pdb2_name: str,
-        model_type: str,
-    ) -> None:
-        self.pred_dir = Path(pred_dir)
-        self.pdb1 = Path(pdb1)
-        self.pdb2 = Path(pdb2)
-        self.pdb1_name = pdb1_name
-        self.pdb2_name = pdb2_name
-        self.model_type = model_type
-        self.tmscores: List[float] = self._compute_scores()
-
-    def _resolve_models(self) -> List[Path]:
-        if any(char in str(self.pred_dir) for char in "*?["):
-            candidate_paths = sorted(Path().glob(str(self.pred_dir)))
-            if len(candidate_paths) == 1 and candidate_paths[0].is_dir():
-                return sorted(candidate_paths[0].glob("*_unrelaxed*pdb"))
-            return [p for p in candidate_paths if p.suffix.lower() == ".pdb"]
-
-        if self.model_type != MULTIMER_MODEL_TYPE:
-            return sorted(self.pred_dir.glob("*_unrelaxed*pdb"))
-
-        output_files = sorted(self.pred_dir.glob("rmTER*_unrelaxed*pdb"))
-        if not output_files:
-            convert_m2s(str(self.pred_dir), self.pdb1_name, self.pdb2_name)
-            output_files = sorted(self.pred_dir.glob("rmTER*_unrelaxed*pdb"))
-        return output_files
-
-    def _calculate_scores(self) -> List[float]:
-        predicted_models = self._resolve_models()
-        if not predicted_models:
-            logger.warning("No models found in %s", self.pred_dir)
-            return ZERO_TM_SCORES.copy()
-
-        ref1 = get_structure(get_pdb_path(str(self.pdb1)))
-        ref1_coords, ref1_seq = get_residue_data(ref1)
-        ref2 = get_structure(get_pdb_path(str(self.pdb2)))
-        ref2_coords, ref2_seq = get_residue_data(ref2)
-
-        scores1: List[float] = []
-        scores2: List[float] = []
-
-        for model_path in predicted_models:
-            model_path = model_path.with_suffix("")
-            model_structure = get_structure(get_pdb_path(str(model_path)))
-            model_coords, model_seq = get_residue_data(model_structure)
-
-            scores1.append(
-                round(tm_align(model_coords, ref1_coords, model_seq, ref1_seq).tm_norm_chain1, 5)
-            )
-            scores2.append(
-                round(tm_align(model_coords, ref2_coords, model_seq, ref2_seq).tm_norm_chain1, 5)
-            )
-
-        if max(scores1, default=0.0) >= max(scores2, default=0.0):
-            return scores1
-        return scores2
 
     def select_size(
         self,

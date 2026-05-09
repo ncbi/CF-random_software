@@ -6,6 +6,9 @@ Provides classes for computing TM-scores and pLDDT metrics focused on
 fold-switching regions and structural comparisons.
 """
 
+from .base import (
+    BaseTMScore,
+)
 from .cal_plddt_ACFS import (
     PlddtCal,
 )
@@ -23,6 +26,7 @@ from .tmscore_all_var_fs import (
 )
 
 __all__ = [
+    "BaseTMScore",
     "TMScoreFS",
     "TMScoreFSMulti",
     "PlddtCal",
