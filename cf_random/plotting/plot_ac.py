@@ -20,20 +20,19 @@ class Plot2DScatterAC:
     def __init__(
         self, full_cate, random_cate, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type
     ):
-        ##### load TM-scores both full- and ramdon-MSA
+        # Load TM-scores both full- and random-MSA
         TMs_full = genfromtxt("TMScore_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" ")
         TMs_random = genfromtxt("TMScore_" + random_cate + "_" + pdb1_name + ".csv", delimiter=" ")
 
-        ############ load pLDDT scores both full- and ramdon-MSA
+        # Load pLDDT scores both full- and random-MSA
         plddt_full = genfromtxt("plddt_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" ")
         plddt_random = genfromtxt("plddt_" + random_cate + "_" + pdb1_name + ".csv", delimiter=" ")
 
-        #################################################################
-        ########### getting the TM-score values of fold-switching region
+        # Getting the TM-score values of fold-switching region
 
         os.getcwd() + "/"
 
-        ######### plotting the TM-score values as 2D scatter plot
+        # Plotting the TM-score values as 2D scatter plot
         print("                                        ")
         print("Size of column: ", TMs_random.shape[-1])
         print("Size of row: ", TMs_random.shape[0])

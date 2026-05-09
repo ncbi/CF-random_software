@@ -36,7 +36,7 @@ from ..analysis.tmscore_all_var_fs import (
 from ..plotting.plot_ac import (
     Plot2DScatterAC,
 )
-from ..plotting.plot_fc import (
+from ..plotting.plot_fs import (
     Plot2DScatter,
 )
 from ..prediction.prediction_all_var import (
