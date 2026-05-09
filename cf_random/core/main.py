@@ -17,6 +17,7 @@ from pathlib import (
 )
 from typing import (
     Optional,
+    Union,
 )
 
 import numpy as np
@@ -66,6 +67,8 @@ MULTI = "multimer_prediction"
 BLIND = "predictions_all"
 SUCCESS = "predictions_all"
 
+FOLDSEEK_DONE_FILE_COUNT = 640
+
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -88,24 +91,21 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--pname", type=str, help="job name for predicting blind mode")
     parser.add_argument(
         "--nMSA",
-        type=int,
-        default=0,
+        type=str,
         help="number of additional MSA seeds to run (added to default 5)",
     )
     parser.add_argument(
         "--nENS",
-        type=int,
-        default=0,
+        type=str,
         help="number of ensemble samples to generate (integer)",
     )
     parser.add_argument(
         "--option",
         type=str,
         required=True,
-        choices=["AC", "FS", "blind"],
         help=(
             "select prediction mode: AC (alternative conformation), "
-            "FS (fold-switching), "
+            "FS (fold-switching), inAC (increased AC sampling), "
             "or blind (no crystal structures)"
         ),
     )
@@ -118,39 +118,82 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def validate_arguments(args: argparse.Namespace) -> None:
-    """Validate command line arguments."""
-    if args.option == "blind":
-        if not args.pname and not args.fname:
-            raise ValueError("Blind mode requires --pname or --fname")
-    elif args.option in ["AC", "FS", "inAC"]:
-        if not args.pdb1 or not args.pdb2:
-            raise ValueError("Non-blind modes require --pdb1 and --pdb2")
+def resolve_pdb1_name(args: argparse.Namespace) -> str:
+    """Resolve the working name for blind mode, matching original precedence.
+
+    Original logic:
+        - pdb1 is None and pdb2 is None → use pname
+        - pdb1 is None and pname is None → use fname (stripped)
+        - else                           → use fname (stripped)
+    """
+    if args.pdb1 is None and args.pdb2 is None:
+        return args.pname
+    elif args.pdb1 is None and args.pname is None:
+        return args.fname.replace("/", "")
     else:
-        raise ValueError(f"Unrecognized option: {args.option}")
-
-    if not args.fname:
-        raise ValueError("--fname (MSA folder) is required for all modes")
+        return args.fname.replace("/", "")
 
 
-def determine_model_type(args: argparse.Namespace) -> str:
-    """Determine the model type based on arguments."""
-    if not args.type or args.type == "ptm":
+def resolve_nMSA_nENS(args: argparse.Namespace):
+    """Resolve nMSA and nENS from optional string arguments, matching original."""
+    nMSA_raw = args.nMSA
+    nENS_raw = args.nENS
+
+    if nMSA_raw is None and nENS_raw is None:
+        return 0, 0
+    elif nMSA_raw is not None and nENS_raw is not None:
+        return int(nMSA_raw), int(nENS_raw)
+    elif nMSA_raw is None and nENS_raw is not None:
+        return 0, int(nENS_raw)
+    elif nMSA_raw is not None and nENS_raw is None:
+        return int(nMSA_raw), 0
+    else:
+        logger.error("Please put correct option of nMSA or nENS")
+        raise SystemExit(1)
+
+
+def resolve_search_dirs(args: argparse.Namespace):
+    """Resolve search_dir and search_multi_dir, preserving original sentinel values.
+
+    Original behaviour:
+        - fname=None, fmname=None   → exit
+        - fname=None, fmname set    → exit (monomer MSA required)
+        - fname set,  fmname=None   → search_multi_dir = 0  (integer sentinel)
+        - fname set,  fmname set    → search_multi_dir = ' ' + fmname (leading space)
+    """
+    if args.fname is None and args.fmname is None:
+        logger.error("Please put MSA folder and file for prediction")
+        raise SystemExit(1)
+    elif args.fname is None and args.fmname is not None:
+        logger.error("Please put MSA folder and file for monomer prediction")
+        raise SystemExit(1)
+    elif args.fname is not None and args.fmname is None:
+        return args.fname, 0
+    else:
+        return args.fname, " " + args.fmname
+
+
+def determine_model_type(args: argparse.Namespace, pdb1: Optional[str]) -> str:
+    """Determine the model type and set up multimer directory if needed."""
+    if args.type is None or args.type == "ptm":
         return MODEL_TYPES["ptm"]
     elif args.type == "monomer":
         return MODEL_TYPES["monomer"]
+    elif args.type == "multimer" and args.option == "blind":
+        model_type = MODEL_TYPES["multimer"]
+        if not os.path.exists(MULTI):
+            os.mkdir(MULTI)
+        return model_type
     elif args.type == "multimer":
-        return MODEL_TYPES["multimer"]
+        ter_count = count_chains(pdb1)
+        logger.info("%d chain(s) in this multimer file.", ter_count)
+        model_type = MODEL_TYPES["multimer"]
+        if not os.path.exists(MULTI):
+            os.mkdir(MULTI)
+        return model_type
     else:
-        raise ValueError(f"Unrecognized model type: {args.type}")
-
-
-def setup_multimer_directory(option: str, pdb1_name: str) -> None:
-    """Set up multimer prediction directory if needed."""
-    if option != "blind":
-        target_dir = MULTI
-        if not os.path.exists(target_dir):
-            os.mkdir(target_dir)
+        logger.error("Please put correct model-type option")
+        raise SystemExit(1)
 
 
 def count_chains(pdb_file: str) -> int:
@@ -165,44 +208,34 @@ def count_chains(pdb_file: str) -> int:
 def main() -> None:
     """Main entry point for the CF-random pipeline."""
     args = parse_arguments()
-    validate_arguments(args)
 
-    # Download AlphaFold parameters
     download_alphafold_params("alphafold2_ptm", Path("."))
 
-    # Determine working directory and names
     pwd = os.getcwd() + "/"
     pdb1: Optional[str] = None
     pdb2: Optional[str] = None
     pdb1_name: Optional[str] = None
     pdb2_name: Optional[str] = None
 
+    # Resolve working names
     if args.option == "blind":
-        pdb1_name = args.pname or args.fname.replace("/", "")
+        pdb1_name = resolve_pdb1_name(args)
         logger.info("Work name: %s", pdb1_name)
-    else:
+    elif args.pdb1 is not None and args.pdb2 is not None:
         pdb1 = args.pdb1
         pdb2 = args.pdb2
         pdb1_name = pdb1.replace(".pdb", "")
         pdb2_name = pdb2.replace(".pdb", "")
         logger.info("PDB names: %s, %s", pdb1_name, pdb2_name)
 
-    nMSA = args.nMSA
-    nENS = args.nENS
-    model_type = determine_model_type(args)
+    nMSA, nENS = resolve_nMSA_nENS(args)
+    search_dir, search_multi_dir = resolve_search_dirs(args)
+    model_type = determine_model_type(args, pdb1)
 
+    # Override search_dir after model-type resolution (matches original)
     search_dir = args.fname
-    search_multi_dir = args.fmname
-
-    if model_type == MODEL_TYPES["multimer"]:
-        setup_multimer_directory(args.option, pdb1_name)
-        if args.option != "blind" and pdb1:
-            ter_count = count_chains(pdb1)
-            logger.info("%d chain(s) in this multimer file.", ter_count)
-
     success_dir = f"{SUCCESS}/{pdb1_name}/"
 
-    # Execute the appropriate workflow
     if args.option == "AC":
         run_alternative_conformation_workflow(
             pdb1,
@@ -232,9 +265,10 @@ def main() -> None:
             pwd,
         )
     elif args.option == "blind":
-        run_blind_workflow(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)  # type: ignore
+        run_blind_workflow(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
     else:
-        raise ValueError(f"Unrecognized option: {args.option}")
+        logger.error("Unrecognized option: %s", args.option)
+        raise SystemExit(1)
 
 
 def run_alternative_conformation_workflow(
@@ -246,19 +280,22 @@ def run_alternative_conformation_workflow(
     nENS: int,
     model_type: str,
     search_dir: str,
-    search_multi_dir: Optional[str],
+    search_multi_dir: Union[int, str],
     success_dir: str,
     pwd: str,
 ) -> None:
     """Run the alternative conformation prediction workflow."""
     logger.info("Predicting alternative conformations")
 
-    # Check if predictions already exist
-    succ_dir_count = (
-        sum(1 for _ in os.walk(pwd + success_dir)) if os.path.exists(success_dir) else 0
-    )
+    if not os.path.exists(success_dir):
+        os.mkdir(success_dir)
+        succ_dir_count = 0
+    else:
+        succ_dir_count = 0
+        for root_dir, cur_dir, files in os.walk(pwd + success_dir + "/"):
+            succ_dir_count += len(cur_dir)
 
-    if os.path.exists(success_dir) and succ_dir_count > 0 and succ_dir_count < 8:
+    if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
         os.system("rm -rf " + success_dir)
 
@@ -277,7 +314,6 @@ def run_alternative_conformation_workflow(
     logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_MSA_size)
     np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
 
-    # Determine directories for analysis
     if model_type == MODEL_TYPES["multimer"]:
         base = pwd + MULTI + "/" + pdb1_name
         list_org_samplings = glob.glob(base + "/*full_rand*/")
@@ -302,28 +338,33 @@ def run_fold_switching_workflow(
     nENS: int,
     model_type: str,
     search_dir: str,
-    search_multi_dir: Optional[str],
+    search_multi_dir: Union[int, str],
     success_dir: str,
     pwd: str,
 ) -> None:
     """Run the fold-switching prediction workflow."""
     logger.info("Predicting fold-switching models.")
 
-    # Check if predictions already exist
-    succ_dir_count = (
-        sum(1 for _ in os.walk(pwd + success_dir)) if os.path.exists(success_dir) else 0
-    )
+    if not os.path.exists(success_dir):
+        os.mkdir(success_dir)
+        succ_dir_count = 0
+    else:
+        succ_dir_count = 0
+        for root_dir, cur_dir, files in os.walk(pwd + success_dir + "/"):
+            succ_dir_count += len(cur_dir)
 
-    if os.path.exists(success_dir) and succ_dir_count > 0 and succ_dir_count < 8:
+    if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
         os.system("rm -rf " + success_dir)
+
+    shallow_MSA_size = np.array([])
 
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
         calculate_tm_score = TMScoreCalAllVarFS(
             pdb1, pdb1_name, pdb2, pdb2_name, nMSA, "FS", model_type, search_dir, search_multi_dir
         )
-        shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
+        shallow_MSA_size = np.append(shallow_MSA_size, calculate_tm_score.size_selection)
     else:
         PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
         if model_type != MODEL_TYPES["multimer"]:
@@ -338,21 +379,18 @@ def run_fold_switching_workflow(
                 search_dir,
                 search_multi_dir,
             )
-            shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
-        else:
-            shallow_MSA_size = np.array([])
+            shallow_MSA_size = np.append(shallow_MSA_size, calculate_tm_score.size_selection)
 
     logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_MSA_size)
     np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
 
-    # Determine directories for analysis
     if model_type == MODEL_TYPES["multimer"]:
         base = pwd + MULTI + "/" + pdb1_name
         list_org_samplings = glob.glob(base + "/*full_rand*/")
         list_ran_samplings = glob.glob(base + "/*max*/")
     else:
-        list_org_samplings = glob.glob(pwd + success_dir + "*full_rand*/")
-        list_ran_samplings = glob.glob(pwd + success_dir + "*max*/")
+        list_org_samplings = glob.glob(pwd + success_dir + "/*full_rand*/")
+        list_ran_samplings = glob.glob(pwd + success_dir + "/*max*/")
 
     full = "full-MSA"
     random = "random-MSA"
@@ -366,7 +404,11 @@ def run_fold_switching_workflow(
 
 
 def run_blind_workflow(
-    pdb1_name: str, search_dir: str, search_multi_dir: Optional[str], nMSA: int, model_type: str
+    pdb1_name: str,
+    search_dir: str,
+    search_multi_dir: Union[int, str],
+    nMSA: int,
+    model_type: str,
 ) -> None:
     """Run the blind prediction workflow."""
     logger.info("Predicting fold-switching proteins without crystal structures.")
@@ -375,18 +417,31 @@ def run_blind_workflow(
         os.mkdir(BLIND)
 
     blind_pdb_dir = BLIND + "/" + pdb1_name
-    blind_dir_count = sum(1 for _ in os.walk(blind_pdb_dir)) if os.path.exists(blind_pdb_dir) else 0
+    blind_pred_path = f"{BLIND}/{pdb1_name}"
+    logger.info("Blind prediction path: %s", blind_pred_path)
 
-    if os.path.exists(blind_pdb_dir) and blind_dir_count > 0 and blind_dir_count < 8:
+    blind_dir_count = 0
+    if os.path.exists(blind_pdb_dir):
+        for root_dir, cur_dir, files in os.walk(blind_pdb_dir + "/"):
+            blind_dir_count += len(cur_dir)
+
+    if os.path.exists(blind_pdb_dir) and 0 < blind_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
         os.system("rm -rf " + blind_pdb_dir)
 
-    blind_pred_path = f"{BLIND}/{pdb1_name}"
-
     if os.path.exists(blind_pdb_dir) and blind_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
-        fseek_file_count = sum(len(files) for _, _, files in os.walk(blind_pdb_dir))
+
+        # Count total files to determine whether Foldseek has already been run
+        fseek_file_count = 0
+        for root_dir, cur_dir, files in os.walk(blind_pdb_dir + "/"):
+            fseek_file_count += len(files)
         logger.info("Number of files in blind prediction path: %d", fseek_file_count)
+
+        if fseek_file_count >= FOLDSEEK_DONE_FILE_COUNT:
+            logger.info("Foldseek search was already done")
+
+        # Run blind screening regardless — Foldseek searches skip existing results
         BlindScreening(pdb1_name, blind_pred_path)
     else:
         PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
