@@ -234,8 +234,3 @@ class PredictionAllMultimerFS:
             self.num_seeds,
             model_type,
         )
-
-
-# Backward compatibility aliases
-CF_MSA_MAX = MSAMaxMultimer
-CF_MSA_VAR = MSAVariableMultimer
