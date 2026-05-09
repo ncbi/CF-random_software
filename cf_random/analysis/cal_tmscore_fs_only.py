@@ -18,29 +18,9 @@ from typing import (
 
 import numpy as np
 
-# Amino acid three-letter to one-letter code mapping
-AA3TO1: Dict[str, str] = {
-    "CYS": "C",
-    "ASP": "D",
-    "SER": "S",
-    "GLN": "Q",
-    "LYS": "K",
-    "ILE": "I",
-    "PRO": "P",
-    "THR": "T",
-    "PHE": "F",
-    "ASN": "N",
-    "GLY": "G",
-    "HIS": "H",
-    "LEU": "L",
-    "ARG": "R",
-    "TRP": "W",
-    "ALA": "A",
-    "VAL": "V",
-    "GLU": "E",
-    "TYR": "Y",
-    "MET": "M",
-}
+from cf_random.utils.constants import (
+    AA3TO1,
+)
 
 
 class TMScoreFS:
@@ -53,6 +33,60 @@ class TMScoreFS:
     Attributes:
         tmscores_fs (numpy.ndarray): Array of TM-scores for fold-switching comparisons.
     """
+
+    def __init__(
+        self,
+        pred_path: Union[str, Path],
+        pdb1: Union[str, Path],
+        pdb1_name: str,
+        pdb2: Union[str, Path],
+        pdb2_name: str,
+    ) -> None:
+        """Initializes TM-score calculation for fold-switching analysis.
+
+        Args:
+            pred_path (str or Path): Path to directory containing predicted model subdirectories.
+            pdb1 (str or Path): Path to first PDB file.
+            pdb1_name (str): Name/ID of first PDB structure.
+            pdb2 (str or Path): Path to second PDB file.
+            pdb2_name (str): Name/ID of second PDB structure.
+
+        Raises:
+            SystemExit: If PDB names are not found in range file.
+        """
+        import os
+
+        current_dir = os.getcwd() + "/"
+        Path(pred_path)
+
+        # Read fold-switching ranges from file
+        range_file = current_dir + "range_fs_pairs_all.txt"
+        fs_res: Dict[str, Tuple[str, str]] = {}
+
+        with open(range_file, "r") as infile:
+            next(infile)  # Skip header
+            for line in infile:
+                line = line.strip()
+                n1, n2, p1, p2, m1, m2 = line.split(",")
+                if n1 not in fs_res:
+                    fs_res[n1] = (p1, m1)
+                if n2 not in fs_res:
+                    fs_res[n2] = (p2, m2)
+
+        print("Running for pair", pdb1_name, pdb2_name, end="..\n")
+        print("comparing predictions of", pdb1_name, end="...\n")
+
+        try:
+            range_pdb1 = fs_res[pdb1_name]
+            range_pdb2 = fs_res[pdb2_name]
+        except KeyError:
+            print("check PDBIDs ", pdb1_name, pdb2_name)
+            import sys
+
+            sys.exit(1)
+
+        range_pred = range_pdb1[1]
+        self.run_for_models(pdb1, pdb2, pred_path, range_pred, range_pdb1[0], range_pdb2[0])
 
     def get_coords(self, pdbfile: Union[str, Path], FSRange: str) -> Tuple[np.ndarray, str]:
         """Extracts CA coordinates and sequence for fold-switching region from PDB.
@@ -202,45 +236,3 @@ class TMScoreFS:
         tmscores_fs_array = np.array(tmscores_fs)
         print("tmscores_fs")
         self.tmscores_fs = tmscores_fs_array
-
-    def __init__(
-        self,
-        pred_path: Union[str, Path],
-        pdb1: Union[str, Path],
-        pdb1_name: str,
-        pdb2: Union[str, Path],
-        pdb2_name: str,
-    ) -> None:
-        """Initializes TM-score calculation for fold-switching analysis.
-
-        Args:
-            pred_path (str or Path): Path to directory containing predicted model subdirectories.
-            pdb1 (str or Path): Path to first PDB file.
-            pdb1_name (str): Name/ID of first PDB structure.
-            pdb2 (str or Path): Path to second PDB file.
-            pdb2_name (str): Name/ID of second PDB structure.
-
-        Raises:
-            SystemExit: If PDB names are not found in range file.
-        """
-        import os
-
-        current_dir = os.getcwd() + "/"
-        Path(pred_path)
-
-        # Read fold-switching ranges from file
-        range_file = current_dir + "range_fs_pairs_all.txt"
-        fs_res: Dict[str, Tuple[str, str]] = {}
-
-        with open(range_file, "r") as infile:
-            next(infile)  # Skip header
-            for line in infile:
-                line = line.strip()
-                n1, n2, p1, p2, m1, m2 = line.split(",")
-                if n1 not in fs_res:
-                    fs_res[n1] = (p1, m1)
-                if n2 not in fs_res:
-                    fs_res[n2] = (p2, m2)
-
-        print("Running for pair", pdb1_name, pdb2_name, end="..\n")
-        print("comparing predictions of", pdb1_name, end="...\n")

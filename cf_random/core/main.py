@@ -195,7 +195,7 @@ def main() -> None:
     search_multi_dir = args.fmname
 
     if model_type == MODEL_TYPES["multimer"]:
-        setup_multimer_directory(args.option, pdb1_name)  # type: ignore
+        setup_multimer_directory(args.option, pdb1_name)
         if args.option != "blind" and pdb1:
             ter_count = count_chains(pdb1)
             logger.info("%d chain(s) in this multimer file.", ter_count)
@@ -211,7 +211,7 @@ def main() -> None:
             pdb2_name,
             nMSA,
             nENS,
-            model_type,  # type: ignore
+            model_type,
             search_dir,
             search_multi_dir,
             success_dir,
@@ -225,7 +225,7 @@ def main() -> None:
             pdb2_name,
             nMSA,
             nENS,
-            model_type,  # type: ignore
+            model_type,
             search_dir,
             search_multi_dir,
             success_dir,

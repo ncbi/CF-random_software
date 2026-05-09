@@ -12,89 +12,6 @@ from thefuzz import (
 
 
 class FSRange:
-    def first_res_check(self, pdb1, pdb2):
-        # self.pdb1 = pdb1; self.pdb2 = pdb2
-
-        ## first residue index check
-        structure_1 = PDBParser().get_structure("pdb1", pdb1)
-        model_1 = structure_1[0]
-        print(model_1)
-
-        structure_2 = PDBParser().get_structure("pdb2", pdb2)
-        model_2 = structure_2[0]
-        print(model_2)
-
-        res_index_1 = []
-        res_index_2 = []
-
-        for chain_1 in model_1:
-            for i, residue in enumerate(chain_1.get_residues()):
-                # res_id = list(residue.id)
-                res_index_1.append(residue.id[1])
-                # print(residue.id[1])
-
-        for chain_2 in model_2:
-            for i, residue in enumerate(chain_2.get_residues()):
-                res_index_2.append(residue.id[1])
-
-        # print(int(res_index_1[0]))
-        # print(int(res_index_2[0]))
-
-        self.pdb1_res_index_1 = int(res_index_1[0])
-        self.pdb2_res_index_1 = int(res_index_2[0])
-
-    def pydssp(self, crys_pdb, pred_pdb, number, pdb_name):
-
-        ##### generating the command for pydssp
-        number = str(number)
-        command = (
-            "pydssp " + crys_pdb + " " + pred_pdb + " -o output_" + pdb_name + "_" + number + ".log"
-        )
-        print(command)
-        os.system(command)
-
-    def res_check(self, pdb1, pdb2, pdb1_name, pdb2_name):
-        current_dir = os.getcwd() + "/"
-        range_file = current_dir + "range_fs_pairs_all.txt"
-
-        crys_fs_res_1 = {}
-        crys_fs_res_2 = {}
-        pred_fs_res_1 = {}
-        pred_fs_res_2 = {}
-
-        with open(range_file, "r") as Infile:
-            next(Infile)  # skip header line "# pdb1,pdb2,pred1,pred2"
-            for line in Infile:
-                line = line.strip()
-                n1, n2, p1, p2, m1, m2 = line.split(",")
-                # the value of the dictionary is a tuple
-                # the first element of tuple is the fs range in the original PDB
-                # followed by the range in the predicted model
-                # if n1 == pdb1_name and n2 == pdb2_name:
-                if (n1 == pdb1_name and n2 == pdb2_name) or (n2 == pdb1_name and n1 == pdb2_name):
-                    # fs_res_1 = (m1); fs_res_2 = (m2)
-                    crys_fs_res_1 = p1
-                    crys_fs_res_2 = p2
-                    pred_fs_res_1 = m1
-                    pred_fs_res_2 = m2
-
-            # fs_res_1_update = fs_res_1.split("-"); fs_res_2_update = fs_res_2.split("-");
-            # print(fs_res_1_update, fs_res_2_update)
-
-        crys_fs_res_1_update = crys_fs_res_1.split("-")
-        crys_fs_res_2_update = crys_fs_res_2.split("-")
-        print(crys_fs_res_1_update, crys_fs_res_2_update)
-        pred_fs_res_1_update = pred_fs_res_1.split("-")
-        pred_fs_res_2_update = pred_fs_res_2.split("-")
-        print(pred_fs_res_1_update, pred_fs_res_2_update)
-
-        ##### convert list data to int
-        self.crys_fs_res_1_update = [int(i) for i in crys_fs_res_1_update]
-        self.crys_fs_res_2_update = [int(i) for i in crys_fs_res_2_update]
-
-        self.pred_fs_res_1_update = [int(i) for i in pred_fs_res_1_update]
-        self.pred_fs_res_2_update = [int(i) for i in pred_fs_res_2_update]
-
     def __init__(self, pdb1, pdb2, pdb1_name, pdb2_name, pred_dir):
         ##### check first residue index of query proteins
         # fs_check = FSRange(pdb1, pdb2)
@@ -239,3 +156,86 @@ class FSRange:
 
             else:
                 index += 1
+
+    def first_res_check(self, pdb1, pdb2):
+        # self.pdb1 = pdb1; self.pdb2 = pdb2
+
+        ## first residue index check
+        structure_1 = PDBParser().get_structure("pdb1", pdb1)
+        model_1 = structure_1[0]
+        print(model_1)
+
+        structure_2 = PDBParser().get_structure("pdb2", pdb2)
+        model_2 = structure_2[0]
+        print(model_2)
+
+        res_index_1 = []
+        res_index_2 = []
+
+        for chain_1 in model_1:
+            for i, residue in enumerate(chain_1.get_residues()):
+                # res_id = list(residue.id)
+                res_index_1.append(residue.id[1])
+                # print(residue.id[1])
+
+        for chain_2 in model_2:
+            for i, residue in enumerate(chain_2.get_residues()):
+                res_index_2.append(residue.id[1])
+
+        # print(int(res_index_1[0]))
+        # print(int(res_index_2[0]))
+
+        self.pdb1_res_index_1 = int(res_index_1[0])
+        self.pdb2_res_index_1 = int(res_index_2[0])
+
+    def pydssp(self, crys_pdb, pred_pdb, number, pdb_name):
+
+        ##### generating the command for pydssp
+        number = str(number)
+        command = (
+            "pydssp " + crys_pdb + " " + pred_pdb + " -o output_" + pdb_name + "_" + number + ".log"
+        )
+        print(command)
+        os.system(command)
+
+    def res_check(self, pdb1, pdb2, pdb1_name, pdb2_name):
+        current_dir = os.getcwd() + "/"
+        range_file = current_dir + "range_fs_pairs_all.txt"
+
+        crys_fs_res_1 = {}
+        crys_fs_res_2 = {}
+        pred_fs_res_1 = {}
+        pred_fs_res_2 = {}
+
+        with open(range_file, "r") as Infile:
+            next(Infile)  # skip header line "# pdb1,pdb2,pred1,pred2"
+            for line in Infile:
+                line = line.strip()
+                n1, n2, p1, p2, m1, m2 = line.split(",")
+                # the value of the dictionary is a tuple
+                # the first element of tuple is the fs range in the original PDB
+                # followed by the range in the predicted model
+                # if n1 == pdb1_name and n2 == pdb2_name:
+                if (n1 == pdb1_name and n2 == pdb2_name) or (n2 == pdb1_name and n1 == pdb2_name):
+                    # fs_res_1 = (m1); fs_res_2 = (m2)
+                    crys_fs_res_1 = p1
+                    crys_fs_res_2 = p2
+                    pred_fs_res_1 = m1
+                    pred_fs_res_2 = m2
+
+            # fs_res_1_update = fs_res_1.split("-"); fs_res_2_update = fs_res_2.split("-");
+            # print(fs_res_1_update, fs_res_2_update)
+
+        crys_fs_res_1_update = crys_fs_res_1.split("-")
+        crys_fs_res_2_update = crys_fs_res_2.split("-")
+        print(crys_fs_res_1_update, crys_fs_res_2_update)
+        pred_fs_res_1_update = pred_fs_res_1.split("-")
+        pred_fs_res_2_update = pred_fs_res_2.split("-")
+        print(pred_fs_res_1_update, pred_fs_res_2_update)
+
+        ##### convert list data to int
+        self.crys_fs_res_1_update = [int(i) for i in crys_fs_res_1_update]
+        self.crys_fs_res_2_update = [int(i) for i in crys_fs_res_2_update]
+
+        self.pred_fs_res_1_update = [int(i) for i in pred_fs_res_1_update]
+        self.pred_fs_res_2_update = [int(i) for i in pred_fs_res_2_update]

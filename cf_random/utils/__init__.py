@@ -13,17 +13,13 @@ from .convert_multi_single import (
 from .search_foldseek_cluster import (
     BlindScreening,
 )
-from .split_chains import (
-    split_chains,
-)
 from .split_multi_single import (
-    split_multi_single,
+    SplitMultiToChains,
 )
 
 __all__ = [
     "ConvertM2S",
     "convert_m2s",
     "BlindScreening",
-    "split_chains",
-    "split_multi_single",
+    "SplitMultiToChains",
 ]
