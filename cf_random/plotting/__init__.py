@@ -9,7 +9,7 @@ predictions and quality metrics.
 from .plot_ac import (
     Plot2DScatterAC,
 )
-from .plot_fc import (
+from .plot_fs import (
     Plot2DScatter,
 )
 
