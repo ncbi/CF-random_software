@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """TM-score analysis for fold-switching prediction workflows."""
 
+import glob
 import shutil
 from pathlib import (
     Path,
@@ -12,16 +13,6 @@ from typing import (
 )
 
 import numpy as np
-from tmtools import (
-    tm_align,
-)
-from tmtools.io import (
-    get_residue_data,
-    get_structure,
-)
-from tmtools.testing import (
-    get_pdb_path,
-)
 
 from ..prediction.pred_cal_tmscore_multimer import (
     PredictionAllMultimerFS,
@@ -31,50 +22,129 @@ from .base import (
     BaseTMScore,
     logger,
 )
-from .cal_tmscore_fs_flmsa import (
-    TMScoreFS,
-)
 
 PREDICTIONS_ROOT = Path("predictions_all")
 FAILED_ROOT = Path("failed_prediction")
 
+# Must match the multiplier sequence used in prediction_all_var.py
+MSA_MULTIPLIERS = (1, 2, 2, 2, 2, 2, 2)
+
 
 class TMScore(BaseTMScore):
-    """Compute whole-structure TM-scores for a prediction set."""
+    """Compute whole-structure TM-scores for a prediction set.
+
+    Inherits forward/reverse scoring, glob resolution, and multimer
+    conversion from BaseTMScore. Adds fold-switching select_size logic.
+    """
 
     def select_size(
         self,
-        tmscores_random: np.ndarray,
-        tmscores_fs_random: np.ndarray,
+        TMscores_random: np.ndarray,
+        TMscores_fs_random: np.ndarray,
         pdb1_name: str,
         pdb2_name: str,
         alt_name: str,
         num_seeds: int,
     ) -> None:
-        if tmscores_random.size != 14 * num_seeds * 5:
-            raise ValueError("Unexpected random TM-score matrix size")
+        """Select optimal shallow MSA depth using whole-structure and FS scores.
 
-        reshaped_random = tmscores_random.reshape(14, num_seeds * 5)
-        reshaped_fs = tmscores_fs_random.reshape(14, num_seeds * 5)
+            1. Extract alternative rows from both whole and FS matrices.
+            2. Sum whole-structure group scores and pick argmax location.
+            3. Primary check: whole >= 0.5 AND fs >= 0.5 at that location.
+            4. Fallback: if fs < 0.5 at primary location, scan all pairs
+               for any combination where whole >= 0.4 and fs >= 0.5.
+            5. Raise RuntimeError if no valid selection found.
 
+        Args:
+            TMscores_random: Flat array of shallow whole-structure TM-scores.
+            TMscores_fs_random: Flat array of shallow FS-region TM-scores.
+            pdb1_name: Name of first reference structure.
+            pdb2_name: Name of second reference structure.
+            alt_name: Name of the alternative conformation structure.
+            num_seeds: Number of prediction seeds.
+
+        Raises:
+            RuntimeError: If no viable shallow MSA selection can be found.
+        """
+        TMscores_random_reshape = TMscores_random.reshape(14, num_seeds * 5)
+        TMscores_fs_random_reshape = TMscores_fs_random.reshape(14, num_seeds * 5)
+        TMscores_random_locat = np.zeros((7, num_seeds * 5))
+        TMscores_fs_random_locat = np.zeros((7, num_seeds * 5))
+
+        # Extract every-other row for the alternative structure (both matrices)
         if alt_name == pdb2_name:
-            alternative_indices = list(range(1, 14, 2))
-            location_offset = 1
+            tmp_cnt = 0
+            for i in range(1, 14, 2):
+                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
+                TMscores_fs_random_locat[tmp_cnt, :] = TMscores_fs_random_reshape[i, :]
+                tmp_cnt += 1
         else:
-            alternative_indices = list(range(0, 14, 2))
-            location_offset = 0
+            tmp_cnt = 0
+            for i in range(0, 13, 2):
+                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
+                TMscores_fs_random_locat[tmp_cnt, :] = TMscores_fs_random_reshape[i, :]
+                tmp_cnt += 1
 
-        alternative_matrix = reshaped_random[alternative_indices, :]
-        best_group = int(np.argmax(alternative_matrix.sum(axis=1)))
-        location = best_group * 2 + location_offset
+        # Sum whole-structure groups and find best location
+        TMscore_data_sum = np.zeros((7, 1))
+        for ii in range(TMscores_random_locat.shape[0]):
+            TMscore_data_sum[ii] = np.sum(TMscores_random_locat[ii])
 
-        if not (
-            np.any(reshaped_random[location, :] >= 0.5) and np.any(reshaped_fs[location, :] >= 0.5)
+        location = int(np.argmax(np.max(TMscore_data_sum, axis=1)))
+
+        # Map group index back to full-matrix row
+        if alt_name == pdb2_name:
+            location_full = (location * 2) + 1
+        else:
+            location_full = location * 2
+
+        TMscore_data = TMscores_random_reshape
+        TMscore_fs_data = TMscores_fs_random_reshape
+
+        # --- Primary check: both whole and FS must have >= 0.5 at location ---
+        if alt_name == pdb2_name and (
+            np.any(TMscore_data[location_full, :] >= 0.5)
+            and np.any(TMscore_fs_data[location_full, :] >= 0.5)
         ):
-            raise RuntimeError("Predictions are bad: no viable shallow MSA selection")
+            self.selection = int((location_full - 1) / 2)
+            logger.info("Selected shallow MSA index %s for %s", self.selection, pdb1_name)
 
-        self.selection = int((location - location_offset) / 2)
-        logger.info("Selected shallow MSA index %s for %s", self.selection, pdb1_name)
+        elif alt_name == pdb1_name and (
+            np.any(TMscore_data[location_full, :] >= 0.5)
+            and np.any(TMscore_fs_data[location_full, :] >= 0.5)
+        ):
+            self.selection = int(location_full / 2)
+            logger.info("Selected shallow MSA index %s for %s", self.selection, pdb1_name)
+
+        # --- Fallback: FS score < 0.5 at primary location ---
+        # Scan all pairs for whole >= 0.4 AND fs >= 0.5 in any combination
+        elif np.any(TMscore_fs_data[location_full, :] < 0.5):
+            found = False
+            for jj in range(int(TMscore_data.shape[0] / 2)):
+                cross1 = np.any(TMscore_data[jj * 2, :] >= 0.4) and np.any(
+                    TMscore_fs_data[(jj * 2) + 1, :] >= 0.5
+                )
+                cross2 = np.any(TMscore_data[(jj * 2) + 1, :] >= 0.4) and np.any(
+                    TMscore_fs_data[jj * 2, :] >= 0.5
+                )
+                same1 = np.any(TMscore_data[jj * 2, :] >= 0.4) and np.any(
+                    TMscore_fs_data[jj * 2, :] >= 0.5
+                )
+                same2 = np.any(TMscore_data[(jj * 2) + 1, :] >= 0.4) and np.any(
+                    TMscore_fs_data[(jj * 2) + 1, :] >= 0.5
+                )
+                if cross1 or cross2 or same1 or same2:
+                    self.selection = jj
+                    found = True
+                    logger.info("Fallback selection: shallow MSA index %s for %s", jj, pdb1_name)
+                    break
+                elif jj == (int(TMscore_data.shape[0]) - 1) and np.all(TMscore_data[jj, :] < 0.5):
+                    raise RuntimeError("Predictions are bad: no viable shallow MSA selection found")
+            if not found:
+                raise RuntimeError("Predictions are bad: no viable shallow MSA selection found")
+
+        else:
+            raise RuntimeError("Predictions are bad: whole-structure predictions are bad")
 
 
 class TMScoreCalAllVarFS:
@@ -92,8 +162,8 @@ class TMScoreCalAllVarFS:
         search_dir: Optional[str] = None,
         search_multi_dir: Optional[str] = None,
     ) -> None:
-        self.pdb1 = Path(pdb1)
-        self.pdb2 = Path(pdb2)
+        self.pdb1 = pdb1
+        self.pdb2 = pdb2
         self.pdb1_name = pdb1_name
         self.pdb2_name = pdb2_name
         self.nMSA = nMSA
@@ -108,124 +178,186 @@ class TMScoreCalAllVarFS:
         else:
             self._evaluate_multimer()
 
-    def _find_prediction_directory(self, pattern: str) -> Optional[Path]:
-        candidates = sorted((PREDICTIONS_ROOT / self.pdb1_name).glob(pattern))
-        return candidates[0] if candidates else None
-
     def _move_failed_full_outputs(self) -> None:
-        target = FAILED_ROOT / self.pdb1_name
-        target.mkdir(parents=True, exist_ok=True)
-        for candidate in sorted(
-            (PREDICTIONS_ROOT / self.pdb1_name).glob(
-                f"{self.pdb1_name}_predicted_models_full_rand_*"
-            )
-        ):
-            shutil.move(str(candidate), str(target / candidate.name))
+        """Move failed full-MSA prediction folders to failed_prediction/."""
+        FAILED_ROOT.mkdir(parents=True, exist_ok=True)
+        pattern = (
+            str(PREDICTIONS_ROOT / self.pdb1_name)
+            + f"/{self.pdb1_name}_predicted_models_full_rand_*"
+        )
+        for candidate in glob.glob(pattern):
+            destination = FAILED_ROOT / self.pdb1_name / Path(candidate).name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(candidate, str(destination))
+            logger.info("Moved failed prediction %s -> %s", candidate, destination)
 
     @staticmethod
     def _msa_pairs() -> List[tuple]:
+        """Generate (max_msa, ext_msa) pairs matching the prediction multiplier sequence."""
         pairs: List[tuple] = []
         max_msa = 1
         ext_msa = 2
-        for multiplier in (1, 2, 2, 2, 2, 2, 2):
+        for multiplier in MSA_MULTIPLIERS:
             max_msa *= multiplier
             ext_msa *= multiplier
             pairs.append((max_msa, ext_msa))
         return pairs
 
     def _evaluate_monomer(self) -> None:
+        """Run the full monomer FS TM-score evaluation pipeline."""
+        from .cal_tmscore_fs_flmsa import (
+            TMScoreFS,
+        )
+
         num_seeds = 5 + self.nMSA
-        full_dir = self._find_prediction_directory(f"{self.pdb1_name}_predicted_models_full_rand_*")
-        if full_dir is None:
-            raise FileNotFoundError(f"Full-MSA prediction directory not found for {self.pdb1_name}")
 
-        full_scores = np.asarray(
-            TMScore(
-                str(full_dir),
-                str(self.pdb1),
-                self.pdb1_name,
-                str(self.pdb2),
-                self.pdb2_name,
-                self.model_type,
-            ).tmscores,
-            dtype=float,
-        ).reshape(2, num_seeds * 5)
-
-        if np.all(full_scores < 0.5):
-            self._move_failed_full_outputs()
-            raise RuntimeError("All predictions with deep MSA are failed")
-
-        if np.average(full_scores[0, :]) >= np.average(full_scores[1, :]):
-            alt_name = self.pdb2_name
-        else:
-            alt_name = self.pdb1_name
-
-        np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_scores, fmt="%2.3f")
-
-        random_scores: List[float] = []
-        fs_random_scores: List[float] = []
-        for max_msa, ext_msa in self._msa_pairs():
-            pattern = f"{self.pdb1_name}_predicted_models_rand_*_max_{max_msa}_ext_{ext_msa}"
-            pred_path = PREDICTIONS_ROOT / self.pdb1_name / pattern
-            random_scores.extend(
-                TMScore(
-                    str(pred_path),
-                    str(self.pdb1),
-                    self.pdb1_name,
-                    str(self.pdb2),
-                    self.pdb2_name,
-                    self.model_type,
-                ).tmscores
-            )
-            fs_random_scores.extend(
-                TMScoreFS(
-                    str(pred_path), str(self.pdb1), self.pdb1_name, self.pdb2_name, self.pdb2_name
-                ).tmscores_fs
-            )
-
-        random_array = np.asarray(random_scores, dtype=float)
-        fs_random_array = np.asarray(fs_random_scores, dtype=float)
-        if random_array.size != 14 * num_seeds * 5 or fs_random_array.size != 14 * num_seeds * 5:
-            raise RuntimeError("Unexpected shallow MSA TM-score matrix size")
-
-        selector = TMScore(
-            str(pred_path),
-            str(self.pdb1),
+        # --- Full MSA whole-structure TM-scores ---
+        # Passed as glob pattern string so BaseTMScore._resolve_models expands it
+        full_pred_dir = (
+            str(PREDICTIONS_ROOT / self.pdb1_name)
+            + f"/{self.pdb1_name}_predicted_models_full_rand_*"
+        )
+        MSA_full_TMscore = TMScore(
+            full_pred_dir,
+            self.pdb1,
             self.pdb1_name,
-            str(self.pdb2),
+            self.pdb2,
             self.pdb2_name,
             self.model_type,
         )
-        selector.select_size(
-            random_array, fs_random_array, self.pdb1_name, self.pdb2_name, alt_name, num_seeds
-        )
-        self.size_selection = [selector.selection]
+        full_TMscore = np.asarray(MSA_full_TMscore.tmscores, dtype=float).reshape(2, num_seeds * 5)
 
-        np.savetxt(
-            f"TMScore_random-MSA_{self.pdb1_name}.csv",
-            random_array.reshape(14, num_seeds * 5),
-            fmt="%2.3f",
+        # --- Full MSA fold-switching region TM-scores ---
+        MSA_fs_TMscore = TMScoreFS(
+            full_pred_dir,
+            self.pdb1,
+            self.pdb1_name,
+            self.pdb2,
+            self.pdb2_name,
         )
-        np.savetxt(
-            f"TMScore_fs_random-MSA_{self.pdb1_name}.csv",
-            fs_random_array.reshape(14, num_seeds * 5),
-            fmt="%2.3f",
-        )
+        fs_TMscore = np.asarray(MSA_fs_TMscore.tmscores_fs, dtype=float).reshape(2, num_seeds * 5)
+
+        # --- Two-branch quality check using both whole and FS scores ---
+        if np.average(full_TMscore[0, :]) > np.average(full_TMscore[1, :]):
+            if np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
+                ref_name = self.pdb1_name
+                alt_name = self.pdb2_name
+            elif np.any(fs_TMscore[1, :] >= 0.5) and np.any(full_TMscore[1, :] >= 0.5):
+                ref_name = self.pdb2_name
+                alt_name = self.pdb1_name
+            else:
+                self._move_failed_full_outputs()
+                raise RuntimeError("Prediction with deep MSA was failed")
+        else:
+            if np.any(fs_TMscore[1, :] >= 0.5) and np.any(full_TMscore[1, :] >= 0.5):
+                ref_name = self.pdb2_name
+                alt_name = self.pdb1_name
+            elif np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
+                ref_name = self.pdb1_name
+                alt_name = self.pdb2_name
+            else:
+                self._move_failed_full_outputs()
+                raise RuntimeError("Prediction with deep MSA was failed")
+
+        logger.info("Reference structure: %s", ref_name)
+        logger.info("Alternative structure: %s", alt_name)
+
+        # Save full MSA scores for both whole structure and FS region
+        np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_TMscore, fmt="%2.3f")
+        np.savetxt(f"TMScore_fs_full-MSA_{self.pdb1_name}.csv", fs_TMscore, fmt="%2.3f")
+
+        # --- Shallow random MSA TM-scores (whole + FS) ---
+        TMscores_random: List[float] = []
+        TMscores_fs_random: List[float] = []
+        last_shallow: Optional[TMScore] = None
+
+        for max_msa, ext_msa in self._msa_pairs():
+            pred_dir = (
+                str(PREDICTIONS_ROOT / self.pdb1_name)
+                + f"/{self.pdb1_name}_predicted_models_rand_*"
+                + f"_max_{max_msa}_ext_{ext_msa}/"
+            )
+            logger.debug("Shallow MSA dir pattern: %s", pred_dir)
+
+            shallow = TMScore(
+                pred_dir,
+                self.pdb1,
+                self.pdb1_name,
+                self.pdb2,
+                self.pdb2_name,
+                self.model_type,
+            )
+            TMscores_random = list(np.append(TMscores_random, shallow.tmscores))
+            last_shallow = shallow
+
+            shallow_fs = TMScoreFS(
+                pred_dir,
+                self.pdb1,
+                self.pdb1_name,
+                self.pdb2,
+                self.pdb2_name,
+            )
+            TMscores_fs_random = list(np.append(TMscores_fs_random, shallow_fs.tmscores_fs))
+
+        random_array = np.asarray(TMscores_random, dtype=float)
+        fs_random_array = np.asarray(TMscores_fs_random, dtype=float)
+
+        TMscores_random_reshape = random_array.reshape(14, num_seeds * 5)
+        TMscores_fs_random_reshape = fs_random_array.reshape(14, num_seeds * 5)
+
+        # Extract alternative rows for quality check (both matrices)
+        if alt_name == self.pdb2_name:
+            TMscores_random_alter = TMscores_random_reshape[1::2, :]
+            TMscores_fs_random_alter = TMscores_fs_random_reshape[1::2, :]
+        else:
+            TMscores_random_alter = TMscores_random_reshape[0::2, :]
+            TMscores_fs_random_alter = TMscores_fs_random_reshape[0::2, :]
+
+        # Quality gate: both whole and FS must have at least one value > 0.5
+        if np.any(TMscores_random_alter > 0.5) and np.any(TMscores_fs_random_alter > 0.5):
+            np.savetxt(
+                f"TMScore_random-MSA_{self.pdb1_name}.csv",
+                TMscores_random_reshape,
+                fmt="%2.3f",
+            )
+            np.savetxt(
+                f"TMScore_fs_random-MSA_{self.pdb1_name}.csv",
+                TMscores_fs_random_reshape,
+                fmt="%2.3f",
+            )
+
+            logger.info("Finding optimal size of random MSA...")
+            last_shallow.select_size(
+                TMscores_random_reshape,
+                TMscores_fs_random_reshape,
+                self.pdb1_name,
+                self.pdb2_name,
+                alt_name,
+                num_seeds,
+            )
+            self.size_selection = [last_shallow.selection]
+            logger.info("Selected MSA size index: %s", self.size_selection)
+        else:
+            raise RuntimeError(
+                "Full-MSA prediction is not tightly aligned to crystal structure "
+                "with additional seeds"
+            )
 
     def _evaluate_multimer(self) -> None:
+        """Run multimer FS TM-score evaluation via PredictionAllMultimerFS."""
         if not self.search_dir and not self.search_multi_dir:
             raise ValueError(
                 "Multimer fold-switching evaluation requires search_dir or search_multi_dir"
             )
 
-        PredictionAllMultimerFS(
+        multimer = PredictionAllMultimerFS(
             self.pdb1_name,
             self.pdb2_name,
             self.search_dir,
             self.nMSA,
             self.model_type,
             self.search_multi_dir,
-            str(self.pdb1),
-            str(self.pdb2),
+            self.pdb1,
+            self.pdb2,
         )
-        self.size_selection = []
+        self.size_selection = multimer.size_selection

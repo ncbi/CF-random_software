@@ -11,6 +11,7 @@ import argparse
 import glob
 import logging
 import os
+import shutil
 import warnings
 from pathlib import (
     Path,
@@ -119,13 +120,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def resolve_pdb1_name(args: argparse.Namespace) -> str:
-    """Resolve the working name for blind mode, matching original precedence.
-
-    Original logic:
-        - pdb1 is None and pdb2 is None → use pname
-        - pdb1 is None and pname is None → use fname (stripped)
-        - else                           → use fname (stripped)
-    """
+    """Resolve the working name for blind mode."""
     if args.pdb1 is None and args.pdb2 is None:
         return args.pname
     elif args.pdb1 is None and args.pname is None:
@@ -135,7 +130,7 @@ def resolve_pdb1_name(args: argparse.Namespace) -> str:
 
 
 def resolve_nMSA_nENS(args: argparse.Namespace):
-    """Resolve nMSA and nENS from optional string arguments, matching original."""
+    """Resolve nMSA and nENS from optional string arguments."""
     nMSA_raw = args.nMSA
     nENS_raw = args.nENS
 
@@ -148,25 +143,15 @@ def resolve_nMSA_nENS(args: argparse.Namespace):
     elif nMSA_raw is not None and nENS_raw is None:
         return int(nMSA_raw), 0
     else:
-        logger.error("Please put correct option of nMSA or nENS")
-        raise SystemExit(1)
+        raise ValueError("Please provide a valid combination of --nMSA and --nENS")
 
 
 def resolve_search_dirs(args: argparse.Namespace):
-    """Resolve search_dir and search_multi_dir, preserving original sentinel values.
-
-    Original behaviour:
-        - fname=None, fmname=None   → exit
-        - fname=None, fmname set    → exit (monomer MSA required)
-        - fname set,  fmname=None   → search_multi_dir = 0  (integer sentinel)
-        - fname set,  fmname set    → search_multi_dir = ' ' + fmname (leading space)
-    """
+    """Resolve search_dir and search_multi_dir."""
     if args.fname is None and args.fmname is None:
-        logger.error("Please put MSA folder and file for prediction")
-        raise SystemExit(1)
+        raise ValueError("--fname (MSA folder) is required for all modes")
     elif args.fname is None and args.fmname is not None:
-        logger.error("Please put MSA folder and file for monomer prediction")
-        raise SystemExit(1)
+        raise ValueError("--fname (monomer MSA folder) is required alongside --fmname")
     elif args.fname is not None and args.fmname is None:
         return args.fname, 0
     else:
@@ -181,19 +166,18 @@ def determine_model_type(args: argparse.Namespace, pdb1: Optional[str]) -> str:
         return MODEL_TYPES["monomer"]
     elif args.type == "multimer" and args.option == "blind":
         model_type = MODEL_TYPES["multimer"]
-        if not os.path.exists(MULTI):
-            os.mkdir(MULTI)
+        Path(MULTI).mkdir(parents=True, exist_ok=True)
         return model_type
     elif args.type == "multimer":
         ter_count = count_chains(pdb1)
         logger.info("%d chain(s) in this multimer file.", ter_count)
         model_type = MODEL_TYPES["multimer"]
-        if not os.path.exists(MULTI):
-            os.mkdir(MULTI)
+        Path(MULTI).mkdir(parents=True, exist_ok=True)
         return model_type
     else:
-        logger.error("Please put correct model-type option")
-        raise SystemExit(1)
+        raise ValueError(
+            f"Unrecognized model type: {args.type!r}. Choose from: ptm, monomer, multimer"
+        )
 
 
 def count_chains(pdb_file: str) -> int:
@@ -232,7 +216,6 @@ def main() -> None:
     search_dir, search_multi_dir = resolve_search_dirs(args)
     model_type = determine_model_type(args, pdb1)
 
-    # Override search_dir after model-type resolution (matches original)
     search_dir = args.fname
     success_dir = f"{SUCCESS}/{pdb1_name}/"
 
@@ -267,8 +250,7 @@ def main() -> None:
     elif args.option == "blind":
         run_blind_workflow(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
     else:
-        logger.error("Unrecognized option: %s", args.option)
-        raise SystemExit(1)
+        raise ValueError(f"Unrecognized option: {args.option!r}. Choose from: AC, FS, inAC, blind")
 
 
 def run_alternative_conformation_workflow(
@@ -288,7 +270,7 @@ def run_alternative_conformation_workflow(
     logger.info("Predicting alternative conformations")
 
     if not os.path.exists(success_dir):
-        os.mkdir(success_dir)
+        Path(success_dir).mkdir(parents=True, exist_ok=True)
         succ_dir_count = 0
     else:
         succ_dir_count = 0
@@ -297,7 +279,7 @@ def run_alternative_conformation_workflow(
 
     if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
-        os.system("rm -rf " + success_dir)
+        shutil.rmtree(success_dir)
 
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
@@ -346,7 +328,7 @@ def run_fold_switching_workflow(
     logger.info("Predicting fold-switching models.")
 
     if not os.path.exists(success_dir):
-        os.mkdir(success_dir)
+        Path(success_dir).mkdir(parents=True, exist_ok=True)
         succ_dir_count = 0
     else:
         succ_dir_count = 0
@@ -355,7 +337,7 @@ def run_fold_switching_workflow(
 
     if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
-        os.system("rm -rf " + success_dir)
+        shutil.rmtree(success_dir)
 
     shallow_MSA_size = np.array([])
 
@@ -414,7 +396,7 @@ def run_blind_workflow(
     logger.info("Predicting fold-switching proteins without crystal structures.")
 
     if not os.path.exists(BLIND):
-        os.mkdir(BLIND)
+        Path(BLIND).mkdir(parents=True, exist_ok=True)
 
     blind_pdb_dir = BLIND + "/" + pdb1_name
     blind_pred_path = f"{BLIND}/{pdb1_name}"
@@ -427,7 +409,7 @@ def run_blind_workflow(
 
     if os.path.exists(blind_pdb_dir) and 0 < blind_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
-        os.system("rm -rf " + blind_pdb_dir)
+        shutil.rmtree(blind_pdb_dir)
 
     if os.path.exists(blind_pdb_dir) and blind_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
@@ -445,7 +427,7 @@ def run_blind_workflow(
         BlindScreening(pdb1_name, blind_pred_path)
     else:
         PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
-        logger.info("Finished running predictions using full- and shallow random-MSAs")
+        logger.info("Finished running predictions using full and shallow random-MSAs")
         logger.info("Running Foldseek to find related crystal structures")
         BlindScreening(pdb1_name, blind_pred_path)
 

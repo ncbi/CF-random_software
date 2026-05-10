@@ -208,11 +208,7 @@ class BlindScreening:
         return medoids, tot_cost
 
     def _stage_pdb_files(self) -> None:
-        """Copy all PDB files into a flat staging directory for Foldseek.
-
-        Mirrors the original: files are renamed by replacing path separators
-        with dashes so the directory is flat and names are unique.
-        """
+        """Copy all PDB files into a flat staging directory for Foldseek."""
         self.db_directory = self.blind_path / "pdbs_for_db"
         self.db_directory.mkdir(exist_ok=True)
 

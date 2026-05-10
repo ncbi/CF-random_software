@@ -95,7 +95,6 @@ class ColabFoldRunner(ABC):
         try:
             queries, is_complex = get_queries(self.search_dir)
         except Exception as e:
-            logger.error(f"Failed to extract queries from {self.search_dir}: {e}")
             raise RuntimeError(f"Query extraction failed: {e}") from e
 
         run_kwargs = {
@@ -117,49 +116,35 @@ class ColabFoldRunner(ABC):
         try:
             run(**run_kwargs)
         except Exception as e:
-            logger.error(f"ColabFold prediction failed: {e}")
             raise RuntimeError(f"Prediction failed: {e}") from e
 
     @staticmethod
     def _ensure_dir(dir_path: str) -> None:
-        """Create directory if it doesn't exist.
-
-        Args:
-            dir_path: Path to directory to create.
-        """
+        """Create directory if it doesn't exist."""
         os.makedirs(dir_path, exist_ok=True)
 
     @staticmethod
     def _move_results(source_pattern: str, dest_dir: str) -> None:
-        """Move prediction results to destination directory.
+        """Move prediction results matching a glob pattern to destination directory.
 
         Args:
-            source_pattern: Glob pattern for source files.
+            source_pattern: Glob pattern for source directories/files.
             dest_dir: Destination directory path.
 
         Raises:
-            RuntimeError: If move operation fails.
+            RuntimeError: If no files matched or move operation fails.
         """
-        try:
-            ColabFoldRunner._ensure_dir(dest_dir)
-            moved = False
-            for source_path in glob.glob(source_pattern):
-                shutil.move(source_path, dest_dir)
-                moved = True
-            if not moved:
-                raise RuntimeError(f"No files matched {source_pattern}")
-            logger.info(f"Moved results to {dest_dir}")
-        except Exception as e:
-            logger.error(f"Failed to move results: {e}")
-            raise RuntimeError(f"Move operation failed: {e}") from e
+        ColabFoldRunner._ensure_dir(dest_dir)
+        matched = glob.glob(source_pattern)
+        if not matched:
+            raise RuntimeError(f"No files matched pattern: {source_pattern}")
+        for source_path in matched:
+            shutil.move(source_path, dest_dir)
+            logger.info("Moved %s -> %s", source_path, dest_dir)
 
 
 class MSAMaxRunner(ColabFoldRunner):
-    """Run ColabFold prediction with maximum (full) MSA depth.
-
-    This runner uses full-length MSAs for structure prediction,
-    providing the most comprehensive predictions.
-    """
+    """Run ColabFold prediction with maximum (full) MSA depth."""
 
     def __init__(
         self,
@@ -174,30 +159,33 @@ class MSAMaxRunner(ColabFoldRunner):
 
         Args:
             search_dir: Directory containing MSA files.
-            output_dir: Output directory for results.
+            output_dir: Local output directory for ColabFold results.
             pdb_name: Protein name for file naming.
-            random_seed: Random seed for prediction.
+            random_seed: Random seed for prediction (string or int).
             num_seeds: Number of random seeds.
             model_type: ColabFold model type.
         """
-        super().__init__(search_dir, output_dir, pdb_name, num_seeds, model_type)
-        logger.info(f"Running full MSA prediction for {pdb_name}")
-        self._run_colabfold(random_seed)
+        # ColabFold writes locally; use a local output dir then move
+        local_output_dir = f"{pdb_name}_predicted_models_full_rand_{random_seed}"
+        super().__init__(search_dir, local_output_dir, pdb_name, num_seeds, model_type)
+
+        logger.info("Running full MSA prediction for %s", pdb_name)
+        self._run_colabfold(int(random_seed) if not isinstance(random_seed, int) else random_seed)
+
+        # Move completed folder into predictions_all/<pdb_name>/ (matches original)
+        dest_dir = str(Path("predictions_all") / pdb_name)
+        self._move_results(local_output_dir + "/", dest_dir)
 
 
 class MSAVariableRunner(ColabFoldRunner):
-    """Run ColabFold predictions across varied MSA depths.
-
-    This runner systematically reduces MSA depth by specified multipliers,
-    allowing analysis of prediction robustness across different MSA sizes.
-    """
+    """Run ColabFold predictions across varied MSA depths."""
 
     def __init__(
         self,
         search_dir: str,
         output_dir: str,
         pdb_name: str,
-        random_seed: int,
+        random_seed,
         num_seeds: int,
         model_type: str,
         multipliers: tuple = MSA_DEPTH_MULTIPLIERS,
@@ -208,33 +196,37 @@ class MSAVariableRunner(ColabFoldRunner):
 
         Args:
             search_dir: Directory containing MSA files.
-            output_dir: Base output directory for results.
+            output_dir: Base name for local output directories.
             pdb_name: Protein name for file naming.
-            random_seed: Random seed for predictions.
+            random_seed: Random seed for predictions (list, ndarray, or int).
             num_seeds: Number of random seeds.
             model_type: ColabFold model type.
             multipliers: Tuple of multipliers for MSA depth variation.
             initial_max_msa: Starting maximum sequence depth.
             initial_extra_msa: Starting extra sequence depth.
         """
-        super().__init__(search_dir, output_dir, pdb_name, num_seeds, model_type)
-
-        # Convert random seed to string if needed
+        # Normalise random seed to string, matching original join logic
         if isinstance(random_seed, (list, np.ndarray)):
             random_seed_str = "".join(map(str, random_seed))
         else:
             random_seed_str = str(random_seed)
 
+        # Base output_dir is just a prefix used to name local folders
+        super().__init__(search_dir, output_dir, pdb_name, num_seeds, model_type)
+
         self.random_seed_str = random_seed_str
         self.multipliers = multipliers
+        self.pdb_name = pdb_name
+
         logger.info(
-            f"Running variable MSA prediction for {pdb_name} "
-            f"with {len(multipliers)} depth variations"
+            "Running variable MSA predictions for %s with %d depth variations",
+            pdb_name,
+            len(multipliers),
         )
         self._run_varied_predictions(initial_max_msa, initial_extra_msa)
 
     def _run_varied_predictions(self, initial_max_msa: int, initial_extra_msa: int) -> None:
-        """Execute predictions across varied MSA depths.
+        """Execute predictions across varied MSA depths and move results.
 
         Args:
             initial_max_msa: Starting maximum sequence depth.
@@ -242,28 +234,34 @@ class MSAVariableRunner(ColabFoldRunner):
         """
         max_msa = initial_max_msa
         extra_msa = initial_extra_msa
+        dest_dir = str(Path("predictions_all") / self.pdb_name)
 
         for multiplier in self.multipliers:
             max_msa = int(max_msa * multiplier)
             extra_msa = int(extra_msa * multiplier)
 
-            output_dir_var = (
-                f"{self.output_dir}{self.random_seed_str}_max_{max_msa}_ext_{extra_msa}"
+            # Local folder name matches original pattern exactly
+            local_output_dir = (
+                f"{self.pdb_name}_predicted_models_rand_"
+                f"{self.random_seed_str}_max_{max_msa}_ext_{extra_msa}"
             )
 
-            logger.info(f"Running prediction: max_seq={max_msa}, max_extra_seq={extra_msa}")
+            logger.info(
+                "Running prediction: max_seq=%d, max_extra_seq=%d -> %s",
+                max_msa,
+                extra_msa,
+                local_output_dir,
+            )
 
-            # Override output directory temporarily
-            original_output_dir = self.output_dir
-            self.output_dir = output_dir_var
+            # Write to local dir, then move (matches original mv logic)
+            self.output_dir = local_output_dir
             self._setup_logging()
 
-            try:
-                self._run_colabfold(
-                    int(self.random_seed_str),
-                    max_seq=max_msa,
-                    max_extra_seq=extra_msa,
-                )
-            finally:
-                # Restore original output directory
-                self.output_dir = original_output_dir
+            self._run_colabfold(
+                int(self.random_seed_str),
+                max_seq=max_msa,
+                max_extra_seq=extra_msa,
+            )
+
+            # Move completed folder into predictions_all/<pdb_name>/
+            self._move_results(local_output_dir + "/", dest_dir)

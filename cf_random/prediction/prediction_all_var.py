@@ -7,6 +7,7 @@ multiple ColabFold runs with different MSA settings.
 """
 
 import logging
+import random
 from pathlib import (
     Path,
 )
@@ -17,6 +18,8 @@ from .base import (
     MSAMaxRunner,
     MSAVariableRunner,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class PredictionAll:
@@ -48,33 +51,38 @@ class PredictionAll:
         self.base_output_dir.mkdir(parents=True, exist_ok=True)
 
         num_seeds = nMSA + 5
-        random_seed = int(np.random.randint(0, 100, 1))
+
+        # Full MSA seed: range 0-15, joined as string
+        full_random_seed = "".join(map(str, np.random.randint(0, 16, 1)))
 
         full_output_dir = (
-            self.base_output_dir / f"{pdb1_name}_predicted_models_full_rand_{random_seed}"
+            self.base_output_dir / f"{pdb1_name}_predicted_models_full_rand_{full_random_seed}"
         )
-        logging.info("Running full MSA prediction: %s", full_output_dir)
+        logger.info("Running full MSA prediction: %s", full_output_dir)
         MSAMaxRunner(
             self.search_dir,
             str(full_output_dir),
             self.pdb1_name,
-            random_seed,
+            full_random_seed,
             num_seeds,
             self.model_type,
         )
+
+        # Variable MSA seed: independently sampled from range 0-99
+        var_random_seed = random.sample(range(100), 1)
 
         if self.model_type == "alphafold2_multimer_v3":
             variable_search_dir = self.search_multi_dir
         else:
             variable_search_dir = self.search_dir
 
-        variable_output_dir = self.base_output_dir / f"{pdb1_name}_predicted_models_rand_"
-        logging.info("Running variable MSA predictions under: %s", variable_output_dir)
+        variable_output_dir = f"{pdb1_name}_predicted_models_rand_"
+        logger.info("Running variable MSA predictions under: %s", variable_output_dir)
         MSAVariableRunner(
             variable_search_dir,
             str(variable_output_dir),
             self.pdb1_name,
-            random_seed,
+            var_random_seed,
             num_seeds,
             self.model_type,
         )
