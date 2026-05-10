@@ -6,6 +6,7 @@ Extracts coordinates for FS regions and computes TM-align scores
 for full-MSA predictions.
 """
 
+import sys
 from pathlib import (
     Path,
 )
@@ -78,8 +79,6 @@ class TMScoreFS:
             range_pdb2 = fs_res[pdb2_name]
         except KeyError:
             print("check PDBIDs ", pdb1_name, pdb2_name)
-            import sys
-
             sys.exit(1)
 
         range_pred = range_pdb1[1]

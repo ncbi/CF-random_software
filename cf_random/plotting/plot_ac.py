@@ -28,8 +28,6 @@ class Plot2DScatterAC:
         plddt_full = genfromtxt("plddt_" + full_cate + "_" + pdb1_name + ".csv", delimiter=" ")
         plddt_random = genfromtxt("plddt_" + random_cate + "_" + pdb1_name + ".csv", delimiter=" ")
 
-        # Getting the TM-score values of fold-switching region
-
         os.getcwd() + "/"
 
         # Plotting the TM-score values as 2D scatter plot

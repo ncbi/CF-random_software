@@ -42,9 +42,7 @@ class TMScoreFSMulti:
         )
 
         current_dir = os.getcwd() + "/"
-        # pred_dir = 'additional_sampling/' + pdb1_name
-        # pred_path = current_dir + pred_dir + '/'
-        data_dir = Path(pred_path)  # Path to the predicted models
+        data_dir = Path(pred_path)
 
         # the range of the fold-switching region
         range_file = current_dir + "range_fs_pairs_all.txt"

@@ -13,8 +13,7 @@ from thefuzz import (
 
 class FSRange:
     def __init__(self, pdb1, pdb2, pdb1_name, pdb2_name, pred_dir):
-        ##### check first residue index of query proteins
-        # fs_check = FSRange(pdb1, pdb2)
+        # Check first residue index of query proteins
         self.first_res_check(pdb1, pdb2)
         print("    ")
         print("checking first residue index")
@@ -22,13 +21,12 @@ class FSRange:
         print(self.pdb2_res_index_1)
 
         pred_folder = pred_dir
-        # pred_folder = '3hdf_A_predicted_models_full_rand_12'
         pred_path = pred_folder
         print(pred_path)
 
         pred_files = glob.glob(str(pred_path) + "/*_unrelaxed*pdb")
 
-        ##### read range file information
+        # Read range file information
         self.res_check(pdb1, pdb2, pdb1_name, pdb2_name)
         print(self.crys_fs_res_1_update, self.pred_fs_res_1_update)
         print(self.crys_fs_res_2_update, self.pred_fs_res_2_update)
@@ -66,7 +64,7 @@ class FSRange:
         print(pred1_fs_res_st, pred1_fs_res_ed)
         print(pred2_fs_res_st, pred2_fs_res_ed)
 
-        ##### perform pydssp and calculate secondary structure similarity
+        # Perform pydssp and calculate secondary structure similarity
         index = 0
         print(np.size(pred_files))
         print("         ")
@@ -77,7 +75,7 @@ class FSRange:
             dssp_read_tmp = pd.read_csv(
                 "output_" + pdb1_name + "_" + str(index) + ".log", sep=" ", header=None
             )
-            ## seq1 = crystal structure, seq2 = predicted structure
+            # seq1 = crystal structure, seq2 = predicted structure
             print(dssp_read_tmp)
             print(dssp_read_tmp[0].iloc[0])
             seq1 = dssp_read_tmp[0].iloc[0]
@@ -101,14 +99,6 @@ class FSRange:
                 break
             elif index == (int(np.size(pred_files)) - 1):
                 print("fs region is not correctly predicted")
-
-                # command = 'mv ' + pred_dir_add + pred_dir_fal
-                # print(command); os.system(command)
-                # command = 'mv ' + pred_dir_suc + pred_dir_fal + pdb1_name + '/'
-                # print(command); os.system(command)
-
-                # command = 'rm *' + pdb1_name + '*csv'
-                # print(command); os.system(command)
                 print("calculating TM-score of fs with alternative pdb")
 
                 index = 0
@@ -146,11 +136,6 @@ class FSRange:
                         f.write("fail")
                         f.close()
 
-                        # command = 'mv ' + pred_dir_add + pred_dir_fal
-                        # print(command); os.system(command)
-                        # command = 'mv ' + pred_dir_suc + pred_dir_fal + pdb1_name + '/'
-                        # print(command); os.system(command)
-
                     else:
                         index += 1
 
@@ -158,9 +143,7 @@ class FSRange:
                 index += 1
 
     def first_res_check(self, pdb1, pdb2):
-        # self.pdb1 = pdb1; self.pdb2 = pdb2
-
-        ## first residue index check
+        # First residue index check
         structure_1 = PDBParser().get_structure("pdb1", pdb1)
         model_1 = structure_1[0]
         print(model_1)
@@ -173,24 +156,19 @@ class FSRange:
         res_index_2 = []
 
         for chain_1 in model_1:
-            for i, residue in enumerate(chain_1.get_residues()):
-                # res_id = list(residue.id)
+            for _, residue in enumerate(chain_1.get_residues()):
                 res_index_1.append(residue.id[1])
-                # print(residue.id[1])
 
         for chain_2 in model_2:
-            for i, residue in enumerate(chain_2.get_residues()):
+            for _, residue in enumerate(chain_2.get_residues()):
                 res_index_2.append(residue.id[1])
-
-        # print(int(res_index_1[0]))
-        # print(int(res_index_2[0]))
 
         self.pdb1_res_index_1 = int(res_index_1[0])
         self.pdb2_res_index_1 = int(res_index_2[0])
 
     def pydssp(self, crys_pdb, pred_pdb, number, pdb_name):
 
-        ##### generating the command for pydssp
+        # Generating the command for pydssp
         number = str(number)
         command = (
             "pydssp " + crys_pdb + " " + pred_pdb + " -o output_" + pdb_name + "_" + number + ".log"
@@ -217,14 +195,10 @@ class FSRange:
                 # followed by the range in the predicted model
                 # if n1 == pdb1_name and n2 == pdb2_name:
                 if (n1 == pdb1_name and n2 == pdb2_name) or (n2 == pdb1_name and n1 == pdb2_name):
-                    # fs_res_1 = (m1); fs_res_2 = (m2)
                     crys_fs_res_1 = p1
                     crys_fs_res_2 = p2
                     pred_fs_res_1 = m1
                     pred_fs_res_2 = m2
-
-            # fs_res_1_update = fs_res_1.split("-"); fs_res_2_update = fs_res_2.split("-");
-            # print(fs_res_1_update, fs_res_2_update)
 
         crys_fs_res_1_update = crys_fs_res_1.split("-")
         crys_fs_res_2_update = crys_fs_res_2.split("-")
@@ -233,7 +207,7 @@ class FSRange:
         pred_fs_res_2_update = pred_fs_res_2.split("-")
         print(pred_fs_res_1_update, pred_fs_res_2_update)
 
-        ##### convert list data to int
+        # Convert list data to int
         self.crys_fs_res_1_update = [int(i) for i in crys_fs_res_1_update]
         self.crys_fs_res_2_update = [int(i) for i in crys_fs_res_2_update]
 

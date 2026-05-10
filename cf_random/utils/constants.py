@@ -1,5 +1,3 @@
-# Amino acid constants
-
 # Amino acid three-letter to one-letter code mapping
 AA3TO1 = {
     "CYS": "C",
