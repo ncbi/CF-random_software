@@ -1,10 +1,6 @@
 #! /Users/porterll/miniconda3/bin/python
 
-import sys
-import pandas as pd
-import numpy as np
 from matplotlib import pyplot as plt
-import seaborn as sns
 import matplotlib as mpl
 
 if __name__ == '__main__':

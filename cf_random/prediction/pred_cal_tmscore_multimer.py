@@ -28,15 +28,6 @@ from tmtools.testing import (
     get_pdb_path,
 )
 
-from ..analysis.cal_tmscore_fs_multimer import (
-    TMScoreFSMulti,
-)
-from ..analysis.cal_tmscore_fs_only import (
-    TMScoreFS,
-)
-from ..utils.convert_multi_single import (
-    ConvertM2S,
-)
 from .base import (
     MSAMaxRunner,
     MSAVariableRunner,
@@ -195,7 +186,7 @@ class PredictionAllMultimerFS:
         pdb1_name: str,
         pdb2_name: str,
         search_dir: str,
-        nMSA: int,
+        num_msa: int,
         model_type: str,
         search_multi_dir: Optional[str] = None,
         pdb1: Optional[str] = None,
@@ -207,7 +198,7 @@ class PredictionAllMultimerFS:
         self.pdb1_name = pdb1_name
         self.pdb2_name = pdb2_name
         self.search_dir = search_multi_dir or search_dir
-        self.num_seeds = 5 + nMSA
+        self.num_seeds = 5 + num_msa
         self.random_seed = int(np.random.randint(0, 100, 1))
         self.size_selection = []
 

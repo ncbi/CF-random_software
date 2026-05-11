@@ -21,6 +21,10 @@ from tmtools.testing import (
     get_pdb_path,
 )
 
+from ..utils.convert_multi_single import (
+    convert_m2s,
+)
+
 logger = logging.getLogger(__name__)
 
 ZERO_TM_SCORES = [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -89,10 +93,6 @@ class BaseTMScore:
 
     def _convert_multimer_to_single(self) -> None:
         """Convert multimer predictions to single chains."""
-        from ..utils.convert_multi_single import (
-            convert_m2s,
-        )
-
         convert_m2s(str(self.pred_dir), self.pdb1_name, self.pdb2_name)
 
     def _calculate_scores(self) -> List[float]:

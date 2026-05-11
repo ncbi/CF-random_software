@@ -6,6 +6,23 @@ Provides utilities to compute TM-scores for multimeric predicted models
 and compare fold-switching regions to reference structures.
 """
 
+import os
+import sys
+import glob
+from pathlib import (
+    Path,
+)
+
+import numpy as np
+
+from tmtools import (
+    tm_align,
+)
+
+from Bio.PDB import (
+    PDBParser,
+)
+
 from cf_random.utils.constants import (
     AA3TO1,
 )
@@ -35,12 +52,6 @@ class TMScoreFSMulti:
         Raises:
             SystemExit: If PDB names are not found in range file.
         """
-        import os
-        import sys
-        from pathlib import (
-            Path,
-        )
-
         current_dir = os.getcwd() + "/"
         data_dir = Path(pred_path)
 
@@ -53,9 +64,9 @@ class TMScoreFSMulti:
         # The range_file file has the fold-switching residue ranges
         # for the original PDB/PDB1, alternate PDB/PDB2
         # Predicted model for PDB1, predicted model for PDB2
-        with open(range_file, "r") as Infile:
-            next(Infile)  # skip header line "# pdb1,pdb2,pred1,pred2"
-            for line in Infile:
+        with open(range_file, "r", encoding="utf-8") as file:
+            next(file)  # skip header line "# pdb1,pdb2,pred1,pred2"
+            for line in file:
                 line = line.strip()
                 n1, n2, p1, p2, m1, m2 = line.split(",")
                 # the value of the dictionary is a tuple
@@ -76,29 +87,24 @@ class TMScoreFSMulti:
             range_pdb2 = fs_res[
                 pdb2_name
             ]  # and if pdb2 is '1nqj_B', fs_res['1nqj_B']=('894-919', '1-33')
-        except:
-            print("check PDBIDs ", pdb1_name, pdb2_name)
+        except KeyError:
+            print("Check PDBIDs ", pdb1_name, pdb2_name)
             sys.exit(1)
 
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
 
-    def get_coords(self, pdbfile, FSRange):
+    def get_coords(self, pdbfile, fs_range):
         """Extracts coordinates and sequence for fold-switching region from PDB file.
 
         Args:
             pdbfile (str or Path): Path to the PDB file.
-            FSRange (str): Residue range for fold-switching region, e.g., "112-162".
+            fs_range (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    and seq is the one-letter amino acid sequence.
         """
-        import numpy as np
-        from Bio.PDB import (
-            PDBParser,
-        )
-
         pdb_parser = PDBParser(QUIET=True)
         seq = ""
         struct = pdb_parser.get_structure("x", str(pdbfile))
@@ -110,7 +116,7 @@ class TMScoreFSMulti:
         # return the coords and the seq
 
         # convert str to residue range for the fs region
-        start, stop = FSRange.split("-")
+        start, stop = fs_range.split("-")
         res_range = range(int(start), int(stop) + 1)
 
         for atom in struct.get_atoms():
@@ -143,15 +149,6 @@ class TMScoreFSMulti:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        import glob
-        from pathlib import (
-            Path,
-        )
-
-        from tmtools import (
-            tm_align,
-        )
-
         tmscores = []
         modelfiles = glob.glob(str(predfilepath) + "/single*_unrelaxed*pdb")
 
@@ -185,13 +182,6 @@ class TMScoreFSMulti:
         Returns:
             None: Stores results in self.tmscores_fs attribute.
         """
-        import glob
-        from pathlib import (
-            Path,
-        )
-
-        import numpy as np
-
         all_sub_dir_paths = glob.glob(str(data_dir))
         tmscores_fs = []
 

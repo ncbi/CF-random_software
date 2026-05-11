@@ -38,7 +38,7 @@ class TMScore(BaseTMScore):
 
     def select_size(
         self,
-        TMscores_random: np.ndarray,
+        tmscores_random: np.ndarray,
         pdb1_name: str,
         pdb2_name: str,
         alt_name: str,
@@ -54,7 +54,7 @@ class TMScore(BaseTMScore):
             5. Verify at least one score >= 0.5 threshold.
 
         Args:
-            TMscores_random: Flat array of all shallow-MSA TM-scores.
+            tmscores_random: Flat array of all shallow-MSA TM-scores.
             pdb1_name: Name of first reference structure.
             pdb2_name: Name of second reference structure.
             alt_name: Name of the alternative conformation structure.
@@ -63,27 +63,27 @@ class TMScore(BaseTMScore):
         Raises:
             RuntimeError: If no model exceeds the 0.5 TM-score threshold.
         """
-        TMscores_random_reshape = TMscores_random.reshape(14, num_seeds * 5)
-        TMscores_random_locat = np.zeros((7, num_seeds * 5))
+        tmscores_random_reshape = tmscores_random.reshape(14, num_seeds * 5)
+        tmscores_random_locat = np.zeros((7, num_seeds * 5))
 
         # Extract rows for the alternative structure
         if alt_name == pdb2_name:
             tmp_cnt = 0
             for i in range(1, 14, 2):
-                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
+                tmscores_random_locat[tmp_cnt, :] = tmscores_random_reshape[i, :]
                 tmp_cnt += 1
         else:
             tmp_cnt = 0
             for i in range(0, 13, 2):
-                TMscores_random_locat[tmp_cnt, :] = TMscores_random_reshape[i, :]
+                tmscores_random_locat[tmp_cnt, :] = tmscores_random_reshape[i, :]
                 tmp_cnt += 1
 
         # Sum each MSA-depth group and pick the best via argmax of max
-        TMscore_data_sum = np.zeros((7, 1))
-        for i in range(TMscores_random_locat.shape[0]):
-            TMscore_data_sum[i] = np.sum(TMscores_random_locat[i])
+        tmscore_data_sum = np.zeros((7, 1))
+        for i in range(tmscores_random_locat.shape[0]):
+            tmscore_data_sum[i] = np.sum(tmscores_random_locat[i])
 
-        location = int(np.argmax(np.max(TMscore_data_sum, axis=1)))
+        location = int(np.argmax(np.max(tmscore_data_sum, axis=1)))
 
         # Map group index back to full-matrix row using alt_name offset
         if alt_name == pdb2_name:
@@ -91,11 +91,11 @@ class TMScore(BaseTMScore):
         else:
             location_full = location * 2
 
-        TMscore_check = TMscores_random_reshape
+        tmscore_check = tmscores_random_reshape
 
-        if alt_name == pdb2_name and np.any(TMscore_check[location_full, :] >= 0.5):
+        if alt_name == pdb2_name and np.any(tmscore_check[location_full, :] >= 0.5):
             self.selection = int((location_full - 1) / 2)
-        elif alt_name == pdb1_name and np.any(TMscore_check[location_full, :] >= 0.5):
+        elif alt_name == pdb1_name and np.any(tmscore_check[location_full, :] >= 0.5):
             self.selection = int(location_full / 2)
         else:
             raise RuntimeError(
@@ -115,7 +115,7 @@ class TMScoreCalAllVar:
         pdb1_name: str,
         pdb2: str,
         pdb2_name: str,
-        nMSA: int,
+        num_msa: int,
         option: str,
         model_type: str,
         search_dir: Optional[str] = None,
@@ -125,7 +125,7 @@ class TMScoreCalAllVar:
         self.pdb2 = pdb2
         self.pdb1_name = pdb1_name
         self.pdb2_name = pdb2_name
-        self.nMSA = nMSA
+        self.num_msa = num_msa
         self.option = option
         self.model_type = model_type
         self.search_dir = search_dir
@@ -139,14 +139,14 @@ class TMScoreCalAllVar:
 
     def _evaluate_monomer(self) -> None:
         """Run the full monomer TM-score evaluation pipeline."""
-        num_seeds = 5 + self.nMSA
+        num_seeds = 5 + self.num_msa
 
         # Pass as glob pattern string — BaseTMScore._resolve_models expands it
         full_pred_dir = (
             str(PREDICTIONS_ROOT / self.pdb1_name)
             + f"/{self.pdb1_name}_predicted_models_full_rand_*"
         )
-        MSA_full = TMScore(
+        msa_full = TMScore(
             full_pred_dir,
             self.pdb1,
             self.pdb1_name,
@@ -154,7 +154,7 @@ class TMScoreCalAllVar:
             self.pdb2_name,
             self.model_type,
         )
-        full_scores_array = np.asarray(MSA_full.tmscores, dtype=float).reshape(2, num_seeds * 5)
+        full_scores_array = np.asarray(msa_full.tmscores, dtype=float).reshape(2, num_seeds * 5)
 
         # Three-branch quality check
         if np.any(full_scores_array[0, :] > 0.5) or np.any(full_scores_array[1, :] > 0.5):
@@ -175,7 +175,7 @@ class TMScoreCalAllVar:
         # Shallow random MSA TM-scores
         max_msa = 1
         ext_msa = 2
-        TMscores_random: List[float] = []
+        tmscores_random: List[float] = []
         last_shallow: Optional[TMScore] = None
 
         for multi in MSA_MULTIPLIERS:
@@ -197,17 +197,17 @@ class TMScoreCalAllVar:
                 self.pdb2_name,
                 self.model_type,
             )
-            TMscores_random = list(np.append(TMscores_random, shallow.tmscores))
+            tmscores_random = list(np.append(tmscores_random, shallow.tmscores))
             last_shallow = shallow
 
-        random_array = np.asarray(TMscores_random, dtype=float)
-        TMscores_random_reshape = random_array.reshape(14, num_seeds * 5)
+        random_array = np.asarray(tmscores_random, dtype=float)
+        tmscores_random_reshape = random_array.reshape(14, num_seeds * 5)
 
         # Extract alternative rows for quality check
-        TMscores_random_alter = self._extract_alternative_rows(
-            TMscores_random_reshape, alt_name, self.pdb1_name, self.pdb2_name
+        tmscores_random_alter = self._extract_alternative_rows(
+            tmscores_random_reshape, alt_name, self.pdb1_name, self.pdb2_name
         )
-        if np.all(TMscores_random_alter < 0.5):
+        if np.all(tmscores_random_alter < 0.5):
             raise RuntimeError("All shallow predictions are failed")
 
         logger.info("Finding optimal size of random MSA...")
@@ -215,7 +215,7 @@ class TMScoreCalAllVar:
         self.size_selection = [last_shallow.selection]
         logger.info("Selected MSA size index: %s", self.size_selection)
 
-        np.savetxt(f"TMScore_random-MSA_{self.pdb1_name}.csv", TMscores_random_reshape, fmt="%2.3f")
+        np.savetxt(f"TMScore_random-MSA_{self.pdb1_name}.csv", tmscores_random_reshape, fmt="%2.3f")
 
     def _determine_alternative(self, reference_scores: np.ndarray) -> str:
         """Return the name of the alternative conformation structure."""
@@ -257,7 +257,7 @@ class TMScoreCalAllVar:
             self.pdb1_name,
             self.pdb2_name,
             self.search_dir,
-            self.nMSA,
+            self.num_msa,
             self.model_type,
             self.search_multi_dir,
         )

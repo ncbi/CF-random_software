@@ -30,7 +30,7 @@ class PredictionAll:
         pdb1_name: str,
         search_dir: str,
         search_multi_dir: str,
-        nMSA: int,
+        num_msa: int,
         model_type: str,
     ) -> None:
         """Run the full and varied MSA prediction pipeline.
@@ -39,7 +39,7 @@ class PredictionAll:
             pdb1_name: Name of the target protein.
             search_dir: Path to the single-chain MSA folder.
             search_multi_dir: Path to the multimer MSA folder.
-            nMSA: Number of additional MSA seeds to add to the default 5.
+            num_msa: Number of additional MSA seeds to add to the default 5.
             model_type: ColabFold model type.
         """
         self.pdb1_name = pdb1_name
@@ -50,7 +50,7 @@ class PredictionAll:
         self.base_output_dir = Path("predictions_all") / pdb1_name
         self.base_output_dir.mkdir(parents=True, exist_ok=True)
 
-        num_seeds = nMSA + 5
+        num_seeds = num_msa + 5
 
         # Full MSA seed: range 0-15, joined as string
         full_random_seed = "".join(map(str, np.random.randint(0, 16, 1)))

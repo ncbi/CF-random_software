@@ -39,7 +39,7 @@ class Plot2DScatter:
     Attributes:
         pdb1_name (str): Name of first reference structure.
         pdb2_name (str): Name of second reference structure.
-        nMSA (int): Number of additional MSA samples used.
+        num_msa (int): Number of additional MSA samples used.
     """
 
     def __init__(
@@ -50,8 +50,8 @@ class Plot2DScatter:
         pdb1_name: str,
         pdb2: str,
         pdb2_name: str,
-        nMSA: int,
-        nENS: int,
+        num_msa: int,
+        num_ens: int,
     ) -> None:
         """Initialize and generate scatter plots.
 
@@ -62,8 +62,8 @@ class Plot2DScatter:
             pdb1_name: Name of first reference structure (used for filenames).
             pdb2: Path to second reference structure (unused, kept for API compatibility).
             pdb2_name: Name of second reference structure (for axis labels).
-            nMSA: Number of additional MSA samples.
-            nENS: Number of ensemble samples (unused, kept for API compatibility).
+            num_msa: Number of additional MSA samples.
+            num_ens: Number of ensemble samples (unused, kept for API compatibility).
 
         Raises:
             FileNotFoundError: If required CSV files not found.
@@ -71,7 +71,7 @@ class Plot2DScatter:
         """
         self.pdb1_name = pdb1_name
         self.pdb2_name = pdb2_name
-        self.nMSA = nMSA
+        self.num_msa = num_msa
         self.full_cate = full_cate
         self.random_cate = random_cate
 
@@ -124,7 +124,7 @@ class Plot2DScatter:
         logger.info("Creating scatter plots...")
 
         # Reshape pLDDT data for proper color mapping
-        self.plddt_random = np.reshape(self.plddt_random, (7, (self.nMSA + 5) * 5))
+        self.plddt_random = np.reshape(self.plddt_random, (7, (self.num_msa + 5) * 5))
 
         # Create whole structure plot
         self._plot_whole_structure()

@@ -62,8 +62,8 @@ class ConvertM2S:
                 output_file = pred_file.replace(".pdb", "").split("/")[-1]
                 output_path = self.pred_path / f"rmTER_{output_file}.pdb"
 
-                with open(pred_file, "r") as infile:
-                    with open(output_path, "w") as outfile:
+                with open(pred_file, "r", encoding="utf-8") as infile:
+                    with open(output_path, "w", encoding="utf-8") as outfile:
                         for line in infile:
                             if "TER" not in line:
                                 outfile.write(line)
@@ -78,8 +78,8 @@ class ConvertM2S:
             ref_file = Path(f"{self.pdb2_name}.pdb")
             if ref_file.exists():
                 output_path = Path(f"{self.pdb2_name}_rmTER.pdb")
-                with open(ref_file, "r") as infile:
-                    with open(output_path, "w") as outfile:
+                with open(ref_file, "r", encoding="utf-8") as infile:
+                    with open(output_path, "w", encoding="utf-8") as outfile:
                         for line in infile:
                             if "TER" not in line:
                                 outfile.write(line)
@@ -100,8 +100,8 @@ class ConvertM2S:
                 output_path = self.pred_path / f"single_{output_basename}.pdb"
 
                 # Extract first chain (up to first TER record)
-                with open(pred_file, "r") as infile:
-                    with open(output_path, "w") as outfile:
+                with open(pred_file, "r", encoding="utf-8") as infile:
+                    with open(output_path, "w", encoding="utf-8") as outfile:
                         for line in infile:
                             outfile.write(line)
                             if "TER" in line:

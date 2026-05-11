@@ -30,7 +30,7 @@ def read_plddt(jsonfile: str) -> np.ndarray:
     Returns:
         Array of pLDDT scores as float64.
     """
-    with open(jsonfile) as json_file:
+    with open(jsonfile, "r", encoding="utf-8") as json_file:
         data = json.load(json_file)
 
     plddt_scores = np.array(data["plddt"], dtype=np.float64)
@@ -62,8 +62,8 @@ class PlddtCal:
         sub_list: List[str],
         category: str,
         pdb_name: str,
-        nMSA: int,
-        nENS: int,
+        num_msa: int,
+        num_ens: int,
         model_type: str,
     ) -> None:
         """Initializes pLDDT calculation for given subdirectories and parameters.
@@ -72,8 +72,8 @@ class PlddtCal:
             sub_list: List of subdirectory paths to process.
             category: MSA category ('full-MSA', 'additional-MSA', 'random-MSA').
             pdb_name: Name of the PDB structure.
-            nMSA: Number of MSA sequences.
-            nENS: Number of ensemble models.
+            num_msa: Number of MSA sequences.
+            num_ens: Number of ensemble models.
             model_type: Type of AlphaFold model.
         """
         if not sub_list:
@@ -82,7 +82,7 @@ class PlddtCal:
         logger.info("Processing pLDDT scores for %d subdirectories", len(sub_list))
         logger.debug("Subdirectories: %s", sub_list)
 
-        values_all, out_dict_all, cnt = self._process_subdirs(sub_list)
+        values_all, _, cnt = self._process_subdirs(sub_list)
 
         if category == "full-MSA":
             cnt = int(cnt / 5)
@@ -91,15 +91,15 @@ class PlddtCal:
 
         # Reshape based on category and model_type
         if category == "full-MSA":
-            values_all_resh = values_all.reshape(nMSA + 5, 5)
+            values_all_resh = values_all.reshape(num_msa + 5, 5)
         elif category == "additional-MSA" and model_type == "alphafold2_multimer_v3":
-            values_all_resh = values_all.reshape((nENS + 20), 5)
+            values_all_resh = values_all.reshape((num_ens + 20), 5)
         elif category == "additional-MSA":
-            values_all_resh = values_all.reshape((nENS + 20), 5)
+            values_all_resh = values_all.reshape((num_ens + 20), 5)
         elif category == "random-MSA" and model_type != "alphafold2_multimer_v3":
-            values_all_resh = values_all.reshape((nMSA + 5) * 7, 5)
+            values_all_resh = values_all.reshape((num_msa + 5) * 7, 5)
         elif category == "random-MSA":
-            values_all_resh = values_all.reshape((nMSA + 5) * 7, 5)
+            values_all_resh = values_all.reshape((num_msa + 5) * 7, 5)
         else:
             raise ValueError(f"Unknown category/model_type combination: {category}/{model_type}")
 

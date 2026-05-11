@@ -26,7 +26,7 @@ from colabfold.download import (
     download_alphafold_params,
 )
 
-from ..analysis.cal_plddt_ACFS import (
+from ..analysis.cal_plddt_ac_fs import (
     PlddtCal,
 )
 from ..analysis.tmscore_all_var import (
@@ -91,12 +91,12 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--fmname", type=str, help="multimer MSA folder name after colabsearch")
     parser.add_argument("--pname", type=str, help="job name for predicting blind mode")
     parser.add_argument(
-        "--nMSA",
+        "--num_msa",
         type=str,
         help="number of additional MSA seeds to run (added to default 5)",
     )
     parser.add_argument(
-        "--nENS",
+        "--num_ens",
         type=str,
         help="number of ensemble samples to generate (integer)",
     )
@@ -129,21 +129,21 @@ def resolve_pdb1_name(args: argparse.Namespace) -> str:
         return args.fname.replace("/", "")
 
 
-def resolve_nMSA_nENS(args: argparse.Namespace):
-    """Resolve nMSA and nENS from optional string arguments."""
-    nMSA_raw = args.nMSA
-    nENS_raw = args.nENS
+def resolve_num_msa_num_ens(args: argparse.Namespace):
+    """Resolve num_msa and num_ens from optional string arguments."""
+    num_msa_raw = args.num_msa
+    num_ens_raw = args.num_ens
 
-    if nMSA_raw is None and nENS_raw is None:
+    if num_msa_raw is None and num_ens_raw is None:
         return 0, 0
-    elif nMSA_raw is not None and nENS_raw is not None:
-        return int(nMSA_raw), int(nENS_raw)
-    elif nMSA_raw is None and nENS_raw is not None:
-        return 0, int(nENS_raw)
-    elif nMSA_raw is not None and nENS_raw is None:
-        return int(nMSA_raw), 0
+    elif num_msa_raw is not None and num_ens_raw is not None:
+        return int(num_msa_raw), int(num_ens_raw)
+    elif num_msa_raw is None and num_ens_raw is not None:
+        return 0, int(num_ens_raw)
+    elif num_msa_raw is not None and num_ens_raw is None:
+        return int(num_msa_raw), 0
     else:
-        raise ValueError("Please provide a valid combination of --nMSA and --nENS")
+        raise ValueError("Please provide a valid combination of --num_msa and --num_ens")
 
 
 def resolve_search_dirs(args: argparse.Namespace):
@@ -212,7 +212,7 @@ def main() -> None:
         pdb2_name = pdb2.replace(".pdb", "")
         logger.info("PDB names: %s, %s", pdb1_name, pdb2_name)
 
-    nMSA, nENS = resolve_nMSA_nENS(args)
+    num_msa, num_ens = resolve_num_msa_num_ens(args)
     search_dir, search_multi_dir = resolve_search_dirs(args)
     model_type = determine_model_type(args, pdb1)
 
@@ -225,8 +225,8 @@ def main() -> None:
             pdb1_name,
             pdb2,
             pdb2_name,
-            nMSA,
-            nENS,
+            num_msa,
+            num_ens,
             model_type,
             search_dir,
             search_multi_dir,
@@ -239,8 +239,8 @@ def main() -> None:
             pdb1_name,
             pdb2,
             pdb2_name,
-            nMSA,
-            nENS,
+            num_msa,
+            num_ens,
             model_type,
             search_dir,
             search_multi_dir,
@@ -248,7 +248,7 @@ def main() -> None:
             pwd,
         )
     elif args.option == "blind":
-        run_blind_workflow(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+        run_blind_workflow(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
     else:
         raise ValueError(f"Unrecognized option: {args.option!r}. Choose from: AC, FS, inAC, blind")
 
@@ -258,8 +258,8 @@ def run_alternative_conformation_workflow(
     pdb1_name: str,
     pdb2: str,
     pdb2_name: str,
-    nMSA: int,
-    nENS: int,
+    num_msa: int,
+    num_ens: int,
     model_type: str,
     search_dir: str,
     search_multi_dir: Union[int, str],
@@ -274,7 +274,7 @@ def run_alternative_conformation_workflow(
         succ_dir_count = 0
     else:
         succ_dir_count = 0
-        for root_dir, cur_dir, files in os.walk(pwd + success_dir + "/"):
+        for _, cur_dir, _ in os.walk(pwd + success_dir + "/"):
             succ_dir_count += len(cur_dir)
 
     if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
@@ -284,17 +284,33 @@ def run_alternative_conformation_workflow(
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
         calculate_tm_score = TMScoreCalAllVar(
-            pdb1, pdb1_name, pdb2, pdb2_name, nMSA, "AC", model_type, search_dir, search_multi_dir
+            pdb1,
+            pdb1_name,
+            pdb2,
+            pdb2_name,
+            num_msa,
+            "AC",
+            model_type,
+            search_dir,
+            search_multi_dir,
         )
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
         calculate_tm_score = TMScoreCalAllVar(
-            pdb1, pdb1_name, pdb2, pdb2_name, nMSA, "AC", model_type, search_dir, search_multi_dir
+            pdb1,
+            pdb1_name,
+            pdb2,
+            pdb2_name,
+            num_msa,
+            "AC",
+            model_type,
+            search_dir,
+            search_multi_dir,
         )
 
-    shallow_MSA_size = np.append([], calculate_tm_score.size_selection)
-    logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_MSA_size)
-    np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
+    shallow_msa_size = np.append([], calculate_tm_score.size_selection)
+    logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_msa_size)
+    np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
     if model_type == MODEL_TYPES["multimer"]:
         base = pwd + MULTI + "/" + pdb1_name
@@ -306,9 +322,9 @@ def run_alternative_conformation_workflow(
 
     full = "full-MSA"
     random = "random-MSA"
-    PlddtCal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
-    PlddtCal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
-    Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
+    PlddtCal(list_org_samplings, full, pdb1_name, num_msa, num_ens, model_type)
+    PlddtCal(list_ran_samplings, random, pdb1_name, num_msa, num_ens, model_type)
+    Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens, model_type)
 
 
 def run_fold_switching_workflow(
@@ -316,8 +332,8 @@ def run_fold_switching_workflow(
     pdb1_name: str,
     pdb2: str,
     pdb2_name: str,
-    nMSA: int,
-    nENS: int,
+    num_msa: int,
+    num_ens: int,
     model_type: str,
     search_dir: str,
     search_multi_dir: Union[int, str],
@@ -332,39 +348,47 @@ def run_fold_switching_workflow(
         succ_dir_count = 0
     else:
         succ_dir_count = 0
-        for root_dir, cur_dir, files in os.walk(pwd + success_dir + "/"):
+        for _, cur_dir, _ in os.walk(pwd + success_dir + "/"):
             succ_dir_count += len(cur_dir)
 
     if os.path.exists(success_dir) and 0 < succ_dir_count < 8:
         logger.info("Folder exists but is incomplete — cleaning subfolders")
         shutil.rmtree(success_dir)
 
-    shallow_MSA_size = np.array([])
+    shallow_msa_size = np.array([])
 
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
         calculate_tm_score = TMScoreCalAllVarFS(
-            pdb1, pdb1_name, pdb2, pdb2_name, nMSA, "FS", model_type, search_dir, search_multi_dir
+            pdb1,
+            pdb1_name,
+            pdb2,
+            pdb2_name,
+            num_msa,
+            "FS",
+            model_type,
+            search_dir,
+            search_multi_dir,
         )
-        shallow_MSA_size = np.append(shallow_MSA_size, calculate_tm_score.size_selection)
+        shallow_msa_size = np.append(shallow_msa_size, calculate_tm_score.size_selection)
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
         if model_type != MODEL_TYPES["multimer"]:
             calculate_tm_score = TMScoreCalAllVarFS(
                 pdb1,
                 pdb1_name,
                 pdb2,
                 pdb2_name,
-                nMSA,
+                num_msa,
                 "FS",
                 model_type,
                 search_dir,
                 search_multi_dir,
             )
-            shallow_MSA_size = np.append(shallow_MSA_size, calculate_tm_score.size_selection)
+            shallow_msa_size = np.append(shallow_msa_size, calculate_tm_score.size_selection)
 
-    logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_MSA_size)
-    np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_MSA_size)
+    logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_msa_size)
+    np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
     if model_type == MODEL_TYPES["multimer"]:
         base = pwd + MULTI + "/" + pdb1_name
@@ -376,20 +400,22 @@ def run_fold_switching_workflow(
 
     full = "full-MSA"
     random = "random-MSA"
-    PlddtCal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
-    PlddtCal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
+    PlddtCal(list_org_samplings, full, pdb1_name, num_msa, num_ens, model_type)
+    PlddtCal(list_ran_samplings, random, pdb1_name, num_msa, num_ens, model_type)
 
     if model_type == MODEL_TYPES["multimer"]:
-        Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
+        Plot2DScatterAC(
+            full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens, model_type
+        )
     else:
-        Plot2DScatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS)
+        Plot2DScatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens)
 
 
 def run_blind_workflow(
     pdb1_name: str,
     search_dir: str,
     search_multi_dir: Union[int, str],
-    nMSA: int,
+    num_msa: int,
     model_type: str,
 ) -> None:
     """Run the blind prediction workflow."""
@@ -404,7 +430,7 @@ def run_blind_workflow(
 
     blind_dir_count = 0
     if os.path.exists(blind_pdb_dir):
-        for root_dir, cur_dir, files in os.walk(blind_pdb_dir + "/"):
+        for _, cur_dir, _ in os.walk(blind_pdb_dir + "/"):
             blind_dir_count += len(cur_dir)
 
     if os.path.exists(blind_pdb_dir) and 0 < blind_dir_count < 8:
@@ -416,7 +442,7 @@ def run_blind_workflow(
 
         # Count total files to determine whether Foldseek has already been run
         fseek_file_count = 0
-        for root_dir, cur_dir, files in os.walk(blind_pdb_dir + "/"):
+        for _, cur_dir, files in os.walk(blind_pdb_dir + "/"):
             fseek_file_count += len(files)
         logger.info("Number of files in blind prediction path: %d", fseek_file_count)
 
@@ -426,7 +452,7 @@ def run_blind_workflow(
         # Run blind screening regardless — Foldseek searches skip existing results
         BlindScreening(pdb1_name, blind_pred_path)
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
         logger.info("Finished running predictions using full and shallow random-MSAs")
         logger.info("Running Foldseek to find related crystal structures")
         BlindScreening(pdb1_name, blind_pred_path)

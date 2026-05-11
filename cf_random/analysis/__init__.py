@@ -9,7 +9,7 @@ fold-switching regions and structural comparisons.
 from .base import (
     BaseTMScore,
 )
-from .cal_plddt_ACFS import (
+from .cal_plddt_ac_fs import (
     PlddtCal,
 )
 from .cal_tmscore_fs_multimer import (

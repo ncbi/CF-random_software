@@ -25,9 +25,6 @@ from tmtools.testing import (
     get_pdb_path,
 )
 
-from ..analysis.cal_tmscore_fs_only import (
-    TMScoreFS,
-)
 from ..utils.convert_multi_single import (
     ConvertM2S,
 )

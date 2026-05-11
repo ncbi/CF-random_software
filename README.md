@@ -33,13 +33,13 @@ chmod +x install.sh
  --pname ####    |  project name for running blind mode (only for blind mode)
  --pdb1  ####    |  dominant reference model used to calculate TM-score with predicted models
  --pdb2  ####    |  alternative reference model used to calculate TM-score with predicted models
- --nMSA  ####    |  the number of additional samples for predicting the structure with MSAs, default = 0
+ --num_msa  ####    |  the number of additional samples for predicting the structure with MSAs, default = 0
  --type  ####    |  can choose the model type of Colabfold. e.g. ptm, monomer, and multimer
  --options ###   |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
 ```
 * Output: TM-score CSV/PNG, plDDT values, and selected MSA info. Successful predictions are saved under `successed_prediction/<pdb1_name>/`.
 * For FS runs you must provide `range_fs_pairs_all.txt` describing the FS region ranges. ColabFold uses 1-based residue indexing; ensure ranges match your PDB/sequence.
-* --nMSA can be applied for all options, but --nESN cannot be used for blind mode.
+* --num_msa can be applied for all options, but --nESN cannot be used for blind mode.
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
 
@@ -80,7 +80,7 @@ _If CF-random fails to find the selected random MSA, all generated files will be
 ## 2. For CF-random with alternative conformation mode. <br>
 For this mode, Lactococcal OppA would be predicted with two reference structures (i.e., 3drh.pdb and 3drf.pdb) and an MSA file. <br>
 ```
-python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --nMSA 5
+python main.py --fname 5olw_A-search --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --num_msa 5
 ```
 ### Used input files: <br>
 * PDB1: 5olw_A.pdb <br>

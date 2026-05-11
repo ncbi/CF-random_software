@@ -6,7 +6,10 @@ Extracts coordinates for FS regions and computes TM-align scores
 for full-MSA predictions.
 """
 
+import os
+import glob
 import sys
+
 from pathlib import (
     Path,
 )
@@ -18,6 +21,10 @@ from typing import (
 )
 
 import numpy as np
+
+from tmtools import (
+    tm_align,
+)
 
 from cf_random.utils.constants import (
     AA3TO1,
@@ -49,8 +56,6 @@ class TMScoreFS:
         Raises:
             SystemExit: If PDB names are not found in range file.
         """
-        import os
-
         current_dir = os.getcwd() + "/"
         pred_dir = pdb1_name + "_predicted_models_full_*"
         pred_path = current_dir + pred_dir + "/"
@@ -61,9 +66,9 @@ class TMScoreFS:
         range_file = current_dir + "range_fs_pairs_all.txt"
         fs_res: Dict[str, Tuple[str, str]] = {}
 
-        with open(range_file, "r") as infile:
-            next(infile)  # Skip header
-            for line in infile:
+        with open(range_file, "r", encoding="utf-8") as file:
+            next(file)  # Skip header
+            for line in file:
                 line = line.strip()
                 n1, n2, p1, p2, m1, m2 = line.split(",")
                 if n1 not in fs_res:
@@ -84,12 +89,12 @@ class TMScoreFS:
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
 
-    def get_coords(self, pdbfile: Union[str, Path], FSRange: str) -> Tuple[np.ndarray, str]:
+    def get_coords(self, pdbfile: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
         """Extracts CA coordinates and sequence for fold-switching region from PDB.
 
         Args:
             pdbfile (str or Path): Path to the PDB file.
-            FSRange (str): Residue range for fold-switching region, e.g., "112-162".
+            fs_range (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
@@ -105,7 +110,7 @@ class TMScoreFS:
         seq_dict: Dict[int, str] = {}
 
         # Convert string range to residue range
-        start, stop = FSRange.split("-")
+        start, stop = fs_range.split("-")
         res_range = range(int(start), int(stop) + 1)
 
         # Extract CA coordinates and sequence for residues in range
@@ -142,12 +147,6 @@ class TMScoreFS:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        import glob
-
-        from tmtools import (
-            tm_align,
-        )
-
         tmscores_ord: List[float] = []
         tmscores_rev: List[float] = []
 
@@ -203,8 +202,6 @@ class TMScoreFS:
         Returns:
             None: Stores results in self.tmscores_fs attribute.
         """
-        import glob
-
         # Get list of subdirectories
         all_sub_dir_paths = glob.glob(str(data_dir))
         tmscores_fs: List[List[float]] = []

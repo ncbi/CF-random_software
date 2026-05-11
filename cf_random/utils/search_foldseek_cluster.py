@@ -104,14 +104,14 @@ class BlindScreening:
         logger.info("Blind screening completed successfully")
 
     @staticmethod
-    def cluster_structures(X: np.ndarray) -> np.ndarray:
+    def cluster_structures(x: np.ndarray) -> np.ndarray:
         """Find optimal HDBSCAN clustering labels for reduced structure features.
 
         Iterates over a range of min_cluster_size values and selects the value
         that maximises the silhouette score.
 
         Args:
-            X: PCA-reduced feature matrix (n_samples, n_components).
+            x: PCA-reduced feature matrix (n_samples, n_components).
 
         Returns:
             np.ndarray: Cluster labels for each sample (-1 = noise).
@@ -119,10 +119,10 @@ class BlindScreening:
         sil_scores: List[float] = []
         for k in HDBSCAN_K_RANGE:
             clustering = HDBSCAN(min_cluster_size=k, min_samples=HDBSCAN_MIN_SAMPLES)
-            clustering.fit(X)
+            clustering.fit(x)
             n_unique = len(set(clustering.labels_))
-            if 1 < n_unique < len(X):
-                score = silhouette_score(X, clustering.labels_, metric=DISTANCE_METRIC)
+            if 1 < n_unique < len(x):
+                score = silhouette_score(x, clustering.labels_, metric=DISTANCE_METRIC)
                 sil_scores.append(score)
             else:
                 sil_scores.append(-1.0)
@@ -131,12 +131,12 @@ class BlindScreening:
         logger.info("Optimal HDBSCAN min_cluster_size: %s", opt_k)
 
         final = HDBSCAN(min_cluster_size=opt_k, min_samples=HDBSCAN_MIN_SAMPLES)
-        final.fit(X)
+        final.fit(x)
         return final.labels_
 
     @staticmethod
     def k_medoids(
-        X: np.ndarray,
+        x: np.ndarray,
         cluster_label: int,
         labels: np.ndarray,
         k: int = KMEDOIDS_DEFAULT_K,
@@ -145,7 +145,7 @@ class BlindScreening:
         """PAM-style k-medoids to find representative structures in a cluster.
 
         Args:
-            X:             Full PCA-reduced feature matrix (all samples).
+            x:             Full PCA-reduced feature matrix (all samples).
             cluster_label: The HDBSCAN label whose members are to be processed.
             labels:        Full label array from HDBSCAN (length = n_samples).
             k:             Number of medoids to return.
@@ -153,12 +153,12 @@ class BlindScreening:
 
         Returns:
             Tuple of (medoid_indices, total_cost) where medoid_indices indexes
-            into the *full* X array (not only the cluster subset).
+            into the *full* x array (not only the cluster subset).
         """
         np.random.seed(RANDOM_SEED)
 
-        temp = X.copy()
-        mask = np.zeros(X.shape, dtype=bool)
+        temp = x.copy()
+        mask = np.zeros(x.shape, dtype=bool)
         mask[np.argwhere(labels == cluster_label)] = True
 
         # Count members of this cluster
@@ -181,8 +181,8 @@ class BlindScreening:
 
         n = temp.shape[0]
         medoids = np.random.choice(n, k, replace=False)
-        D = distance.cdist(temp, temp[medoids], metric=DISTANCE_METRIC)
-        tot_cost = float(np.sum(np.min(D, axis=1)))
+        c_dis = distance.cdist(temp, temp[medoids], metric=DISTANCE_METRIC)
+        tot_cost = float(np.sum(np.min(c_dis, axis=1)))
 
         for _ in range(max_iter):
             improved = False
@@ -192,8 +192,8 @@ class BlindScreening:
                         continue
                     new_medoids = medoids.copy()
                     new_medoids[m_idx] = candidate
-                    D_new = distance.cdist(temp, temp[new_medoids], metric=DISTANCE_METRIC)
-                    new_cost = float(np.sum(np.min(D_new, axis=1)))
+                    new_dis = distance.cdist(temp, temp[new_medoids], metric=DISTANCE_METRIC)
+                    new_cost = float(np.sum(np.min(new_dis, axis=1)))
                     if new_cost < tot_cost:
                         medoids = new_medoids
                         tot_cost = new_cost

@@ -64,3 +64,6 @@ target-version = ["py310"]
 [tool.isort]
 profile = "black"
 line_length = 10
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

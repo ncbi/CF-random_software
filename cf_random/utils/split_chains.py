@@ -46,18 +46,21 @@ if __name__ == "__main__":
     pdb1 = args.pdb1
     pdb1_name = pdb1.replace(".pdb", "")
 
-    TER_count = 0
-    with open(pdb1, "r") as file:
+    ter_count = 0
+    with open(pdb1, "r", encoding="utf-8") as file:
         for line in file:
-            TER = line.split()
-            TER_count += TER.count("TER")
+            ter = line.split()
+            ter_count += ter.count("TER")
 
     line_cnt = 0
-    for i in range(0, TER_count):
+    for i in range(0, ter_count):
         output_file_name = pdb1_name + "_" + chain_char[i] + ".pdb"
 
         if line_cnt == 0:
-            with open(pdb1, "r") as infile, open(output_file_name, "w") as outfile:
+            with (
+                open(pdb1, "r", encoding="utf-8") as infile,
+                open(output_file_name, "w", encoding="utf-8") as outfile,
+            ):
                 for line in infile:
                     outfile.write(line)
                     line_cnt = line_cnt + 1
@@ -66,7 +69,10 @@ if __name__ == "__main__":
                         break
 
         else:
-            with open(pdb1, "r") as infile, open(output_file_name, "w") as outfile:
+            with (
+                open(pdb1, "r", encoding="utf-8") as infile,
+                open(output_file_name, "w", encoding="utf-8") as outfile,
+            ):
                 for line in infile:
                     linecache.getline(pdb1, line_cnt)
                     outfile.write(linecache.getline(pdb1, line_cnt))
