@@ -172,7 +172,7 @@ class MSAMaxRunner(ColabFoldRunner):
         logger.info("Running full MSA prediction for %s", pdb_name)
         self._run_colabfold(int(random_seed) if not isinstance(random_seed, int) else random_seed)
 
-        # Move completed folder into predictions_all/<pdb_name>/ (matches original)
+        # Move completed folder into predictions_all/<pdb_name>/
         dest_dir = str(Path("predictions_all") / pdb_name)
         self._move_results(local_output_dir + "/", dest_dir)
 
@@ -205,7 +205,7 @@ class MSAVariableRunner(ColabFoldRunner):
             initial_max_msa: Starting maximum sequence depth.
             initial_extra_msa: Starting extra sequence depth.
         """
-        # Normalise random seed to string, matching original join logic
+        # Normalise random seed to string
         if isinstance(random_seed, (list, np.ndarray)):
             random_seed_str = "".join(map(str, random_seed))
         else:
@@ -253,7 +253,7 @@ class MSAVariableRunner(ColabFoldRunner):
                 local_output_dir,
             )
 
-            # Write to local dir, then move (matches original mv logic)
+            # Write to local dir
             self.output_dir = local_output_dir
             self._setup_logging()
 

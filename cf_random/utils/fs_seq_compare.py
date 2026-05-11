@@ -110,7 +110,7 @@ class FSRange:
                     dssp_read_tmp = pd.read_csv(
                         "output_" + pdb1_name + "_" + str(index) + ".log", sep=" ", header=None
                     )
-                    ## seq1 = crystal structure, seq2 = predicted structure
+                    # seq1 = crystal structure, seq2 = predicted structure
                     print(dssp_read_tmp[0].iloc[0])
                     seq1 = dssp_read_tmp[0].iloc[0]
                     print(dssp_read_tmp[0].iloc[1])

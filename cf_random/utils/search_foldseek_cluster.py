@@ -78,13 +78,12 @@ PCA_N_COMPONENTS = 4
 class BlindScreening:
     """Perform blind structural screening and clustering analysis.
 
-    Replicates the original pipeline:
-        1. Stage PDB files into a flat directory and build a Foldseek DB.
-        2. Run per-file exhaustive Foldseek easy-search against the DB.
-        3. Parse bit scores into a pairwise correlation matrix.
-        4. Remove unfolded outliers via DSSP z-score filtering.
-        5. Normalise the matrix, run PCA, HDBSCAN, and k-medoids.
-        6. Write CSV summaries, a cluster PNG, and (optionally) a PyMOL .pse.
+    1. Stage PDB files into a flat directory and build a Foldseek DB.
+    2. Run per-file exhaustive Foldseek easy-search against the DB.
+    3. Parse bit scores into a pairwise correlation matrix.
+    4. Remove unfolded outliers via DSSP z-score filtering.
+    5. Normalise the matrix, run PCA, HDBSCAN, and k-medoids.
+    6. Write CSV summaries, a cluster PNG, and (optionally) a PyMOL .pse.
     """
 
     def __init__(self, pdb1_name: str, blind_path: str) -> None:
@@ -208,34 +207,37 @@ class BlindScreening:
         return medoids, tot_cost
 
     def _stage_pdb_files(self) -> None:
-        """Copy all PDB files into a flat staging directory for Foldseek."""
+        """Copy all PDB files into a flat staging directory for Foldseek.
+
+        Replicates the original's flattening logic: replace '/' with '-' in the
+        full path, then strip the first 17 characters to derive the DB filename.
+        The mapping from source Path -> flat label is stored in
+        ``self.pdb_label_map`` so that ``_build_correlation_matrix`` can match
+        Foldseek target fields back to matrix rows.
+        """
         self.db_directory = self.blind_path / "pdbs_for_db"
         self.db_directory.mkdir(exist_ok=True)
 
         raw_pdb_files = sorted(self.blind_path.rglob("*.pdb"))
-        # Exclude any files already inside the staging directory
         raw_pdb_files = [f for f in raw_pdb_files if self.db_directory not in f.parents]
 
         if not raw_pdb_files:
             raise FileNotFoundError(f"No PDB files found under {self.blind_path}")
 
+        # pdb_label_map: source Path -> flat label used as Foldseek DB key
+        self.pdb_label_map: Dict[Path, str] = {}
+
         self.pdb_files: List[Path] = []
         logger.info("Staging %d PDB files for Foldseek database", len(raw_pdb_files))
-        for src in raw_pdb_files:
-            # Flatten path into a dash-separated filename (matches original logic)
-            dest_name = str(src).replace("/", "-")
-            # Strip leading characters up to the first meaningful segment
-            # (original strips the first 17 chars; we replicate by removing the
-            # leading dash-joined blind_path prefix)
-            prefix = str(self.blind_path).replace("/", "-").lstrip("-") + "-"
-            dest_name = dest_name.lstrip("-")
-            if dest_name.startswith(prefix):
-                dest_name = dest_name[len(prefix) :]
 
+        for src in raw_pdb_files:
+            dest_name = str(src).replace("/", "-")[17:]
             dest = self.db_directory / dest_name
             if not dest.exists():
                 shutil.copyfile(src, dest)
             self.pdb_files.append(src)
+            # Label is the dest_name without the .pdb extension
+            self.pdb_label_map[src] = dest_name.replace(".pdb", "")
 
         logger.info("Staged %d files to %s", len(self.pdb_files), self.db_directory)
 
@@ -257,11 +259,7 @@ class BlindScreening:
         logger.info("Foldseek database created at %s", self.foldseek_db)
 
     def _run_foldseek_searches(self) -> None:
-        """Run per-file exhaustive Foldseek easy-search against the database.
-
-        Matches the original exactly: one `.foldseek` result file per PDB,
-        skipped if it already exists.
-        """
+        """Run per-file exhaustive Foldseek easy-search against the database."""
         tmp_dir = self.blind_path / "tmp"
         tmp_dir.mkdir(exist_ok=True)
 
@@ -299,11 +297,11 @@ class BlindScreening:
 
     def _perform_clustering_analysis(self) -> None:
         """Build similarity matrix, filter outliers, cluster, and save outputs."""
-
         foldseek_files = sorted(self.blind_path.rglob("*-self.foldseek"))
         if not foldseek_files:
             raise FileNotFoundError("No .foldseek result files found")
 
+        # _filter_unfolded returns files sorted; labels are derived after sort
         foldseek_files, pdb_labels = self._filter_unfolded(foldseek_files)
 
         corr_mtx = self._build_correlation_matrix(foldseek_files, pdb_labels)
@@ -312,7 +310,6 @@ class BlindScreening:
         norm = (norm + norm.T) / 2.0
 
         pca_coords = PCA(n_components=PCA_N_COMPONENTS).fit_transform(norm)
-
         labels = self.cluster_structures(pca_coords)
 
         files_of_interest: List[Tuple[Path, int]] = []
@@ -327,7 +324,7 @@ class BlindScreening:
         self._save_cluster_plot(pca_coords, labels)
         self._save_structures_of_interest(files_of_interest, pca_of_interest)
         self._save_all_structures(foldseek_files, labels, pca_coords)
-        self._save_pymol_session(files_of_interest)
+        self._save_pymol_session(foldseek_files, files_of_interest)
 
     def _filter_unfolded(self, foldseek_files: List[Path]) -> Tuple[List[Path], List[str]]:
         """Remove unfolded predictions using DSSP loop-content z-scores.
@@ -336,9 +333,8 @@ class BlindScreening:
         has a z-score > ZSCORE_OUTLIER_THRESHOLD across all structures.
 
         Returns:
-            Filtered foldseek file list and matching flat PDB label list.
+            Filtered (sorted) foldseek file list and matching flat PDB labels.
         """
-        files_dssp: List[np.ndarray] = []
         files_count: List[np.ndarray] = []
 
         for ff in foldseek_files:
@@ -347,22 +343,20 @@ class BlindScreening:
             s = DSSP(u).run().results.dssp[0]
             dssp_types, counts = np.unique(s, return_counts=True)
 
-            # Ensure all three categories are present (matches original)
+            # Ensure all three categories are present
             for missing, pos in [("-", 0), ("E", 1), ("H", 2)]:
                 if missing not in dssp_types:
                     dssp_types = np.insert(dssp_types, pos, missing)
                     counts = np.insert(counts, pos, 0)
 
-            files_dssp.append(dssp_types)
             files_count.append(counts)
 
         files_count_arr = np.array(files_count)
         z_scores = stats.zscore(files_count_arr[:, 0])  # column 0 = '-' (loops)
-        outlier_mask = z_scores > ZSCORE_OUTLIER_THRESHOLD
 
         filtered: List[Path] = []
         for i, ff in enumerate(foldseek_files):
-            if outlier_mask[i]:
+            if z_scores[i] > ZSCORE_OUTLIER_THRESHOLD:
                 logger.info(
                     "Removed unfolded structure from analysis: %s",
                     str(ff).replace("-self.foldseek", ".pdb"),
@@ -370,9 +364,18 @@ class BlindScreening:
             else:
                 filtered.append(ff)
 
-        # Flat PDB labels (dash-separated filename stems) used as matrix keys
-        pdb_labels = [ff.name.replace("-self.foldseek", "") for ff in filtered]
-        return sorted(filtered), pdb_labels
+        filtered = sorted(filtered)
+
+        # Derive flat labels using the same slash->dash + [17:] rule as staging,
+        # applied to the .pdb path so they match what Foldseek indexed.
+        pdb_labels = [
+            str(Path(str(ff).replace("-self.foldseek", ".pdb")))
+            .replace("/", "-")[17:]
+            .replace(".pdb", "")
+            for ff in filtered
+        ]
+
+        return filtered, pdb_labels
 
     def _build_correlation_matrix(
         self, foldseek_files: List[Path], pdb_labels: List[str]
@@ -393,7 +396,6 @@ class BlindScreening:
                         bit_score = int(parts[-1])
                     except ValueError:
                         continue
-                    # Foldseek integer overflow bug guard (matches original)
                     if bit_score == FOLDSEEK_BIT_SCORE_BUG_VALUE:
                         bit_score = 0
                     if target in row_dict:
@@ -445,8 +447,14 @@ class BlindScreening:
                 writer.writerow([int(labels[i]), str(ff), pca_coords[i, 0], pca_coords[i, 1]])
         logger.info("Saved all-structures summary to %s", out_path)
 
-    def _save_pymol_session(self, files_of_interest: List[Tuple[Path, int]]) -> None:
+    def _save_pymol_session(
+        self,
+        foldseek_files: List[Path],
+        files_of_interest: List[Tuple[Path, int]],
+    ) -> None:
         """Align structures of interest and save a PyMOL .pse session file.
+
+        Uses foldseek_files[0] as the alignment reference.
 
         Skipped silently if PyMOL is not installed.
         """
@@ -458,19 +466,17 @@ class BlindScreening:
         viridis = plt.get_cmap("viridis", len(files_of_interest))
         largest_label = max(files_of_interest, key=lambda x: x[1])[1]
 
-        # Load the first PDB as the alignment reference
-        dominant_pdb = str(files_of_interest[0][0]).replace("-self.foldseek", ".pdb")
+        # Load the first of all filtered files as the alignment reference
+        dominant_pdb = str(foldseek_files[0]).replace("-self.foldseek", ".pdb")
         pymol.cmd.load(dominant_pdb, "Dominant")
 
         for idx, (ff, cluster_label) in enumerate(files_of_interest):
             pdb_path = str(ff).replace("-self.foldseek", ".pdb")
 
-            # Derive a short readable name (rank/full/max tokens) matching original
             tokens = re.findall(r"(full)|(max\w+)|(rank_\d+)", str(ff))
             short = "_".join(t for group in tokens for t in group if t)
             obj_name = f"{idx}_{short}" if short else f"struct_{idx}"
 
-            # Viridis colour scaled by cluster label
             if largest_label == -1:
                 colour_val = 0.0
             else:

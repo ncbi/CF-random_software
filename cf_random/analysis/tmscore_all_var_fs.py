@@ -87,8 +87,8 @@ class TMScore(BaseTMScore):
 
         # Sum whole-structure groups and find best location
         TMscore_data_sum = np.zeros((7, 1))
-        for ii in range(TMscores_random_locat.shape[0]):
-            TMscore_data_sum[ii] = np.sum(TMscores_random_locat[ii])
+        for i in range(TMscores_random_locat.shape[0]):
+            TMscore_data_sum[i] = np.sum(TMscores_random_locat[i])
 
         location = int(np.argmax(np.max(TMscore_data_sum, axis=1)))
 

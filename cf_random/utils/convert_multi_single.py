@@ -20,9 +20,6 @@ class ConvertM2S:
 
     Processes multimer prediction outputs by removing TER records and
     extracting individual chains for separate analysis.
-
-    The conversion is performed in the constructor for backward compatibility
-    with the original behavior.
     """
 
     def __init__(self, pred_path: str, pdb1_name: str, pdb2_name: str) -> None:

@@ -195,11 +195,11 @@ class Plot2DScatter:
 
         # Plot variable MSA results
         num_msa_depths = int(self.tmscore_fs_random.shape[0] / 2)
-        for ii in range(num_msa_depths):
+        for i in range(num_msa_depths):
             plt.scatter(
-                self.tmscore_fs_random[ii * 2, :],
-                self.tmscore_fs_random[(ii * 2 + 1), :],
-                c=self.plddt_random[ii, :],
+                self.tmscore_fs_random[i * 2, :],
+                self.tmscore_fs_random[(i * 2 + 1), :],
+                c=self.plddt_random[i, :],
                 cmap="plasma",
                 vmin=PLDT_MIN,
                 vmax=PLDT_MAX,

@@ -80,8 +80,8 @@ class TMScore(BaseTMScore):
 
         # Sum each MSA-depth group and pick the best via argmax of max
         TMscore_data_sum = np.zeros((7, 1))
-        for ii in range(TMscores_random_locat.shape[0]):
-            TMscore_data_sum[ii] = np.sum(TMscores_random_locat[ii])
+        for i in range(TMscores_random_locat.shape[0]):
+            TMscore_data_sum[i] = np.sum(TMscores_random_locat[i])
 
         location = int(np.argmax(np.max(TMscore_data_sum, axis=1)))
 
@@ -156,7 +156,7 @@ class TMScoreCalAllVar:
         )
         full_scores_array = np.asarray(MSA_full.tmscores, dtype=float).reshape(2, num_seeds * 5)
 
-        # Three-branch quality check matching original exactly
+        # Three-branch quality check
         if np.any(full_scores_array[0, :] > 0.5) or np.any(full_scores_array[1, :] > 0.5):
             alt_name = self._determine_alternative(np.average(full_scores_array, axis=1))
         elif np.all(full_scores_array[0, :] < 0.5) and np.all(full_scores_array[1, :] < 0.5):

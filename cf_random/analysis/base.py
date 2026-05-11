@@ -84,7 +84,7 @@ class BaseTMScore:
                 self._convert_multimer_to_single()
                 files_list = glob.glob(check_pattern)
 
-        # Prepend pwd and strip extension, matching original path handling
+        # Prepend pwd and strip extension
         return [pwd + f.replace(".pdb", "") for f in files_list]
 
     def _convert_multimer_to_single(self) -> None:
@@ -99,8 +99,7 @@ class BaseTMScore:
         """Calculate TM-scores against both reference structures.
 
         Computes scores in both forward (model→ref) and reverse (ref→model)
-        directions. Whichever direction yields the higher max is returned,
-        matching the original forward/reverse selection logic exactly.
+        directions. Whichever direction yields the higher max is returned.
 
         Returns:
             List of TM-scores, one per predicted model, for both references
@@ -113,7 +112,7 @@ class BaseTMScore:
             logger.warning("No predicted models found for %s", self.pred_dir)
             return ZERO_TM_SCORES.copy()
 
-        # Load reference structures — prepend pwd matching original
+        # Load reference structures
         ref1 = get_structure(get_pdb_path(pwd + self.pdb1_name))
         ref1_coords, ref1_seq = get_residue_data(ref1)
 
@@ -148,7 +147,7 @@ class BaseTMScore:
         logger.debug("TM-scores forward: %s", tmscores_ord)
         logger.debug("TM-scores reverse: %s", tmscores_rev)
 
-        # Return whichever direction gives the higher maximum (matches original)
+        # Return whichever direction gives the higher maximum
         if np.max(tmscores_ord) > np.max(tmscores_rev):
             return tmscores_ord
         return tmscores_rev

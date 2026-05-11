@@ -56,11 +56,11 @@ class Plot2DScatterAC:
         if model_type != "alphafold2_multimer_v3":
 
             plt.figure(0)
-            for ii in range(0, int(TMs_random.shape[0] / 2)):
+            for i in range(0, int(TMs_random.shape[0] / 2)):
                 plt.scatter(
-                    TMs_random[ii * 2, :],
-                    TMs_random[(ii * 2 + 1), :],
-                    c=plddt_random[ii, :],
+                    TMs_random[i * 2, :],
+                    TMs_random[(i * 2 + 1), :],
+                    c=plddt_random[i, :],
                     cmap="rocket_r",
                     vmin=50,
                     vmax=100,
@@ -99,11 +99,11 @@ class Plot2DScatterAC:
 
         else:
             plt.figure(0)
-            for ii in range(0, int(TMs_random.shape[0] / 2)):
+            for i in range(0, int(TMs_random.shape[0] / 2)):
                 plt.scatter(
-                    TMs_random[ii * 2, :],
-                    TMs_random[(ii * 2 + 1), :],
-                    c=plddt_random[ii, :],
+                    TMs_random[i * 2, :],
+                    TMs_random[(i * 2 + 1), :],
+                    c=plddt_random[i, :],
                     cmap="rocket_r",
                     vmin=50,
                     vmax=100,
