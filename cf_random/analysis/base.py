@@ -122,7 +122,6 @@ class BaseTMScore:
         tmscores_ord: List[float] = []
         tmscores_rev: List[float] = []
 
-        # --- pdb1 scores ---
         for model_path in predicted_models:
             s = get_structure(get_pdb_path(model_path))
             coords, seq = get_residue_data(s)
@@ -133,7 +132,6 @@ class BaseTMScore:
             res = tm_align(ref1_coords, coords, ref1_seq, seq)
             tmscores_rev.append(round(res.tm_norm_chain1, 5))
 
-        # --- pdb2 scores ---
         for model_path in predicted_models:
             s = get_structure(get_pdb_path(model_path))
             coords, seq = get_residue_data(s)

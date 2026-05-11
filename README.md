@@ -17,7 +17,8 @@ Quick start (recommended):
 Run the installer (creates/activates a `cf-random` conda env if needed):
 
 ```bash
-bash install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 
@@ -123,5 +124,3 @@ Lee, M., Schafer, J.W., Prabakaran, J. et al. Large-scale predictions of alterna
 
 # License
 Please see the LICENSE.md file.
-
-

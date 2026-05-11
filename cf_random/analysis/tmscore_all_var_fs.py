@@ -101,7 +101,7 @@ class TMScore(BaseTMScore):
         TMscore_data = TMscores_random_reshape
         TMscore_fs_data = TMscores_fs_random_reshape
 
-        # --- Primary check: both whole and FS must have >= 0.5 at location ---
+        # Primary check: both whole and FS must have >= 0.5 at location
         if alt_name == pdb2_name and (
             np.any(TMscore_data[location_full, :] >= 0.5)
             and np.any(TMscore_fs_data[location_full, :] >= 0.5)
@@ -116,7 +116,7 @@ class TMScore(BaseTMScore):
             self.selection = int(location_full / 2)
             logger.info("Selected shallow MSA index %s for %s", self.selection, pdb1_name)
 
-        # --- Fallback: FS score < 0.5 at primary location ---
+        # allback: FS score < 0.5 at primary location
         # Scan all pairs for whole >= 0.4 AND fs >= 0.5 in any combination
         elif np.any(TMscore_fs_data[location_full, :] < 0.5):
             found = False
@@ -211,7 +211,7 @@ class TMScoreCalAllVarFS:
 
         num_seeds = 5 + self.nMSA
 
-        # --- Full MSA whole-structure TM-scores ---
+        # Full MSA whole-structure TM-scores
         # Passed as glob pattern string so BaseTMScore._resolve_models expands it
         full_pred_dir = (
             str(PREDICTIONS_ROOT / self.pdb1_name)
@@ -227,7 +227,7 @@ class TMScoreCalAllVarFS:
         )
         full_TMscore = np.asarray(MSA_full_TMscore.tmscores, dtype=float).reshape(2, num_seeds * 5)
 
-        # --- Full MSA fold-switching region TM-scores ---
+        # Full MSA fold-switching region TM-scores
         MSA_fs_TMscore = TMScoreFS(
             full_pred_dir,
             self.pdb1,
@@ -237,7 +237,7 @@ class TMScoreCalAllVarFS:
         )
         fs_TMscore = np.asarray(MSA_fs_TMscore.tmscores_fs, dtype=float).reshape(2, num_seeds * 5)
 
-        # --- Two-branch quality check using both whole and FS scores ---
+        # Two-branch quality check using both whole and FS scores
         if np.average(full_TMscore[0, :]) > np.average(full_TMscore[1, :]):
             if np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
                 ref_name = self.pdb1_name
@@ -266,7 +266,7 @@ class TMScoreCalAllVarFS:
         np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_TMscore, fmt="%2.3f")
         np.savetxt(f"TMScore_fs_full-MSA_{self.pdb1_name}.csv", fs_TMscore, fmt="%2.3f")
 
-        # --- Shallow random MSA TM-scores (whole + FS) ---
+        # Shallow random MSA TM-scores (whole + FS)
         TMscores_random: List[float] = []
         TMscores_fs_random: List[float] = []
         last_shallow: Optional[TMScore] = None

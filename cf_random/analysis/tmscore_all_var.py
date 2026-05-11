@@ -172,7 +172,7 @@ class TMScoreCalAllVar:
         )
         np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_scores_array, fmt="%2.3f")
 
-        # --- Shallow random MSA TM-scores ---
+        # Shallow random MSA TM-scores
         max_msa = 1
         ext_msa = 2
         TMscores_random: List[float] = []
