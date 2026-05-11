@@ -8,6 +8,7 @@ multiple ColabFold runs with different MSA settings.
 
 import logging
 import random
+
 from pathlib import (
     Path,
 )

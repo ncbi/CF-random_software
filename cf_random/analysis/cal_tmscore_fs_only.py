@@ -7,25 +7,19 @@ TM-align-based comparisons for predicted models.
 """
 
 import glob
+import logging
 import os
-from pathlib import (
-    Path,
-)
-from typing import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-)
+import sys
+from pathlib import Path
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
-from tmtools import (
-    tm_align,
-)
+from Bio.PDB import PDBParser
+from tmtools import tm_align
 
-from cf_random.utils.constants import (
-    AA3TO1,
-)
+from cf_random.utils.constants import AA3TO1
+
+logger = logging.getLogger(__name__)
 
 
 class TMScoreFS:
@@ -60,9 +54,7 @@ class TMScoreFS:
             SystemExit: If PDB names are not found in range file.
         """
         current_dir = os.getcwd() + "/"
-        Path(pred_path)
 
-        # Read fold-switching ranges from file
         range_file = current_dir + "range_fs_pairs_all.txt"
         fs_res: Dict[str, Tuple[str, str]] = {}
 
@@ -76,16 +68,17 @@ class TMScoreFS:
                 if n2 not in fs_res:
                     fs_res[n2] = (p2, m2)
 
-        print("Running for pair", pdb1_name, pdb2_name, end="..\n")
-        print("comparing predictions of", pdb1_name, end="...\n")
+        logger.info("Running fold-switching TM-score for pair %s / %s", pdb1_name, pdb2_name)
 
         try:
             range_pdb1 = fs_res[pdb1_name]
             range_pdb2 = fs_res[pdb2_name]
         except KeyError:
-            print("check PDBIDs ", pdb1_name, pdb2_name)
-            import sys
-
+            logger.error(
+                "PDB ID(s) not found in range file — check identifiers: %s, %s",
+                pdb1_name,
+                pdb2_name,
+            )
             sys.exit(1)
 
         range_pred = range_pdb1[1]
@@ -102,20 +95,14 @@ class TMScoreFS:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    (N x 3) and seq is the one-letter amino acid sequence string.
         """
-        from Bio.PDB import (
-            PDBParser,
-        )
-
         pdb_parser = PDBParser(QUIET=True)
         struct = pdb_parser.get_structure("x", str(pdbfile))
         coords: List[List[float]] = []
         seq_dict: Dict[int, str] = {}
 
-        # Convert string range to residue range
         start, stop = fs_range.split("-")
         res_range = range(int(start), int(stop) + 1)
 
-        # Extract CA coordinates and sequence for residues in range
         for atom in struct.get_atoms():
             residue = atom.get_parent()
             res_id = residue.get_id()[1]
@@ -127,11 +114,12 @@ class TMScoreFS:
                 if res_id not in seq_dict:
                     seq_dict[res_id] = AA3TO1[resname]
 
-        # Convert to numpy array and build sequence string
         coords_np = np.array(coords)
-        sorted_data = sorted(seq_dict.items())
-        seq = "".join(item[1] for item in sorted_data)
+        seq = "".join(item[1] for item in sorted(seq_dict.items()))
 
+        logger.debug(
+            "Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range
+        )
         return coords_np, seq
 
     def get_tmscore(
@@ -149,35 +137,31 @@ class TMScoreFS:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        tmscores: List[float] = []
+        modelfiles = glob.glob(str(predfilepath) + "/*_unrelaxed*pdb")
+
+        if not modelfiles:
+            logger.warning("No unrelaxed model files found in %s", predfilepath)
+            return [0.0, 0.0, 0.0, 0.0, 0.0]
+
         tmscores_ord: List[float] = []
         tmscores_rev: List[float] = []
 
-        modelfiles = glob.glob(str(predfilepath) + "/*_unrelaxed*pdb")
-
-        if len(modelfiles) == 0:
-            return [0.0, 0.0, 0.0, 0.0, 0.0]
-
         for model in modelfiles:
-            modelpath = Path(model)
-            coords2, seq2 = self.get_coords(modelpath, res_range)
+            coords2, seq2 = self.get_coords(Path(model), res_range)
 
-            # Calculate TM-score: coords1 vs coords2
             res = tm_align(coords1, coords2, seq1, seq2)
-            tmscore_ord = round(res.tm_norm_chain1, 2)
-            tmscores_ord.append(tmscore_ord)
+            tmscores_ord.append(round(res.tm_norm_chain1, 2))
 
-            # Calculate reverse TM-score: coords2 vs coords1
+            # Note: both directions rounded to 2 for consistent comparison
             res = tm_align(coords2, coords1, seq2, seq1)
-            tmscore_rev = round(res.tm_norm_chain1, 5)
-            tmscores_rev.append(tmscore_rev)
+            tmscores_rev.append(round(res.tm_norm_chain1, 2))
 
-        # Select the set with higher max score
         if np.max(tmscores_ord) > np.max(tmscores_rev):
             tmscores = tmscores_ord
         else:
             tmscores = tmscores_rev
 
+        logger.debug("TM-scores for %s: %s", predfilepath, tmscores)
         return tmscores
 
     def run_for_models(
@@ -205,27 +189,32 @@ class TMScoreFS:
         Returns:
             None: Stores results in self.tmscores_fs attribute.
         """
-        # Get list of subdirectories
         all_sub_dir_paths = glob.glob(str(data_dir))
-        tmscores_fs: List[List[float]] = []
 
-        if len(all_sub_dir_paths) == 0:
+        if not all_sub_dir_paths:
+            logger.warning("No prediction subdirectories matched pattern: %s", data_dir)
             return
 
-        # Compute coordinates and sequences outside loops for efficiency
+        logger.info(
+            "Found %d prediction director%s under %s",
+            len(all_sub_dir_paths),
+            "y" if len(all_sub_dir_paths) == 1 else "ies",
+            data_dir,
+        )
+
         coords1, seq1 = self.get_coords(pdbfile1, res_range1)
         coords2, seq2 = self.get_coords(pdbfile2, res_range2)
+
+        tmscores_fs: List[List[float]] = []
 
         for subdir in all_sub_dir_paths:
             preddir = Path(subdir)
             if not preddir.exists():
+                logger.debug("Skipping missing directory: %s", preddir)
                 continue
 
-            # Compare against both fold states
-            tmscore_lst1 = self.get_tmscore(coords1, seq1, preddir, pred_range)
-            tmscore_lst2 = self.get_tmscore(coords2, seq2, preddir, pred_range)
-
-            tmscores_fs.extend([tmscore_lst1, tmscore_lst2])
+            tmscores_fs.append(self.get_tmscore(coords1, seq1, preddir, pred_range))
+            tmscores_fs.append(self.get_tmscore(coords2, seq2, preddir, pred_range))
 
         self.tmscores_fs = np.array(tmscores_fs)
-        print(f"TM-scores for fold-switching regions (shape: {self.tmscores_fs.shape}):")
+        logger.info("TM-score array shape: %s", self.tmscores_fs.shape)
