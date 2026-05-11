@@ -116,7 +116,6 @@ class TMScore(BaseTMScore):
             self.selection = int(location_full / 2)
             logger.info("Selected shallow MSA index %s for %s", self.selection, pdb1_name)
 
-        # allback: FS score < 0.5 at primary location
         # Scan all pairs for whole >= 0.4 AND fs >= 0.5 in any combination
         elif np.any(TMscore_fs_data[location_full, :] < 0.5):
             found = False

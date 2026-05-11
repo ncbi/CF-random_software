@@ -239,5 +239,4 @@ class TMScoreFS:
 
         tmscores_fs_array = np.array(tmscores_fs)
         self.tmscores_fs = tmscores_fs_array
-        print("         ")
         print(tmscores_fs_array)

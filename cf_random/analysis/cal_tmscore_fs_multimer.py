@@ -67,9 +67,7 @@ class TMScoreFSMulti:
                     fs_res[n2] = (p2, m2)
 
         print("Running for pair ", pdb1_name, pdb2_name, end="..")
-        print("                ")
         print("comparing predictions of ", pdb1_name, end="...")
-        print("                ")
 
         try:
             range_pdb1 = fs_res[
@@ -116,7 +114,7 @@ class TMScoreFSMulti:
         res_range = range(int(start), int(stop) + 1)
 
         for atom in struct.get_atoms():
-            residue = atom.get_parent()  # from atom we can get the parent residue
+            residue = atom.get_parent()
             res_id = residue.get_id()[1]
             resname = residue.get_resname()
             if res_id in res_range and atom.get_name() == "CA":
@@ -125,9 +123,7 @@ class TMScoreFSMulti:
                 if res_id not in seq_dict:
                     seq_dict[res_id] = AA3TO1[resname]
 
-        # convert to np array
         coords_np = np.array(coords)
-        # sort the seq_dict by keys a.k.a res_ids
         sorted_data = sorted(seq_dict.items())
         for i in sorted_data:
             seq += i[1]
@@ -157,7 +153,6 @@ class TMScoreFSMulti:
         )
 
         tmscores = []
-        # modelfiles = sorted(glob.glob(str(predfilepath) + "/*_unrelaxed*pdb"))
         modelfiles = glob.glob(str(predfilepath) + "/single*_unrelaxed*pdb")
 
         if len(modelfiles) == 0:
@@ -197,9 +192,6 @@ class TMScoreFSMulti:
 
         import numpy as np
 
-        # print(res_range1,res_range2)
-
-        # get list of subdirectories
         all_sub_dir_paths = glob.glob(str(data_dir))
         tmscores_fs = []
 
@@ -221,7 +213,5 @@ class TMScoreFSMulti:
 
             tmscores_fs.extend([tmscore_lst1, tmscore_lst2])
 
-        print("         ")
-        tmscores_fs = np.array(tmscores_fs)
-        print("tmscores_fs")
-        self.tmscores_fs = tmscores_fs
+        self.tmscores_fs = np.array(tmscores_fs)
+        print(f"TM-scores for fold-switching regions (shape: {self.tmscores_fs.shape}):")

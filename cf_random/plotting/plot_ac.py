@@ -31,22 +31,19 @@ class Plot2DScatterAC:
         os.getcwd() + "/"
 
         # Plotting the TM-score values as 2D scatter plot
-        print("                                        ")
         print("Size of column: ", TMs_random.shape[-1])
         print("Size of row: ", TMs_random.shape[0])
         print("Dimension: ", TMs_random.ndim)
 
-        print("                                        ")
-        print(TMs_random)
-        print("                                        ")
-        print(TMs_full)
+        print(f"Random MSA TM-scores: {TMs_random}")
+        print(f"Full MSA TM-scores: {TMs_full}")
 
-        print("checking plddt")
-        print(plddt_full)
-        print(plddt_random)
+        print("Checking plddt")
+        print(f"Full MSA pLDDT scores: {plddt_full}")
+        print(f"Random MSA pLDDT scores: {plddt_random}")
 
         plddt_random = np.reshape(plddt_random, (7, (nMSA + 5) * 5))
-        print(plddt_random)
+        print(f"Reshaped Random MSA pLDDT scores: {plddt_random}")
 
         if model_type != "alphafold2_multimer_v3":
             TMs_full_resh = np.reshape(TMs_full, ((((nMSA + 5) * 2), 5)))

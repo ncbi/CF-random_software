@@ -232,7 +232,5 @@ class TMScoreFS:
 
             tmscores_fs.extend([tmscore_lst1, tmscore_lst2])
 
-        print("         ")
-        tmscores_fs_array = np.array(tmscores_fs)
-        print("tmscores_fs")
-        self.tmscores_fs = tmscores_fs_array
+        self.tmscores_fs = np.array(tmscores_fs)
+        print(f"TM-scores for fold-switching regions (shape: {self.tmscores_fs.shape}):")

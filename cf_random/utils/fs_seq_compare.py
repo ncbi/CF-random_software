@@ -15,21 +15,20 @@ class FSRange:
     def __init__(self, pdb1, pdb2, pdb1_name, pdb2_name, pred_dir):
         # Check first residue index of query proteins
         self.first_res_check(pdb1, pdb2)
-        print("    ")
-        print("checking first residue index")
+        print("Checking first residue index")
         print(self.pdb1_res_index_1)
         print(self.pdb2_res_index_1)
 
         pred_folder = pred_dir
         pred_path = pred_folder
-        print(pred_path)
+        print(f"Predicted model directory: {pred_path}")
 
         pred_files = glob.glob(str(pred_path) + "/*_unrelaxed*pdb")
 
         # Read range file information
         self.res_check(pdb1, pdb2, pdb1_name, pdb2_name)
-        print(self.crys_fs_res_1_update, self.pred_fs_res_1_update)
-        print(self.crys_fs_res_2_update, self.pred_fs_res_2_update)
+        print(f"Crystal structure fold-switching residues: {self.crys_fs_res_1_update}, {self.crys_fs_res_2_update}")
+        print(f"Predicted fold-switching residues: {self.pred_fs_res_1_update}, {self.pred_fs_res_2_update}")
 
         crys1_fs_res_st = self.crys_fs_res_1_update[0]
         crys1_fs_res_ed = self.crys_fs_res_1_update[1]
@@ -54,21 +53,20 @@ class FSRange:
             crys2_fs_res_st = self.crys_fs_res_2_update[0]
             crys2_fs_res_ed = self.crys_fs_res_2_update[1]
 
-        print("checking starting and ending residue number")
+        print("Checking starting and ending residue number")
         print("")
         print("crystal structure")
-        print(crys1_fs_res_st, crys1_fs_res_ed)
-        print(crys2_fs_res_st, crys2_fs_res_ed)
+        print(f"Fold-switching residues: {crys1_fs_res_st}, {crys1_fs_res_ed}")
+        print(f"Fold-switching residues: {crys2_fs_res_st}, {crys2_fs_res_ed}")
         print("")
         print("predicted structure")
-        print(pred1_fs_res_st, pred1_fs_res_ed)
-        print(pred2_fs_res_st, pred2_fs_res_ed)
+        print(f"Fold-switching residues: {pred1_fs_res_st}, {pred1_fs_res_ed}")
+        print(f"Fold-switching residues: {pred2_fs_res_st}, {pred2_fs_res_ed}")
 
         # Perform pydssp and calculate secondary structure similarity
         index = 0
         print(np.size(pred_files))
-        print("         ")
-        print("calculating with pdb1 ", pdb1_name)
+        print(f"Calculating with pdb1: {pdb1_name}")
         for model in pred_files:
             print(model)
             self.pydssp(pdb1, model, index, pdb1_name)
@@ -83,9 +81,8 @@ class FSRange:
             seq2 = dssp_read_tmp[0].iloc[1]
 
             # crystal protein 1 and predictions
-            print("     ")
-            print(seq1[crys1_fs_res_st:crys1_fs_res_ed])
-            print(seq2[pred2_fs_res_st:pred2_fs_res_ed])
+            print(f"Crystal structure fold-switching region: {seq1[crys1_fs_res_st:crys1_fs_res_ed]}")
+            print(f"Predicted structure fold-switching region: {seq2[pred2_fs_res_st:pred2_fs_res_ed]}")
             if (
                 fuzz.ratio(
                     seq1[crys1_fs_res_st:crys1_fs_res_ed], seq2[pred2_fs_res_st:pred2_fs_res_ed]
@@ -102,8 +99,7 @@ class FSRange:
                 print("calculating TM-score of fs with alternative pdb")
 
                 index = 0
-                print("         ")
-                print("calculating with pdb2 ", pdb2_name)
+                print(f"Calculating with pdb2: {pdb2_name}")
 
                 for model in pred_files:
                     self.pydssp(pdb2, model, index, pdb1_name)
@@ -117,9 +113,8 @@ class FSRange:
                     seq2 = dssp_read_tmp[0].iloc[1]
 
                     # crystal protein 1 and predictions
-                    print("     ")
-                    print(seq1[crys2_fs_res_st:crys2_fs_res_ed])
-                    print(seq2[pred2_fs_res_st:pred2_fs_res_ed])
+                    print(f"Crystal structure fold-switching region: {seq1[crys2_fs_res_st:crys2_fs_res_ed]}")
+                    print(f"Predicted structure fold-switching region: {seq2[pred2_fs_res_st:pred2_fs_res_ed]}")
                     if (
                         fuzz.ratio(
                             seq1[crys2_fs_res_st:crys2_fs_res_ed],
@@ -146,11 +141,11 @@ class FSRange:
         # First residue index check
         structure_1 = PDBParser().get_structure("pdb1", pdb1)
         model_1 = structure_1[0]
-        print(model_1)
+        print(f"Model 1: {model_1}")
 
         structure_2 = PDBParser().get_structure("pdb2", pdb2)
         model_2 = structure_2[0]
-        print(model_2)
+        print(f"Model 2: {model_2}")
 
         res_index_1 = []
         res_index_2 = []
@@ -173,7 +168,7 @@ class FSRange:
         command = (
             "pydssp " + crys_pdb + " " + pred_pdb + " -o output_" + pdb_name + "_" + number + ".log"
         )
-        print(command)
+        print(f"Executing command: {command}")
         os.system(command)
 
     def res_check(self, pdb1, pdb2, pdb1_name, pdb2_name):
@@ -202,10 +197,12 @@ class FSRange:
 
         crys_fs_res_1_update = crys_fs_res_1.split("-")
         crys_fs_res_2_update = crys_fs_res_2.split("-")
-        print(crys_fs_res_1_update, crys_fs_res_2_update)
+        print(f"Crystal fold-switching region 1: {crys_fs_res_1_update}")
+        print(f"Crystal fold-switching region 2: {crys_fs_res_2_update}")
         pred_fs_res_1_update = pred_fs_res_1.split("-")
         pred_fs_res_2_update = pred_fs_res_2.split("-")
-        print(pred_fs_res_1_update, pred_fs_res_2_update)
+        print(f"Predicted fold-switching region 1: {pred_fs_res_1_update}")
+        print(f"Predicted fold-switching region 2: {pred_fs_res_2_update}")
 
         # Convert list data to int
         self.crys_fs_res_1_update = [int(i) for i in crys_fs_res_1_update]
