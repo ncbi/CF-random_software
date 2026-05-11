@@ -6,8 +6,12 @@ import os
 
 import numpy as np
 import pandas as pd
-from Bio.PDB.PDBParser import PDBParser
-from thefuzz import fuzz
+from Bio.PDB.PDBParser import (
+    PDBParser,
+)
+from thefuzz import (
+    fuzz,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,21 +70,27 @@ class FSRange:
 
         logger.debug(
             "Adjusted FS ranges — crystal: pdb1=[%s,%s] pdb2=[%s,%s]; predicted: pdb1=[%s,%s] pdb2=[%s,%s]",
-            crys1_fs_res_st, crys1_fs_res_ed,
-            crys2_fs_res_st, crys2_fs_res_ed,
-            pred1_fs_res_st, pred1_fs_res_ed,
-            pred2_fs_res_st, pred2_fs_res_ed,
+            crys1_fs_res_st,
+            crys1_fs_res_ed,
+            crys2_fs_res_st,
+            crys2_fs_res_ed,
+            pred1_fs_res_st,
+            pred1_fs_res_ed,
+            pred2_fs_res_st,
+            pred2_fs_res_ed,
         )
 
         # Compare secondary structure of predicted models against pdb1
         index = 0
-        logger.info("Comparing FS region secondary structure against %s (%d models)", pdb1_name, np.size(pred_files))
+        logger.info(
+            "Comparing FS region secondary structure against %s (%d models)",
+            pdb1_name,
+            np.size(pred_files),
+        )
         for model in pred_files:
             logger.debug("Processing model: %s", model)
             self.pydssp(pdb1, model, index, pdb1_name)
-            dssp_read_tmp = pd.read_csv(
-                f"output_{pdb1_name}_{index}.log", sep=" ", header=None
-            )
+            dssp_read_tmp = pd.read_csv(f"output_{pdb1_name}_{index}.log", sep=" ", header=None)
             seq1 = dssp_read_tmp[0].iloc[0]
             seq2 = dssp_read_tmp[0].iloc[1]
 
@@ -129,18 +139,14 @@ class FSRange:
                         )
                         > 85
                     ):
-                        logger.info(
-                            "FS region correctly predicted (matched pdb2: %s)", pdb2_name
-                        )
+                        logger.info("FS region correctly predicted (matched pdb2: %s)", pdb2_name)
                         break
                     elif index == (int(np.size(pred_files)) - 1):
                         logger.warning(
                             "FS region not correctly predicted for %s against either reference",
                             pdb1_name,
                         )
-                        with open(
-                            f"fs_compare_output_{pdb1_name}.log", "w", encoding="utf-8"
-                        ) as f:
+                        with open(f"fs_compare_output_{pdb1_name}.log", "w", encoding="utf-8") as f:
                             f.write("fail")
                     else:
                         index += 1

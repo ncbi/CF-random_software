@@ -10,13 +10,24 @@ import glob
 import logging
 import os
 import sys
-from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from pathlib import (
+    Path,
+)
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
 
 import numpy as np
-from tmtools import tm_align
+from tmtools import (
+    tm_align,
+)
 
-from cf_random.utils.constants import AA3TO1
+from cf_random.utils.constants import (
+    AA3TO1,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +104,9 @@ class TMScoreFS:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    (N x 3) and seq is the one-letter amino acid sequence string.
         """
-        from Bio.PDB import PDBParser
+        from Bio.PDB import (
+            PDBParser,
+        )
 
         pdb_parser = PDBParser(QUIET=True)
         struct = pdb_parser.get_structure("x", str(pdbfile))
@@ -120,9 +133,7 @@ class TMScoreFS:
         sorted_data = sorted(seq_dict.items())
         seq = "".join(item[1] for item in sorted_data)
 
-        logger.debug(
-            "Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range
-        )
+        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range)
         return coords_np, seq
 
     def get_tmscore(
@@ -227,6 +238,4 @@ class TMScoreFS:
             tmscores_fs.append(scores)
 
         self.tmscores_fs = np.array(tmscores_fs)
-        logger.info(
-            "TM-score array shape: %s", self.tmscores_fs.shape
-        )
+        logger.info("TM-score array shape: %s", self.tmscores_fs.shape)

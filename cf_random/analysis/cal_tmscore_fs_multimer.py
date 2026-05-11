@@ -10,14 +10,27 @@ import glob
 import logging
 import os
 import sys
-from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from pathlib import (
+    Path,
+)
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
 
 import numpy as np
-from Bio.PDB import PDBParser
-from tmtools import tm_align
+from Bio.PDB import (
+    PDBParser,
+)
+from tmtools import (
+    tm_align,
+)
 
-from cf_random.utils.constants import AA3TO1
+from cf_random.utils.constants import (
+    AA3TO1,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +98,7 @@ class TMScoreFSMulti:
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
 
-    def get_coords(
-        self, pdbfile: Union[str, Path], fs_range: str
-    ) -> Tuple[np.ndarray, str]:
+    def get_coords(self, pdbfile: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
         """Extracts coordinates and sequence for fold-switching region from PDB file.
 
         Args:
@@ -119,9 +130,7 @@ class TMScoreFSMulti:
         coords_np = np.array(coords)
         seq = "".join(item[1] for item in sorted(seq_dict.items()))
 
-        logger.debug(
-            "Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range
-        )
+        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range)
         return coords_np, seq
 
     def get_tmscore(

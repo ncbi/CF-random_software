@@ -8,8 +8,12 @@ Provides plotting helpers used by the command-line tools.
 import logging
 
 import numpy as np
-from matplotlib import pyplot as plt
-from numpy import genfromtxt
+from matplotlib import (
+    pyplot as plt,
+)
+from numpy import (
+    genfromtxt,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +34,8 @@ class Plot2DScatterAC:
         model_type: str,
     ):
         # Load TM-scores both full- and random-MSA
-        tmscores_full = genfromtxt(
-            f"TMScore_{full_cate}_{pdb1_name}.csv", delimiter=" "
-        )
-        tmscores_random = genfromtxt(
-            f"TMScore_{random_cate}_{pdb1_name}.csv", delimiter=" "
-        )
+        tmscores_full = genfromtxt(f"TMScore_{full_cate}_{pdb1_name}.csv", delimiter=" ")
+        tmscores_random = genfromtxt(f"TMScore_{random_cate}_{pdb1_name}.csv", delimiter=" ")
 
         # Load pLDDT scores both full- and random-MSA
         plddt_full = genfromtxt(f"plddt_{full_cate}_{pdb1_name}.csv", delimiter=" ")

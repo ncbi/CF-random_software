@@ -9,7 +9,6 @@ regions and orchestrating ColabFold batch predictions with varied MSA sizes.
 import glob
 import logging
 import os
-
 from typing import (
     List,
 )

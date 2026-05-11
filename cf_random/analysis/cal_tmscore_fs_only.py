@@ -10,14 +10,27 @@ import glob
 import logging
 import os
 import sys
-from pathlib import Path
-from typing import Dict, List, Tuple, Union
+from pathlib import (
+    Path,
+)
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
 
 import numpy as np
-from Bio.PDB import PDBParser
-from tmtools import tm_align
+from Bio.PDB import (
+    PDBParser,
+)
+from tmtools import (
+    tm_align,
+)
 
-from cf_random.utils.constants import AA3TO1
+from cf_random.utils.constants import (
+    AA3TO1,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -117,9 +130,7 @@ class TMScoreFS:
         coords_np = np.array(coords)
         seq = "".join(item[1] for item in sorted(seq_dict.items()))
 
-        logger.debug(
-            "Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range
-        )
+        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range)
         return coords_np, seq
 
     def get_tmscore(

@@ -9,7 +9,6 @@ helpers to run ColabFold batches for monomer/multimer cases.
 import glob
 import logging
 import os
-
 from pathlib import (
     Path,
 )
