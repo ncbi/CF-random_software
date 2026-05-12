@@ -211,9 +211,11 @@ class TMScoreCalAllVarFS:
 
         # Full MSA whole-structure TM-scores
         # Passed as glob pattern string so BaseTMScore._resolve_models expands it
+        pdb1_basename = self.pdb1_name.split("/")[-1]
+
         full_pred_dir = (
             str(PREDICTIONS_ROOT / self.pdb1_name)
-            + f"/{self.pdb1_name}_predicted_models_full_rand_*"
+            + f"/{pdb1_basename}_predicted_models_full_rand_*"
         )
         msa_full_tmscore = TMScore(
             full_pred_dir,
@@ -227,7 +229,6 @@ class TMScoreCalAllVarFS:
 
         # Full MSA fold-switching region TM-scores
         msa_fs_tmscore = TMScoreFS(
-            full_pred_dir,
             self.pdb1,
             self.pdb1_name,
             self.pdb2,
@@ -273,7 +274,7 @@ class TMScoreCalAllVarFS:
             pred_dir = (
                 str(PREDICTIONS_ROOT / self.pdb1_name)
                 + f"/{self.pdb1_name}_predicted_models_rand_*"
-                + f"_max_{max_msa}_ext_{ext_msa}/"
+                + f"_max_{max_msa}_ext_{ext_msa}"
             )
             logger.debug("Shallow MSA dir pattern: %s", pred_dir)
 
@@ -289,11 +290,11 @@ class TMScoreCalAllVarFS:
             last_shallow = shallow
 
             shallow_fs = TMScoreFS(
-                pred_dir,
                 self.pdb1,
                 self.pdb1_name,
                 self.pdb2,
                 self.pdb2_name,
+                pred_dir_override=pred_dir,
             )
             tmscores_fs_random = list(np.append(tmscores_fs_random, shallow_fs.tmscores_fs))
 

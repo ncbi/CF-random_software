@@ -16,6 +16,7 @@ from pathlib import (
 from typing import (
     Dict,
     List,
+    Optional,
     Tuple,
     Union,
 )
@@ -35,6 +36,9 @@ from cf_random.utils.constants import (
 logger = logging.getLogger(__name__)
 
 
+PREDICTIONS_ROOT = Path("predictions_all")
+
+
 class TMScoreFS:
     """Calculates TM-scores for fold-switching regions between PDB structures.
 
@@ -47,7 +51,12 @@ class TMScoreFS:
     """
 
     def __init__(
-        self, pdb1: Union[str, Path], pdb1_name: str, pdb2: Union[str, Path], pdb2_name: str
+        self,
+        pdb1: Union[str, Path],
+        pdb1_name: str,
+        pdb2: Union[str, Path],
+        pdb2_name: str,
+        pred_dir_override: Optional[str] = None,
     ) -> None:
         """Initializes TM-score calculation for full MSA fold-switching analysis.
 
@@ -60,14 +69,21 @@ class TMScoreFS:
         Raises:
             SystemExit: If PDB names are not found in range file.
         """
+        self.tmscores_fs = None
+
         current_dir = os.getcwd() + "/"
-        pred_dir = pdb1_name + "_predicted_models_full_*"
-        pred_path = current_dir + pred_dir + "/"
-        data_dir = Path(pred_path)
+        pdb1_basename = pdb1_name.split("/")[-1]
+
+        if pred_dir_override is not None:
+            data_dir = pred_dir_override
+        else:
+            data_dir = (
+                str(PREDICTIONS_ROOT / pdb1_name) + f"/{pdb1_basename}_predicted_models_full_*"
+            )
         logger.debug("Prediction directory pattern: %s", data_dir)
 
         # Read fold-switching ranges from file
-        range_file = current_dir + "range_fs_pairs_all.txt"
+        range_file = os.path.join(current_dir, "range_fs_pairs_all.txt")
         fs_res: Dict[str, Tuple[str, str]] = {}
 
         with open(range_file, "r", encoding="utf-8") as file:
@@ -221,6 +237,7 @@ class TMScoreFS:
         tmscores_fs: List[List[float]] = []
 
         for subdir in all_sub_dir_paths:
+            logger.info("Processing prediction directory: %s", subdir)
             preddir = Path(subdir)
             if not preddir.exists():
                 logger.debug("Skipping missing directory: %s", preddir)
@@ -229,6 +246,7 @@ class TMScoreFS:
             tmscores_fs.append(scores)
 
         for subdir in all_sub_dir_paths:
+            logger.info("Processing prediction directory: %s", subdir)
             preddir = Path(subdir)
             if not preddir.exists():
                 logger.debug("Skipping missing directory: %s", preddir)

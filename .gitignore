@@ -80,3 +80,6 @@ tmp/
 
 params/
 msa_folder/
+range_fs_pairs_all.txt
+*.pdb
+2oug_C-search

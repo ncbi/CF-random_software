@@ -211,7 +211,8 @@ def main() -> None:
     if args.option == "blind":
         pdb1_name = resolve_pdb1_name(args)
         logger.info("Work name: %s", pdb1_name)
-    elif args.pdb1 is not None and args.pdb2 is not None:
+
+    if args.pdb1 and args.pdb2:
         pdb1 = args.pdb1
         pdb2 = args.pdb2
         pdb1_name = pdb1.replace(".pdb", "")
