@@ -21,6 +21,9 @@ from typing import (
 )
 
 import numpy as np
+from Bio.PDB import (
+    PDBParser,
+)
 from tmtools import (
     tm_align,
 )
@@ -104,10 +107,6 @@ class TMScoreFS:
             tuple: (coords_np, seq) where coords_np is numpy array of CA coordinates
                    (N x 3) and seq is the one-letter amino acid sequence string.
         """
-        from Bio.PDB import (
-            PDBParser,
-        )
-
         pdb_parser = PDBParser(QUIET=True)
         struct = pdb_parser.get_structure("x", str(pdbfile))
         coords: List[List[float]] = []

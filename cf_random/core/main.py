@@ -123,7 +123,8 @@ def resolve_pdb1_name(args: argparse.Namespace) -> str:
     """Resolve the working name for blind mode."""
     if args.pdb1 is None and args.pdb2 is None:
         return args.pname
-    elif args.pdb1 is None and args.pname is None:
+
+    if args.pdb1 is None and args.pname is None:
         return args.fname.replace("/", "")
     else:
         return args.fname.replace("/", "")
@@ -136,11 +137,14 @@ def resolve_num_msa_num_ens(args: argparse.Namespace):
 
     if num_msa_raw is None and num_ens_raw is None:
         return 0, 0
-    elif num_msa_raw is not None and num_ens_raw is not None:
+
+    if num_msa_raw is not None and num_ens_raw is not None:
         return int(num_msa_raw), int(num_ens_raw)
-    elif num_msa_raw is None and num_ens_raw is not None:
+
+    if num_msa_raw is None and num_ens_raw is not None:
         return 0, int(num_ens_raw)
-    elif num_msa_raw is not None and num_ens_raw is None:
+
+    if num_msa_raw is not None and num_ens_raw is None:
         return int(num_msa_raw), 0
     else:
         raise ValueError("Please provide a valid combination of --num_msa and --num_ens")
@@ -150,9 +154,11 @@ def resolve_search_dirs(args: argparse.Namespace):
     """Resolve search_dir and search_multi_dir."""
     if args.fname is None and args.fmname is None:
         raise ValueError("--fname (MSA folder) is required for all modes")
-    elif args.fname is None and args.fmname is not None:
+
+    if args.fname is None and args.fmname is not None:
         raise ValueError("--fname (monomer MSA folder) is required alongside --fmname")
-    elif args.fname is not None and args.fmname is None:
+
+    if args.fname is not None and args.fmname is None:
         return args.fname, 0
     else:
         return args.fname, " " + args.fmname

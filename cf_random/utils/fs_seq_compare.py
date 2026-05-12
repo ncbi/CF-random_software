@@ -112,7 +112,7 @@ class FSRange:
                     f.write("success")
                 break
 
-            elif index == (int(np.size(pred_files)) - 1):
+            if index == (int(np.size(pred_files)) - 1):
                 logger.info(
                     "FS region not matched against %s; retrying against %s", pdb1_name, pdb2_name
                 )
@@ -141,7 +141,7 @@ class FSRange:
                     ):
                         logger.info("FS region correctly predicted (matched pdb2: %s)", pdb2_name)
                         break
-                    elif index == (int(np.size(pred_files)) - 1):
+                    if index == (int(np.size(pred_files)) - 1):
                         logger.warning(
                             "FS region not correctly predicted for %s against either reference",
                             pdb1_name,
