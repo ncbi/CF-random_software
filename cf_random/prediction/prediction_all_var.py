@@ -44,7 +44,7 @@ class PredictionAll:
         """
         self.pdb1_name = pdb1_name
         self.search_dir = search_dir
-        self.search_multi_dir = search_multi_dir
+        self.search_multi_dir = self.search_dir or search_multi_dir
         self.model_type = model_type
 
         self.base_output_dir = Path("predictions_all") / pdb1_name
@@ -58,14 +58,22 @@ class PredictionAll:
         full_output_dir = (
             self.base_output_dir / f"{pdb1_name}_predicted_models_full_rand_{full_random_seed}"
         )
-        logger.info("Running full MSA prediction: %s", full_output_dir)
+        logger.info(
+            "Running full MSA prediction with parameters: %s",
+            {
+                "random_seed": full_random_seed,
+                "search_dir": self.search_dir,
+                "output_dir": full_output_dir,
+                "model_type": self.model_type,
+            },
+        )
         MSAMaxRunner(
-            self.search_dir,
-            str(full_output_dir),
-            self.pdb1_name,
-            full_random_seed,
-            num_seeds,
-            self.model_type,
+            search_dir=self.search_dir,
+            output_dir=str(full_output_dir),
+            pdb_name=self.pdb1_name,
+            random_seed=full_random_seed,
+            num_seeds=num_seeds,
+            model_type=self.model_type,
         )
 
         # Variable MSA seed: independently sampled from range 0-99
@@ -77,12 +85,22 @@ class PredictionAll:
             variable_search_dir = self.search_dir
 
         variable_output_dir = f"{pdb1_name}_predicted_models_rand_"
-        logger.info("Running variable MSA predictions under: %s", variable_output_dir)
+        logger.info(
+            "Running variable MSA predictions under parameters: %s",
+            {
+                "search_dir": variable_search_dir,
+                "output_dir": variable_output_dir,
+                "pdb_name": self.pdb1_name,
+                "random_seed": var_random_seed,
+                "num_seeds": num_seeds,
+                "model_type": self.model_type,
+            },
+        )
         MSAVariableRunner(
-            variable_search_dir,
-            str(variable_output_dir),
-            self.pdb1_name,
-            var_random_seed,
-            num_seeds,
-            self.model_type,
+            search_dir=variable_search_dir,
+            output_dir=str(variable_output_dir),
+            pdb_name=self.pdb1_name,
+            random_seed=var_random_seed,
+            num_seeds=num_seeds,
+            model_type=self.model_type,
         )

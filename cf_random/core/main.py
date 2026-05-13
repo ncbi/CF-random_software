@@ -35,6 +35,9 @@ from ..analysis.tmscore_all_var import (
 from ..analysis.tmscore_all_var_fs import (
     TMScoreCalAllVarFS,
 )
+from ..analysis.cal_tmscore_fs_multimer import (
+    TMScoreFSMulti,
+)
 from ..plotting.plot_ac import (
     Plot2DScatterAC,
 )
@@ -43,6 +46,9 @@ from ..plotting.plot_fs import (
 )
 from ..prediction.prediction_all_var import (
     PredictionAll,
+)
+from ..prediction.pred_cal_tmscore_multimer import (
+    PredictionAllMultimerFS,
 )
 from ..utils.search_foldseek_cluster import (
     BlindScreening,
@@ -64,7 +70,6 @@ MODEL_TYPES = {
     "monomer": "alphafold2",
     "multimer": "alphafold2_multimer_v3",
 }
-MULTI = "multimer_prediction"
 BLIND = "predictions_all"
 SUCCESS = "predictions_all"
 
@@ -111,7 +116,7 @@ def parse_arguments() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--type",
+        "--model-type",
         type=str,
         choices=["ptm", "monomer", "multimer"],
         help="select model-type of Colabfold: ptm, monomer, or multimer",
@@ -119,7 +124,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def resolve_pdb1_name(args: argparse.Namespace) -> str:
+def resolve_pdb_name(args: argparse.Namespace) -> str:
     """Resolve the working name for blind mode."""
     if args.pdb1 is None and args.pdb2 is None:
         return args.pname
@@ -159,30 +164,28 @@ def resolve_search_dirs(args: argparse.Namespace):
         raise ValueError("--fname (monomer MSA folder) is required alongside --fmname")
 
     if args.fname is not None and args.fmname is None:
-        return args.fname, 0
+        return args.fname, None
     else:
         return args.fname, " " + args.fmname
 
 
 def determine_model_type(args: argparse.Namespace, pdb1: Optional[str]) -> str:
     """Determine the model type and set up multimer directory if needed."""
-    if args.type is None or args.type == "ptm":
+    if args.model_type is None or args.model_type == "ptm":
         return MODEL_TYPES["ptm"]
-    elif args.type == "monomer":
+    elif args.model_type == "monomer":
         return MODEL_TYPES["monomer"]
-    elif args.type == "multimer" and args.option == "blind":
+    elif args.model_type == "multimer" and args.option == "blind":
         model_type = MODEL_TYPES["multimer"]
-        Path(MULTI).mkdir(parents=True, exist_ok=True)
         return model_type
-    elif args.type == "multimer":
+    elif args.model_type == "multimer":
         ter_count = count_chains(pdb1)
         logger.info("%d chain(s) in this multimer file.", ter_count)
         model_type = MODEL_TYPES["multimer"]
-        Path(MULTI).mkdir(parents=True, exist_ok=True)
         return model_type
     else:
         raise ValueError(
-            f"Unrecognized model type: {args.type!r}. Choose from: ptm, monomer, multimer"
+            f"Unrecognized model type: {args.model_type!r}. Choose from: ptm, monomer, multimer"
         )
 
 
@@ -199,7 +202,7 @@ def main() -> None:
     """Main entry point for the CF-random pipeline."""
     args = parse_arguments()
 
-    download_alphafold_params("alphafold2_ptm", Path("."))
+    download_alphafold_params(MODEL_TYPES[args.model_type], Path("."))
 
     pwd = os.getcwd() + "/"
     pdb1: Optional[str] = None
@@ -209,7 +212,7 @@ def main() -> None:
 
     # Resolve working names
     if args.option == "blind":
-        pdb1_name = resolve_pdb1_name(args)
+        pdb1_name = resolve_pdb_name(args)
         logger.info("Work name: %s", pdb1_name)
 
     if args.pdb1 and args.pdb2:
@@ -226,36 +229,58 @@ def main() -> None:
     search_dir = args.fname
     success_dir = f"{SUCCESS}/{pdb1_name}/"
 
+    logger.info(
+        "Running CF-random pipeline with updated options: %s",
+        {
+            "pdb1": pdb1,
+            "pdb1_name": pdb1_name,
+            "pdb2": pdb2,
+            "pdb2_name": pdb2_name,
+            "num_msa": num_msa,
+            "num_ens": num_ens,
+            "model_type": model_type,
+            "search_dir": search_dir,
+            "search_multi_dir": search_multi_dir,
+            "success_dir": success_dir,
+        },
+    )
+
     if args.option == "AC":
         run_alternative_conformation_workflow(
-            pdb1,
-            pdb1_name,
-            pdb2,
-            pdb2_name,
-            num_msa,
-            num_ens,
-            model_type,
-            search_dir,
-            search_multi_dir,
-            success_dir,
-            pwd,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            num_ens=num_ens,
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            success_dir=success_dir,
+            pwd=pwd,
         )
     elif args.option == "FS":
         run_fold_switching_workflow(
-            pdb1,
-            pdb1_name,
-            pdb2,
-            pdb2_name,
-            num_msa,
-            num_ens,
-            model_type,
-            search_dir,
-            search_multi_dir,
-            success_dir,
-            pwd,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            num_ens=num_ens,
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            success_dir=success_dir,
+            pwd=pwd,
         )
     elif args.option == "blind":
-        run_blind_workflow(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
+        run_blind_workflow(
+            pdb1_name=pdb1_name,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            num_msa=num_msa,
+            model_type=model_type,
+        )
     else:
         raise ValueError(f"Unrecognized option: {args.option!r}. Choose from: AC, FS, inAC, blind")
 
@@ -291,28 +316,34 @@ def run_alternative_conformation_workflow(
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
         calculate_tm_score = TMScoreCalAllVar(
-            pdb1,
-            pdb1_name,
-            pdb2,
-            pdb2_name,
-            num_msa,
-            "AC",
-            model_type,
-            search_dir,
-            search_multi_dir,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            option="AC",
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
         )
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
+        PredictionAll(
+            pdb1_name=pdb1_name,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            num_msa=num_msa,
+            model_type=model_type,
+        )
         calculate_tm_score = TMScoreCalAllVar(
-            pdb1,
-            pdb1_name,
-            pdb2,
-            pdb2_name,
-            num_msa,
-            "AC",
-            model_type,
-            search_dir,
-            search_multi_dir,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            option="AC",
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
         )
 
     shallow_msa_size = np.append([], calculate_tm_score.size_selection)
@@ -320,7 +351,7 @@ def run_alternative_conformation_workflow(
     np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
     if model_type == MODEL_TYPES["multimer"]:
-        base = pwd + MULTI + "/" + pdb1_name
+        base = pwd + success_dir
         list_org_samplings = glob.glob(base + "/*full_rand*/")
         list_ran_samplings = glob.glob(base + "/*max*/")
     else:
@@ -329,9 +360,33 @@ def run_alternative_conformation_workflow(
 
     full = "full-MSA"
     random = "random-MSA"
-    PlddtCal(list_org_samplings, full, pdb1_name, num_msa, num_ens, model_type)
-    PlddtCal(list_ran_samplings, random, pdb1_name, num_msa, num_ens, model_type)
-    Plot2DScatterAC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens, model_type)
+    PlddtCal(
+        sub_list=list_org_samplings,
+        category=full,
+        pdb_name=pdb1_name,
+        num_msa=num_msa,
+        num_ens=num_ens,
+        model_type=model_type,
+    )
+    PlddtCal(
+        sub_list=list_ran_samplings,
+        category=random,
+        pdb_name=pdb1_name,
+        num_msa=num_msa,
+        num_ens=num_ens,
+        model_type=model_type,
+    )
+    Plot2DScatterAC(
+        full_category=full,
+        random_category=random,
+        pdb1=pdb1,
+        pdb1_name=pdb1_name,
+        pdb2=pdb2,
+        pdb2_name=pdb2_name,
+        num_msa=num_msa,
+        num_ens=num_ens,
+        model_type=model_type,
+    )
 
 
 def run_fold_switching_workflow(
@@ -364,41 +419,52 @@ def run_fold_switching_workflow(
 
     shallow_msa_size = np.array([])
 
+    logging.info("Success directory and count: %s, %d", success_dir, succ_dir_count)
+
     if os.path.exists(success_dir) and succ_dir_count >= 8:
         logger.info("Predictions including full and random-MSA were already completed.")
         calculate_tm_score = TMScoreCalAllVarFS(
-            pdb1,
-            pdb1_name,
-            pdb2,
-            pdb2_name,
-            num_msa,
-            "FS",
-            model_type,
-            search_dir,
-            search_multi_dir,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            option="FS",
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
         )
         shallow_msa_size = np.append(shallow_msa_size, calculate_tm_score.size_selection)
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
-        if model_type != MODEL_TYPES["multimer"]:
-            calculate_tm_score = TMScoreCalAllVarFS(
-                pdb1,
-                pdb1_name,
-                pdb2,
-                pdb2_name,
-                num_msa,
-                "FS",
-                model_type,
-                search_dir,
-                search_multi_dir,
-            )
-            shallow_msa_size = np.append(shallow_msa_size, calculate_tm_score.size_selection)
+        PredictionAll(
+            pdb1_name=pdb1_name,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            num_msa=num_msa,
+            model_type=model_type,
+        )
+        calculate_tm_score = TMScoreCalAllVarFS(
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            option="FS",
+            model_type=model_type,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+        )
+        shallow_msa_size = np.append(shallow_msa_size, calculate_tm_score.size_selection)
 
-    logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_msa_size)
-    np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
+        logger.info(
+            "Specific size of shallow random MSA is similar to full-MSA: %s", shallow_msa_size
+        )
+        np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
     if model_type == MODEL_TYPES["multimer"]:
-        base = pwd + MULTI + "/" + pdb1_name
+        base = pwd + success_dir
+        logger.info("Multimer prediction base path: %s", base)
+
         list_org_samplings = glob.glob(base + "/*full_rand*/")
         list_ran_samplings = glob.glob(base + "/*max*/")
     else:
@@ -407,15 +473,47 @@ def run_fold_switching_workflow(
 
     full = "full-MSA"
     random = "random-MSA"
-    PlddtCal(list_org_samplings, full, pdb1_name, num_msa, num_ens, model_type)
-    PlddtCal(list_ran_samplings, random, pdb1_name, num_msa, num_ens, model_type)
+    PlddtCal(
+        sub_list=list_org_samplings,
+        category=full,
+        pdb_name=pdb1_name,
+        num_msa=num_msa,
+        num_ens=num_ens,
+        model_type=model_type,
+    )
+    PlddtCal(
+        sub_list=list_ran_samplings,
+        category=random,
+        pdb_name=pdb1_name,
+        num_msa=num_msa,
+        num_ens=num_ens,
+        model_type=model_type,
+    )
 
     if model_type == MODEL_TYPES["multimer"]:
         Plot2DScatterAC(
-            full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens, model_type
+            full_category=full,
+            random_category=random,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            num_ens=num_ens,
+            model_type=model_type,
         )
     else:
-        Plot2DScatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, num_msa, num_ens)
+        Plot2DScatter(
+            full_category=full,
+            random_category=random,
+            pdb1=pdb1,
+            pdb1_name=pdb1_name,
+            pdb2=pdb2,
+            pdb2_name=pdb2_name,
+            num_msa=num_msa,
+            num_ens=num_ens,
+            model_type=model_type,
+        )
 
 
 def run_blind_workflow(
@@ -457,12 +555,18 @@ def run_blind_workflow(
             logger.info("Foldseek search was already done")
 
         # Run blind screening regardless — Foldseek searches skip existing results
-        BlindScreening(pdb1_name, blind_pred_path)
+        BlindScreening(pdb1_name=pdb1_name, blind_path=blind_pred_path)
     else:
-        PredictionAll(pdb1_name, search_dir, search_multi_dir, num_msa, model_type)
+        PredictionAll(
+            pdb1_name=pdb1_name,
+            search_dir=search_dir,
+            search_multi_dir=search_multi_dir,
+            num_msa=num_msa,
+            model_type=model_type,
+        )
         logger.info("Finished running predictions using full and shallow random-MSAs")
         logger.info("Running Foldseek to find related crystal structures")
-        BlindScreening(pdb1_name, blind_pred_path)
+        BlindScreening(pdb1_name=pdb1_name, blind_path=blind_pred_path)
 
 
 if __name__ == "__main__":

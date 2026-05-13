@@ -152,7 +152,9 @@ class TMScoreFSMulti:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        modelfiles = glob.glob(str(predfilepath) + "/single*_unrelaxed*pdb")
+        modelfiles = [
+            f for f in glob.glob(str(predfilepath) + "/single*_unrelaxed*pdb") if "rmTER" not in f
+        ]
 
         if not modelfiles:
             logger.warning("No unrelaxed model files found in %s", predfilepath)

@@ -93,7 +93,12 @@ class BaseTMScore:
 
     def _convert_multimer_to_single(self) -> None:
         """Convert multimer predictions to single chains."""
-        convert_m2s(str(self.pred_dir), self.pdb1_name, self.pdb2_name)
+        matched_dirs = glob.glob(str(self.pred_dir))
+        if not matched_dirs:
+            logger.warning("No directories matched pattern: %s", self.pred_dir)
+            return
+        for pred_dir in matched_dirs:
+            convert_m2s(pred_dir, self.pdb1_name, self.pdb2_name)
 
     def _calculate_scores(self) -> List[float]:
         """Calculate TM-scores against both reference structures.

@@ -185,7 +185,7 @@ class MSAVariableRunner(ColabFoldRunner):
         search_dir: str,
         output_dir: str,
         pdb_name: str,
-        random_seed,
+        random_seed: int,
         num_seeds: int,
         model_type: str,
         multipliers: tuple = MSA_DEPTH_MULTIPLIERS,
@@ -211,6 +211,14 @@ class MSAVariableRunner(ColabFoldRunner):
         else:
             random_seed_str = str(random_seed)
 
+        logger.info(
+            "Running variable MSA predictions with random seed %s on search dir: %s with model type: %s under output dir: %s",
+            random_seed_str,
+            search_dir,
+            model_type,
+            output_dir,
+        )
+
         # Base output_dir is just a prefix used to name local folders
         super().__init__(search_dir, output_dir, pdb_name, num_seeds, model_type)
 
@@ -218,11 +226,6 @@ class MSAVariableRunner(ColabFoldRunner):
         self.multipliers = multipliers
         self.pdb_name = pdb_name
 
-        logger.info(
-            "Running variable MSA predictions for %s with %d depth variations",
-            pdb_name,
-            len(multipliers),
-        )
         self._run_varied_predictions(initial_max_msa, initial_extra_msa)
 
     def _run_varied_predictions(self, initial_max_msa: int, initial_extra_msa: int) -> None:

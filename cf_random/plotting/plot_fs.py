@@ -9,6 +9,7 @@ for predicted structures across varied MSA configurations.
 import logging
 
 import numpy as np
+import seaborn as sns
 from matplotlib import (
     pyplot as plt,
 )
@@ -44,8 +45,8 @@ class Plot2DScatter:
 
     def __init__(
         self,
-        full_cate: str,
-        random_cate: str,
+        full_category: str,
+        random_category: str,
         pdb1: str,
         pdb1_name: str,
         pdb2: str,
@@ -56,8 +57,8 @@ class Plot2DScatter:
         """Initialize and generate scatter plots.
 
         Args:
-            full_cate: Category name for full MSA results.
-            random_cate: Category name for random/variable MSA results.
+            full_category: Category name for full MSA results.
+            random_category: Category name for random/variable MSA results.
             pdb1: Path to first reference structure (unused, kept for API compatibility).
             pdb1_name: Name of first reference structure (used for filenames).
             pdb2: Path to second reference structure (unused, kept for API compatibility).
@@ -72,8 +73,8 @@ class Plot2DScatter:
         self.pdb1_name = pdb1_name
         self.pdb2_name = pdb2_name
         self.num_msa = num_msa
-        self.full_cate = full_cate
-        self.random_cate = random_cate
+        self.full_category = full_category
+        self.random_category = random_category
 
         try:
             self._load_data()
@@ -91,26 +92,26 @@ class Plot2DScatter:
         try:
             # Load TM-scores
             self.tmscore_full = genfromtxt(
-                f"TMScore_{self.full_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"TMScore_{self.full_category}_{self.pdb1_name}.csv", delimiter=" "
             )
             self.tmscore_random = genfromtxt(
-                f"TMScore_{self.random_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"TMScore_{self.random_category}_{self.pdb1_name}.csv", delimiter=" "
             )
 
             # Load pLDDT scores
             self.plddt_full = genfromtxt(
-                f"plddt_{self.full_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"plddt_{self.full_category}_{self.pdb1_name}.csv", delimiter=" "
             )
             self.plddt_random = genfromtxt(
-                f"plddt_{self.random_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"plddt_{self.random_category}_{self.pdb1_name}.csv", delimiter=" "
             )
 
             # Load fold-switching region TM-scores
             self.tmscore_fs_full = genfromtxt(
-                f"TMScore_fs_{self.full_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"TMScore_fs_{self.full_category}_{self.pdb1_name}.csv", delimiter=" "
             )
             self.tmscore_fs_random = genfromtxt(
-                f"TMScore_fs_{self.random_cate}_{self.pdb1_name}.csv", delimiter=" "
+                f"TMScore_fs_{self.random_category}_{self.pdb1_name}.csv", delimiter=" "
             )
 
             logger.info("Successfully loaded all data files")
@@ -184,7 +185,7 @@ class Plot2DScatter:
         plt.grid(True, alpha=0.3)
 
         # Save figure
-        output_file = f"TMscore_{self.full_cate}_{self.pdb1_name}.png"
+        output_file = f"TMscore_{self.full_category}_{self.pdb1_name}.png"
         plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight")
         logger.info(f"Saved whole structure plot to {output_file}")
         plt.close()
@@ -241,7 +242,7 @@ class Plot2DScatter:
         plt.grid(True, alpha=0.3)
 
         # Save figure
-        output_file = f"TMscore_fs-region_{self.full_cate}_{self.pdb1_name}.png"
+        output_file = f"TMscore_fs-region_{self.full_category}_{self.pdb1_name}.png"
         plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight")
         logger.info(f"Saved fold-switching region plot to {output_file}")
         plt.close()

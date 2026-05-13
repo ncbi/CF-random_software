@@ -8,6 +8,7 @@ Provides plotting helpers used by the command-line tools.
 import logging
 
 import numpy as np
+import seaborn as sns
 from matplotlib import (
     pyplot as plt,
 )
@@ -23,8 +24,8 @@ class Plot2DScatterAC:
 
     def __init__(
         self,
-        full_cate: str,
-        random_cate: str,
+        full_category: str,
+        random_category: str,
         pdb1: str,
         pdb1_name: str,
         pdb2: str,
@@ -34,12 +35,12 @@ class Plot2DScatterAC:
         model_type: str,
     ):
         # Load TM-scores both full- and random-MSA
-        tmscores_full = genfromtxt(f"TMScore_{full_cate}_{pdb1_name}.csv", delimiter=" ")
-        tmscores_random = genfromtxt(f"TMScore_{random_cate}_{pdb1_name}.csv", delimiter=" ")
+        tmscores_full = genfromtxt(f"TMScore_{full_category}_{pdb1_name}.csv", delimiter=" ")
+        tmscores_random = genfromtxt(f"TMScore_{random_category}_{pdb1_name}.csv", delimiter=" ")
 
         # Load pLDDT scores both full- and random-MSA
-        plddt_full = genfromtxt(f"plddt_{full_cate}_{pdb1_name}.csv", delimiter=" ")
-        plddt_random = genfromtxt(f"plddt_{random_cate}_{pdb1_name}.csv", delimiter=" ")
+        plddt_full = genfromtxt(f"plddt_{full_category}_{pdb1_name}.csv", delimiter=" ")
+        plddt_random = genfromtxt(f"plddt_{random_category}_{pdb1_name}.csv", delimiter=" ")
 
         logger.debug(
             "TM-score array shape: rows=%d, cols=%d, ndim=%d",
@@ -59,7 +60,7 @@ class Plot2DScatterAC:
             num_msa,
             pdb1_name,
             pdb2_name,
-            full_cate,
+            full_category,
         )
 
     def _plot(
@@ -71,7 +72,7 @@ class Plot2DScatterAC:
         num_msa: int,
         pdb1_name: str,
         pdb2_name: str,
-        full_cate: str,
+        full_category: str,
     ) -> None:
         """Render and save the 2D TM-score scatter plot."""
         plt.figure(0)
@@ -109,6 +110,6 @@ class Plot2DScatterAC:
         plt.xlabel(f"TM-Score similar to fold1({pdb1_name})", fontsize=15)
         plt.ylabel(f"TM-score similar to fold2({pdb2_name})", fontsize=15)
 
-        output_file = f"TMscore_{full_cate}_{pdb1_name}.png"
+        output_file = f"TMscore_{full_category}_{pdb1_name}.png"
         plt.savefig(output_file, transparent=True)
         logger.info("Saved AC scatter plot to %s", output_file)

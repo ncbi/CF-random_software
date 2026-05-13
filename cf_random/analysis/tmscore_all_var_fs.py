@@ -17,6 +17,9 @@ import numpy as np
 from ..prediction.pred_cal_tmscore_multimer import (
     PredictionAllMultimerFS,
 )
+from ..analysis.cal_tmscore_fs_multimer import (
+    TMScoreFSMulti,
+)
 from .base import (
     MULTIMER_MODEL_TYPE,
     BaseTMScore,
@@ -343,20 +346,134 @@ class TMScoreCalAllVarFS:
             )
 
     def _evaluate_multimer(self) -> None:
-        """Run multimer FS TM-score evaluation via PredictionAllMultimerFS."""
-        if not self.search_dir and not self.search_multi_dir:
-            raise ValueError(
-                "Multimer fold-switching evaluation requires search_dir or search_multi_dir"
+        """Run the full multimer FS TM-score evaluation pipeline."""
+            num_seeds = 5 + self.num_msa
+            pdb1_basename = self.pdb1_name.split("/")[-1]
+
+            full_pred_dir = (
+                str(PREDICTIONS_ROOT / self.pdb1_name)
+                + f"/{pdb1_basename}_predicted_models_full_rand_*"
+            )
+            msa_full_tmscore = TMScore(
+                full_pred_dir,
+                self.pdb1,
+                self.pdb1_name,
+                self.pdb2,
+                self.pdb2_name,
+                self.model_type,
+            )
+            full_tmscore = np.asarray(msa_full_tmscore.tmscores, dtype=float).reshape(
+                2, num_seeds * 5
             )
 
-        multimer = PredictionAllMultimerFS(
-            self.pdb1_name,
-            self.pdb2_name,
-            self.search_dir,
-            self.num_msa,
-            self.model_type,
-            self.search_multi_dir,
-            self.pdb1,
-            self.pdb2,
-        )
-        self.size_selection = multimer.size_selection
+            msa_fs_tmscore = TMScoreFSMulti(
+                full_pred_dir,
+                self.pdb1,
+                self.pdb1_name,
+                self.pdb2,
+                self.pdb2_name,
+            )
+            fs_tmscore = np.asarray(msa_fs_tmscore.tmscores_fs, dtype=float).reshape(
+                2, num_seeds * 5
+            )
+
+            if np.average(full_tmscore[0, :]) > np.average(full_tmscore[1, :]):
+                if np.any(fs_tmscore[0, :] >= 0.5) and np.any(full_tmscore[0, :] >= 0.5):
+                    ref_name = self.pdb1_name
+                    alt_name = self.pdb2_name
+                elif np.any(fs_tmscore[1, :] >= 0.5) and np.any(full_tmscore[1, :] >= 0.5):
+                    ref_name = self.pdb2_name
+                    alt_name = self.pdb1_name
+                else:
+                    self._move_failed_full_outputs()
+                    raise RuntimeError("Prediction with deep MSA was failed")
+            else:
+                if np.any(fs_tmscore[1, :] >= 0.5) and np.any(full_tmscore[1, :] >= 0.5):
+                    ref_name = self.pdb2_name
+                    alt_name = self.pdb1_name
+                elif np.any(fs_tmscore[0, :] >= 0.5) and np.any(full_tmscore[0, :] >= 0.5):
+                    ref_name = self.pdb1_name
+                    alt_name = self.pdb2_name
+                else:
+                    self._move_failed_full_outputs()
+                    raise RuntimeError("Prediction with deep MSA was failed")
+
+            logger.info("Reference structure: %s", ref_name)
+            logger.info("Alternative structure: %s", alt_name)
+
+            np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_tmscore, fmt="%2.3f")
+            np.savetxt(f"TMScore_fs_full-MSA_{self.pdb1_name}.csv", fs_tmscore, fmt="%2.3f")
+
+            tmscores_random: List[float] = []
+            tmscores_fs_random: List[float] = []
+            last_shallow: Optional[TMScore] = None
+
+            for max_msa, ext_msa in self._msa_pairs():
+                pred_dir = (
+                    str(PREDICTIONS_ROOT / self.pdb1_name)
+                    + f"/{self.pdb1_name}_predicted_models_rand_*"
+                    + f"_max_{max_msa}_ext_{ext_msa}"
+                )
+                logger.debug("Shallow MSA dir pattern: %s", pred_dir)
+
+                shallow = TMScore(
+                    pred_dir,
+                    self.pdb1,
+                    self.pdb1_name,
+                    self.pdb2,
+                    self.pdb2_name,
+                    self.model_type,
+                )
+                tmscores_random = list(np.append(tmscores_random, shallow.tmscores))
+                last_shallow = shallow
+
+                shallow_fs = TMScoreFSMulti(
+                    pred_dir,
+                    self.pdb1,
+                    self.pdb1_name,
+                    self.pdb2,
+                    self.pdb2_name,
+                )
+                tmscores_fs_random = list(np.append(tmscores_fs_random, shallow_fs.tmscores_fs))
+
+            random_array = np.asarray(tmscores_random, dtype=float)
+            fs_random_array = np.asarray(tmscores_fs_random, dtype=float)
+
+            tmscores_random_reshape = random_array.reshape(14, num_seeds * 5)
+            tmscores_fs_random_reshape = fs_random_array.reshape(14, num_seeds * 5)
+
+            if alt_name == self.pdb2_name:
+                tmscores_random_alter = tmscores_random_reshape[1::2, :]
+                tmscores_fs_random_alter = tmscores_fs_random_reshape[1::2, :]
+            else:
+                tmscores_random_alter = tmscores_random_reshape[0::2, :]
+                tmscores_fs_random_alter = tmscores_fs_random_reshape[0::2, :]
+
+            if np.any(tmscores_random_alter > 0.5) and np.any(tmscores_fs_random_alter > 0.5):
+                np.savetxt(
+                    f"TMScore_random-MSA_{self.pdb1_name}.csv",
+                    tmscores_random_reshape,
+                    fmt="%2.3f",
+                )
+                np.savetxt(
+                    f"TMScore_fs_random-MSA_{self.pdb1_name}.csv",
+                    tmscores_fs_random_reshape,
+                    fmt="%2.3f",
+                )
+
+                logger.info("Finding optimal size of random MSA...")
+                last_shallow.select_size(
+                    tmscores_random_reshape,
+                    tmscores_fs_random_reshape,
+                    self.pdb1_name,
+                    self.pdb2_name,
+                    alt_name,
+                    num_seeds,
+                )
+                self.size_selection = [last_shallow.selection]
+                logger.info("Selected MSA size index: %s", self.size_selection)
+            else:
+                raise RuntimeError(
+                    "Full-MSA prediction is not tightly aligned to crystal structure "
+                    "with additional seeds"
+                )
