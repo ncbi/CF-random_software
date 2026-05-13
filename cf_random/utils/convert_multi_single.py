@@ -55,7 +55,7 @@ class ConvertM2S:
         Also creates cleaned versions of reference structures.
         """
         # Process predicted files
-        files_list = glob.glob(str(self.pred_path / "*_unrelaxed*pdb"))
+        files_list = glob.glob(str(self.pred_path / "0_unrelaxed*pdb"))
 
         for pred_file in files_list:
             try:
@@ -92,7 +92,7 @@ class ConvertM2S:
 
         Creates single-chain PDB files for the first chain found in each prediction.
         """
-        files_list = glob.glob(str(self.pred_path / "*_unrelaxed*pdb"))
+        files_list = glob.glob(str(self.pred_path / "0_unrelaxed*pdb"))
 
         for pred_file in files_list:
             try:
@@ -111,18 +111,3 @@ class ConvertM2S:
             except Exception as e:
                 logger.warning(f"Failed to extract chain from {pred_file}: {e}")
                 continue
-
-
-# Backward-compatible alias for function-style usage
-def convert_m2s(pred_path: str, pdb1_name: str, pdb2_name: str) -> ConvertM2S:
-    """Convert multimer predictions to single chains (function alias).
-
-    Args:
-        pred_path: Path to prediction directory.
-        pdb1_name: First reference structure name.
-        pdb2_name: Second reference structure name.
-
-    Returns:
-        ConvertM2S: Instance with completed conversion.
-    """
-    return ConvertM2S(pred_path, pdb1_name, pdb2_name)

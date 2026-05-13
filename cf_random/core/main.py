@@ -47,9 +47,6 @@ from ..plotting.plot_fs import (
 from ..prediction.prediction_all_var import (
     PredictionAll,
 )
-from ..prediction.pred_cal_tmscore_multimer import (
-    PredictionAllMultimerFS,
-)
 from ..utils.search_foldseek_cluster import (
     BlindScreening,
 )
@@ -201,6 +198,9 @@ def count_chains(pdb_file: str) -> int:
 def main() -> None:
     """Main entry point for the CF-random pipeline."""
     args = parse_arguments()
+
+    if args.model_type is None:
+        args.model_type = "ptm"
 
     download_alphafold_params(MODEL_TYPES[args.model_type], Path("."))
 
@@ -512,7 +512,6 @@ def run_fold_switching_workflow(
             pdb2_name=pdb2_name,
             num_msa=num_msa,
             num_ens=num_ens,
-            model_type=model_type,
         )
 
 

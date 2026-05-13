@@ -22,7 +22,7 @@ from tmtools.testing import (
 )
 
 from ..utils.convert_multi_single import (
-    convert_m2s,
+    ConvertM2S,
 )
 
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ class BaseTMScore:
             logger.warning("No directories matched pattern: %s", self.pred_dir)
             return
         for pred_dir in matched_dirs:
-            convert_m2s(pred_dir, self.pdb1_name, self.pdb2_name)
+            ConvertM2S(pred_dir, self.pdb1_name, self.pdb2_name)
 
     def _calculate_scores(self) -> List[float]:
         """Calculate TM-scores against both reference structures.

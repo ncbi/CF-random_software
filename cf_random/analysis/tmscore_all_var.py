@@ -14,9 +14,6 @@ from typing import (
 
 import numpy as np
 
-from ..prediction.pred_cal_tmscore_multimer import (
-    PredictionAllMultimerFS,
-)
 from .base import (
     MULTIMER_MODEL_TYPE,
     BaseTMScore,
@@ -249,16 +246,4 @@ class TMScoreCalAllVar:
             logger.info("Moved failed prediction %s -> %s", candidate, destination)
 
     def _evaluate_multimer(self) -> None:
-        """Run multimer TM-score evaluation via PredictionAllMultimerFS."""
-        if not self.search_dir and not self.search_multi_dir:
-            raise ValueError("Multimer evaluation requires search_dir or search_multi_dir")
-
-        multimer = PredictionAllMultimerFS(
-            self.pdb1_name,
-            self.pdb2_name,
-            self.search_dir,
-            self.num_msa,
-            self.model_type,
-            self.search_multi_dir,
-        )
-        self.size_selection = multimer.size_selection
+        """Run multimer TM-score evaluation pipeline."""

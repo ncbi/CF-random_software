@@ -8,7 +8,6 @@ structure clustering.
 
 from .convert_multi_single import (
     ConvertM2S,
-    convert_m2s,
 )
 from .search_foldseek_cluster import (
     BlindScreening,
@@ -19,7 +18,6 @@ from .split_multi_single import (
 
 __all__ = [
     "ConvertM2S",
-    "convert_m2s",
     "BlindScreening",
     "SplitMultiToChains",
 ]

@@ -98,11 +98,11 @@ class TMScoreFSMulti:
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
 
-    def get_coords(self, pdbfile: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
+    def get_coords(self, pdb_file: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
         """Extracts coordinates and sequence for fold-switching region from PDB file.
 
         Args:
-            pdbfile (str or Path): Path to the PDB file.
+            pdb_file (str or Path): Path to the PDB file.
             fs_range (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
@@ -110,7 +110,7 @@ class TMScoreFSMulti:
                    and seq is the one-letter amino acid sequence.
         """
         pdb_parser = PDBParser(QUIET=True)
-        struct = pdb_parser.get_structure("x", str(pdbfile))
+        struct = pdb_parser.get_structure("x", str(pdb_file))
         coords: List[List[float]] = []
         seq_dict: Dict[int, str] = {}
 
@@ -130,7 +130,7 @@ class TMScoreFSMulti:
         coords_np = np.array(coords)
         seq = "".join(item[1] for item in sorted(seq_dict.items()))
 
-        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range)
+        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdb_file, fs_range)
         return coords_np, seq
 
     def get_tmscore(
@@ -152,9 +152,7 @@ class TMScoreFSMulti:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        modelfiles = [
-            f for f in glob.glob(str(predfilepath) + "/single*_unrelaxed*pdb") if "rmTER" not in f
-        ]
+        modelfiles = glob.glob(str(predfilepath) + "/single_0_unrelaxed*pdb")
 
         if not modelfiles:
             logger.warning("No unrelaxed model files found in %s", predfilepath)
