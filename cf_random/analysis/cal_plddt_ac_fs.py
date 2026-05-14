@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 # Regex pattern for parsing AlphaFold JSON filenames
 RANK_PATTERN = re.compile(r".*?_scores_rank_(?P<rank>\d+)_alphafold2.*")
 
+MULTIMER_MODEL_TYPE = "alphafold2_multimer_v3"
+
 
 def read_plddt(jsonfile: str) -> np.ndarray:
     """Reads pLDDT scores from an AlphaFold prediction JSON file.
@@ -92,11 +94,11 @@ class PlddtCal:
         # Reshape based on category and model_type
         if category == "full-MSA":
             values_all_resh = values_all.reshape(num_msa + 5, 5)
-        elif category == "additional-MSA" and model_type == "alphafold2_multimer_v3":
+        elif category == "additional-MSA" and model_type == MULTIMER_MODEL_TYPE:
             values_all_resh = values_all.reshape((num_ens + 20), 5)
         elif category == "additional-MSA":
             values_all_resh = values_all.reshape((num_ens + 20), 5)
-        elif category == "random-MSA" and model_type != "alphafold2_multimer_v3":
+        elif category == "random-MSA" and model_type != MULTIMER_MODEL_TYPE:
             values_all_resh = values_all.reshape((num_msa + 5) * 7, 5)
         elif category == "random-MSA":
             values_all_resh = values_all.reshape((num_msa + 5) * 7, 5)

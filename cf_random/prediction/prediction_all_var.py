@@ -21,6 +21,8 @@ from .base import (
 
 logger = logging.getLogger(__name__)
 
+MULTIMER_MODEL_TYPE = "alphafold2_multimer_v3"
+
 
 class PredictionAll:
     """High-level orchestration for full and variable MSA predictions."""
@@ -79,7 +81,7 @@ class PredictionAll:
         # Variable MSA seed: independently sampled from range 0-99
         var_random_seed = random.sample(range(100), 1)
 
-        if self.model_type == "alphafold2_multimer_v3":
+        if self.model_type == MULTIMER_MODEL_TYPE:
             variable_search_dir = self.search_multi_dir
         else:
             variable_search_dir = self.search_dir

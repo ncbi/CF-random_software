@@ -40,6 +40,7 @@ TMSCORE_THRESHOLD_GOOD = 0.5
 TMSCORE_THRESHOLD_ACCEPTABLE = 0.4
 INITIAL_MAX_MSA = 1
 INITIAL_EXTRA_MSA = 2
+MULTIMER_MODEL_TYPE = "alphafold2_multimer_v3"
 
 
 class TMScore:
@@ -94,7 +95,7 @@ class TMScore:
         Returns:
             List[str]: Paths to predicted PDB files.
         """
-        if self.model_type != "alphafold2_multimer_v3":
+        if self.model_type != MULTIMER_MODEL_TYPE:
             return glob.glob(f"{self.pred_dir}/*_unrelaxed*pdb")
 
         # Handle multimer predictions

@@ -35,9 +35,6 @@ from ..analysis.tmscore_all_var import (
 from ..analysis.tmscore_all_var_fs import (
     TMScoreCalAllVarFS,
 )
-from ..analysis.cal_tmscore_fs_multimer import (
-    TMScoreFSMulti,
-)
 from ..plotting.plot_ac import (
     Plot2DScatterAC,
 )
@@ -58,7 +55,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Suppress warnings from dependencies
 warnings.filterwarnings("ignore")
 
 # Constants
@@ -69,6 +65,12 @@ MODEL_TYPES = {
 }
 BLIND = "predictions_all"
 SUCCESS = "predictions_all"
+
+ALTERNATIVE_CONFORMATION = "AC"
+FOLD_SWITCHING = "FS"
+BLIND_MODE = "blind"
+FULL_MSA = "full-MSA"
+RANDOM_MSA = "random-MSA"
 
 FOLDSEEK_DONE_FILE_COUNT = 640
 
@@ -172,7 +174,7 @@ def determine_model_type(args: argparse.Namespace, pdb1: Optional[str]) -> str:
         return MODEL_TYPES["ptm"]
     elif args.model_type == "monomer":
         return MODEL_TYPES["monomer"]
-    elif args.model_type == "multimer" and args.option == "blind":
+    elif args.model_type == "multimer" and args.option == BLIND_MODE:
         model_type = MODEL_TYPES["multimer"]
         return model_type
     elif args.model_type == "multimer":
@@ -211,7 +213,7 @@ def main() -> None:
     pdb2_name: Optional[str] = None
 
     # Resolve working names
-    if args.option == "blind":
+    if args.option == BLIND_MODE:
         pdb1_name = resolve_pdb_name(args)
         logger.info("Work name: %s", pdb1_name)
 
@@ -245,7 +247,7 @@ def main() -> None:
         },
     )
 
-    if args.option == "AC":
+    if args.option == ALTERNATIVE_CONFORMATION:
         run_alternative_conformation_workflow(
             pdb1=pdb1,
             pdb1_name=pdb1_name,
@@ -259,7 +261,7 @@ def main() -> None:
             success_dir=success_dir,
             pwd=pwd,
         )
-    elif args.option == "FS":
+    elif args.option == FOLD_SWITCHING:
         run_fold_switching_workflow(
             pdb1=pdb1,
             pdb1_name=pdb1_name,
@@ -273,7 +275,7 @@ def main() -> None:
             success_dir=success_dir,
             pwd=pwd,
         )
-    elif args.option == "blind":
+    elif args.option == BLIND_MODE:
         run_blind_workflow(
             pdb1_name=pdb1_name,
             search_dir=search_dir,
@@ -321,7 +323,7 @@ def run_alternative_conformation_workflow(
             pdb2=pdb2,
             pdb2_name=pdb2_name,
             num_msa=num_msa,
-            option="AC",
+            option=ALTERNATIVE_CONFORMATION,
             model_type=model_type,
             search_dir=search_dir,
             search_multi_dir=search_multi_dir,
@@ -340,7 +342,7 @@ def run_alternative_conformation_workflow(
             pdb2=pdb2,
             pdb2_name=pdb2_name,
             num_msa=num_msa,
-            option="AC",
+            option=ALTERNATIVE_CONFORMATION,
             model_type=model_type,
             search_dir=search_dir,
             search_multi_dir=search_multi_dir,
@@ -358,11 +360,9 @@ def run_alternative_conformation_workflow(
         list_org_samplings = glob.glob(pwd + success_dir + "*full_rand*/")
         list_ran_samplings = glob.glob(pwd + success_dir + "*max*/")
 
-    full = "full-MSA"
-    random = "random-MSA"
     PlddtCal(
         sub_list=list_org_samplings,
-        category=full,
+        category=FULL_MSA,
         pdb_name=pdb1_name,
         num_msa=num_msa,
         num_ens=num_ens,
@@ -370,15 +370,15 @@ def run_alternative_conformation_workflow(
     )
     PlddtCal(
         sub_list=list_ran_samplings,
-        category=random,
+        category=RANDOM_MSA,
         pdb_name=pdb1_name,
         num_msa=num_msa,
         num_ens=num_ens,
         model_type=model_type,
     )
     Plot2DScatterAC(
-        full_category=full,
-        random_category=random,
+        full_category=FULL_MSA,
+        random_category=RANDOM_MSA,
         pdb1=pdb1,
         pdb1_name=pdb1_name,
         pdb2=pdb2,
@@ -429,7 +429,7 @@ def run_fold_switching_workflow(
             pdb2=pdb2,
             pdb2_name=pdb2_name,
             num_msa=num_msa,
-            option="FS",
+            option=FOLD_SWITCHING,
             model_type=model_type,
             search_dir=search_dir,
             search_multi_dir=search_multi_dir,
@@ -449,7 +449,7 @@ def run_fold_switching_workflow(
             pdb2=pdb2,
             pdb2_name=pdb2_name,
             num_msa=num_msa,
-            option="FS",
+            option=FOLD_SWITCHING,
             model_type=model_type,
             search_dir=search_dir,
             search_multi_dir=search_multi_dir,
@@ -471,11 +471,10 @@ def run_fold_switching_workflow(
         list_org_samplings = glob.glob(pwd + success_dir + "/*full_rand*/")
         list_ran_samplings = glob.glob(pwd + success_dir + "/*max*/")
 
-    full = "full-MSA"
-    random = "random-MSA"
+    
     PlddtCal(
         sub_list=list_org_samplings,
-        category=full,
+        category=FULL_MSA,
         pdb_name=pdb1_name,
         num_msa=num_msa,
         num_ens=num_ens,
@@ -483,7 +482,7 @@ def run_fold_switching_workflow(
     )
     PlddtCal(
         sub_list=list_ran_samplings,
-        category=random,
+        category=RANDOM_MSA,
         pdb_name=pdb1_name,
         num_msa=num_msa,
         num_ens=num_ens,
@@ -492,8 +491,8 @@ def run_fold_switching_workflow(
 
     if model_type == MODEL_TYPES["multimer"]:
         Plot2DScatterAC(
-            full_category=full,
-            random_category=random,
+            full_category=FULL_MSA,
+            random_category=RANDOM_MSA,
             pdb1=pdb1,
             pdb1_name=pdb1_name,
             pdb2=pdb2,
@@ -504,8 +503,8 @@ def run_fold_switching_workflow(
         )
     else:
         Plot2DScatter(
-            full_category=full,
-            random_category=random,
+            full_category=FULL_MSA,
+            random_category=RANDOM_MSA,
             pdb1=pdb1,
             pdb1_name=pdb1_name,
             pdb2=pdb2,
