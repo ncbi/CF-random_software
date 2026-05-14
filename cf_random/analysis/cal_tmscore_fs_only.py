@@ -134,30 +134,30 @@ class TMScoreFS:
         return coords_np, seq
 
     def get_tmscore(
-        self, coords1: np.ndarray, seq1: str, predfilepath: Union[str, Path], res_range: str
+        self, coords1: np.ndarray, seq1: str, pred_file_path: Union[str, Path], res_range: str
     ) -> List[float]:
         """Calculates TM-scores between reference and predicted structures.
 
         Args:
             coords1 (numpy.ndarray): Coordinates of reference structure.
             seq1 (str): Sequence of reference structure.
-            predfilepath (str or Path): Path to directory containing predicted models.
+            pred_file_path (str or Path): Path to directory containing predicted models.
             res_range (str): Residue range for fold-switching in predicted models.
 
         Returns:
             list: TM-scores for each predicted model (rounded to 2 decimals).
                   Returns [0.0, 0.0, 0.0, 0.0, 0.0] if no models found.
         """
-        modelfiles = glob.glob(str(predfilepath) + "/*_unrelaxed*pdb")
+        model_files = glob.glob(str(pred_file_path) + "/*_unrelaxed*pdb")
 
-        if not modelfiles:
-            logger.warning("No unrelaxed model files found in %s", predfilepath)
+        if not model_files:
+            logger.warning("No unrelaxed model files found in %s", pred_file_path)
             return [0.0, 0.0, 0.0, 0.0, 0.0]
 
         tmscores_ord: List[float] = []
         tmscores_rev: List[float] = []
 
-        for model in modelfiles:
+        for model in model_files:
             coords2, seq2 = self.get_coords(Path(model), res_range)
 
             res = tm_align(coords1, coords2, seq1, seq2)
@@ -172,7 +172,7 @@ class TMScoreFS:
         else:
             tmscores = tmscores_rev
 
-        logger.debug("TM-scores for %s: %s", predfilepath, tmscores)
+        logger.debug("TM-scores for %s: %s", pred_file_path, tmscores)
         return tmscores
 
     def run_for_models(

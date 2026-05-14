@@ -352,13 +352,12 @@ def run_alternative_conformation_workflow(
     logger.info("Specific size of shallow random MSA is similar to full-MSA: %s", shallow_msa_size)
     np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
-    if model_type == MODEL_TYPES["multimer"]:
-        base = pwd + success_dir
-        list_org_samplings = glob.glob(base + "/*full_rand*/")
-        list_ran_samplings = glob.glob(base + "/*max*/")
-    else:
-        list_org_samplings = glob.glob(pwd + success_dir + "*full_rand*/")
-        list_ran_samplings = glob.glob(pwd + success_dir + "*max*/")
+    base = os.path.join(pwd, success_dir)
+    list_org_samplings = glob.glob(os.path.join(base, "*full_rand*"))
+    list_ran_samplings = glob.glob(os.path.join(base, "*max*"))
+
+    logger.info("Searching for pLDDT folders in: %s", base)
+    logger.info("Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings))
 
     PlddtCal(
         sub_list=list_org_samplings,
@@ -461,15 +460,12 @@ def run_fold_switching_workflow(
         )
         np.savetxt("selected_MSA-size_" + pdb1_name + ".csv", shallow_msa_size)
 
-    if model_type == MODEL_TYPES["multimer"]:
-        base = pwd + success_dir
-        logger.info("Multimer prediction base path: %s", base)
+    base = os.path.join(pwd, success_dir)
+    list_org_samplings = glob.glob(os.path.join(base, "*full_rand*"))
+    list_ran_samplings = glob.glob(os.path.join(base, "*max*"))
 
-        list_org_samplings = glob.glob(base + "/*full_rand*/")
-        list_ran_samplings = glob.glob(base + "/*max*/")
-    else:
-        list_org_samplings = glob.glob(pwd + success_dir + "/*full_rand*/")
-        list_ran_samplings = glob.glob(pwd + success_dir + "/*max*/")
+    logger.info("Searching for pLDDT folders in: %s", base)
+    logger.info("Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings))
 
     PlddtCal(
         sub_list=list_org_samplings,
