@@ -471,7 +471,6 @@ def run_fold_switching_workflow(
         list_org_samplings = glob.glob(pwd + success_dir + "/*full_rand*/")
         list_ran_samplings = glob.glob(pwd + success_dir + "/*max*/")
 
-    
     PlddtCal(
         sub_list=list_org_samplings,
         category=FULL_MSA,
