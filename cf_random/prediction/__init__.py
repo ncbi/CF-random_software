@@ -11,11 +11,6 @@ from .base import (
     MSAMaxRunner,
     MSAVariableRunner,
 )
-from .pred_cal_tmscore_fs import (
-    MSAMaxFoldSwitch,
-    MSAVariableFoldSwitch,
-    TMScore,
-)
 from .prediction_all_var import (
     PredictionAll,
 )
@@ -25,9 +20,6 @@ __all__ = [
     "MSAMaxRunner",
     "MSAVariableRunner",
     "PredictionAll",
-    "TMScore",
-    "MSAMaxFoldSwitch",
-    "MSAVariableFoldSwitch",
     "MSAMaxMultimer",
     "MSAVariableMultimer",
 ]

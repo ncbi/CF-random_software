@@ -247,3 +247,79 @@ class TMScoreCalAllVar:
 
     def _evaluate_multimer(self) -> None:
         """Run multimer TM-score evaluation pipeline."""
+        num_seeds = 5 + self.num_msa
+        pdb1_basename = self.pdb1_name.split("/")[-1]
+
+        # Full MSA whole-structure TM-scores
+        full_pred_dir = (
+            str(PREDICTIONS_ROOT / self.pdb1_name)
+            + f"/{pdb1_basename}_predicted_models_full_rand_*"
+        )
+        msa_full = TMScore(
+            full_pred_dir,
+            self.pdb1,
+            self.pdb1_name,
+            self.pdb2,
+            self.pdb2_name,
+            self.model_type,
+        )
+        full_tmscore_flat = np.asarray(msa_full.tmscores, dtype=float)
+        n_cols = full_tmscore_flat.size // 2
+        full_scores_array = full_tmscore_flat.reshape(2, n_cols)
+
+        # Quality check
+        if np.all(full_scores_array[0, :] < 0.5) and np.all(full_scores_array[1, :] < 0.5):
+            self._move_failed_full_outputs()
+            raise RuntimeError("All predictions with deep MSA are failed")
+
+        alt_name = self._determine_alternative(np.average(full_scores_array, axis=1))
+        logger.info(
+            "Reference: %s  Alternative: %s",
+            self.pdb1_name if alt_name == self.pdb2_name else self.pdb2_name,
+            alt_name,
+        )
+        np.savetxt(f"TMScore_full-MSA_{self.pdb1_name}.csv", full_scores_array, fmt="%2.3f")
+
+        # Shallow random MSA TM-scores
+        max_msa = 1
+        ext_msa = 2
+        tmscores_random: List[float] = []
+        last_shallow: Optional[TMScore] = None
+
+        for multi in MSA_MULTIPLIERS:
+            max_msa *= multi
+            ext_msa *= multi
+
+            pred_dir = (
+                str(PREDICTIONS_ROOT / self.pdb1_name)
+                + f"/{self.pdb1_name}_predicted_models_rand_*"
+                + f"_max_{max_msa}_ext_{ext_msa}/"
+            )
+            logger.debug("Shallow MSA dir pattern: %s", pred_dir)
+
+            shallow = TMScore(
+                pred_dir,
+                self.pdb1,
+                self.pdb1_name,
+                self.pdb2,
+                self.pdb2_name,
+                self.model_type,
+            )
+            tmscores_random = list(np.append(tmscores_random, shallow.tmscores))
+            last_shallow = shallow
+
+        random_array = np.asarray(tmscores_random, dtype=float)
+        tmscores_random_reshape = random_array.reshape(14, n_cols)
+
+        tmscores_random_alter = self._extract_alternative_rows(
+            tmscores_random_reshape, alt_name, self.pdb1_name, self.pdb2_name
+        )
+        if np.all(tmscores_random_alter < 0.5):
+            raise RuntimeError("All shallow predictions are failed")
+
+        logger.info("Finding optimal size of random MSA...")
+        last_shallow.select_size(random_array, self.pdb1_name, self.pdb2_name, alt_name, num_seeds)
+        self.size_selection = [last_shallow.selection]
+        logger.info("Selected MSA size index: %s", self.size_selection)
+
+        np.savetxt(f"TMScore_random-MSA_{self.pdb1_name}.csv", tmscores_random_reshape, fmt="%2.3f")

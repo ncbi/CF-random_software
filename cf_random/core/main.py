@@ -357,7 +357,9 @@ def run_alternative_conformation_workflow(
     list_ran_samplings = glob.glob(os.path.join(base, "*max*"))
 
     logger.info("Searching for pLDDT folders in: %s", base)
-    logger.info("Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings))
+    logger.info(
+        "Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings)
+    )
 
     PlddtCal(
         sub_list=list_org_samplings,
@@ -465,7 +467,9 @@ def run_fold_switching_workflow(
     list_ran_samplings = glob.glob(os.path.join(base, "*max*"))
 
     logger.info("Searching for pLDDT folders in: %s", base)
-    logger.info("Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings))
+    logger.info(
+        "Found %d folders for pLDDT calculation", len(list_org_samplings) + len(list_ran_samplings)
+    )
 
     PlddtCal(
         sub_list=list_org_samplings,
