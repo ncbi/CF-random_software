@@ -20,6 +20,4 @@ __all__ = [
     "MSAMaxRunner",
     "MSAVariableRunner",
     "PredictionAll",
-    "MSAMaxMultimer",
-    "MSAVariableMultimer",
 ]
