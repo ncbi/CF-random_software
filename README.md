@@ -157,4 +157,4 @@ Lee, M., Schafer, J.W., Prabakaran, J. et al. Large-scale predictions of alterna
 
 ## License
 
-See [LICENSE.md](LICENSE.md).Want to be notified when Claude responds?NotifySonnet 4.6
+See [LICENSE.md](LICENSE.md).
