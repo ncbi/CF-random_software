@@ -11,9 +11,6 @@ To run CF-random in a Colab notebook:
 ---
 
 ## Installation
-
-> **Note:** Windows and macOS are not currently supported.
-
 CF-random depends on ColabFold (structure prediction) and Foldseek (structure search). A convenience script sets up the conda environment and required packages:
 
 ```bash
@@ -106,13 +103,13 @@ MSA depth encoding: `0=1:2`, `1=2:4`, `2=4:8`, `3=8:16`, `4=16:32`, `5=32:64`, `
 Predicts Lactococcal OppA using two reference structures and an MSA.
 
 ```bash
-cf-random --fname 5olw_A-search/ --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC --num_msa 5
+cf-random --fname P71447-search/ --pdb1 2wfa_A.pdb --pdb2 2wf5_A.pdb --option AC --num_msa 5
 ```
 
 **Input files:**
-- `5olw_A.pdb` — dominant reference
-- `5olx_A.pdb` — alternative reference
-- `5olw_A-search/0.a3m` — MSA
+- `2wfa_A.pdb` — dominant reference
+- `2wf5_A.pdb` — alternative reference
+- `P71447-search/P71447_converted.a3m` — MSA
 
 *Generates 200 structures; takes under 70 minutes on an A100 GPU (~250 residue protein).*
 
@@ -120,10 +117,10 @@ cf-random --fname 5olw_A-search/ --pdb1 5olw_A.pdb --pdb2 5olx_A.pdb --option AC
 
 | File | Description |
 |---|---|
-| `TMscore_full-MSA_5olw_A.png` | TM-score scatter plot, whole structure |
-| `TMs_plDDT_full_all_5olw_A.csv` | TM-scores and pLDDT for deep MSA predictions |
-| `TMs_plDDT_rand_all_5olw_A.csv` | TM-scores and pLDDT for random MSA predictions |
-| `selected_MSA-size_5olw_A.csv` | Selected MSA depth (when CF-random identifies the optimal depth) |
+| `TMscore_full-MSA_2wfa_A.png` | TM-score scatter plot, whole structure |
+| `TMs_plDDT_full_all_2wfa_A.csv` | TM-scores and pLDDT for deep MSA predictions |
+| `TMs_plDDT_rand_all_2wfa_A.csv` | TM-scores and pLDDT for random MSA predictions |
+| `selected_MSA-size_2wfa_A.csv` | Selected MSA depth (when CF-random identifies the optimal depth) |
 
 MSA depth encoding: `0=1:2`, `1=2:4`, `2=4:8`, `3=8:16`, `4=16:32`, `5=32:64`, `6=64:128`
 
