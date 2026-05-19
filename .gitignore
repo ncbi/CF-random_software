@@ -65,8 +65,8 @@ venv.bak/
 # Project specific
 examples/*/results/
 blind_prediction/
-successed_prediction/
-failed_prediction/
+successful_predictions/
+failed_predictions/
 multimer_prediction/
 test_data/
 msa_folder/

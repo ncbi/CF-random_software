@@ -41,7 +41,8 @@ dev = [
     "black",
     "isort",
     "flake8",
-    "autoflake"
+    "autoflake",
+    "twine",
 ]
 
 [project.urls]

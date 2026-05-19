@@ -49,15 +49,32 @@ class ConvertM2S:
             logger.error(f"Conversion failed: {e}")
             raise
 
+    def _find_unrelaxed_files(self) -> list:
+        """Find unrelaxed PDB files in the prediction directory.
+
+        Tries the ColabFold default prefix first, then falls back to a
+        wildcard match to handle sequence-ID-prefixed filenames.
+
+        Returns:
+            List of matched file path strings.
+        """
+        files = glob.glob(str(self.pred_path / "0_unrelaxed*pdb"))
+        if not files:
+            files = glob.glob(str(self.pred_path / "*_unrelaxed*pdb"))
+            if files:
+                logger.debug(
+                    "Default prefix not found; matched %d file(s) with wildcard in %s",
+                    len(files),
+                    self.pred_path,
+                )
+        return files
+
     def _remove_ter_records(self) -> None:
         """Remove TER records from predicted multimer PDB files.
 
         Also creates cleaned versions of reference structures.
         """
-        # Process predicted files
-        files_list = glob.glob(str(self.pred_path / "0_unrelaxed*pdb"))
-
-        for pred_file in files_list:
+        for pred_file in self._find_unrelaxed_files():
             try:
                 output_file = pred_file.replace(".pdb", "").split("/")[-1]
                 output_path = self.pred_path / f"rmTER_{output_file}.pdb"
@@ -68,9 +85,9 @@ class ConvertM2S:
                             if "TER" not in line:
                                 outfile.write(line)
 
-                logger.debug(f"Removed TER records: {output_path}")
+                logger.debug("Removed TER records: %s", output_path)
             except Exception as e:
-                logger.warning(f"Failed to process {pred_file}: {e}")
+                logger.warning("Failed to process %s: %s", pred_file, e)
                 continue
 
         # Process reference structure
@@ -83,23 +100,20 @@ class ConvertM2S:
                         for line in infile:
                             if "TER" not in line:
                                 outfile.write(line)
-                logger.debug(f"Removed TER records: {output_path}")
+                logger.debug("Removed TER records: %s", output_path)
         except Exception as e:
-            logger.warning(f"Failed to process reference {self.pdb2_name}: {e}")
+            logger.warning("Failed to process reference %s: %s", self.pdb2_name, e)
 
     def _extract_single_chains(self) -> None:
         """Extract individual chains from multimer PDB files.
 
         Creates single-chain PDB files for the first chain found in each prediction.
         """
-        files_list = glob.glob(str(self.pred_path / "0_unrelaxed*pdb"))
-
-        for pred_file in files_list:
+        for pred_file in self._find_unrelaxed_files():
             try:
                 output_basename = pred_file.replace(".pdb", "").split("/")[-1]
                 output_path = self.pred_path / f"single_{output_basename}.pdb"
 
-                # Extract first chain (up to first TER record)
                 with open(pred_file, "r", encoding="utf-8") as infile:
                     with open(output_path, "w", encoding="utf-8") as outfile:
                         for line in infile:
@@ -107,7 +121,7 @@ class ConvertM2S:
                             if "TER" in line:
                                 break
 
-                logger.debug(f"Extracted single chain: {output_path}")
+                logger.debug("Extracted single chain: %s", output_path)
             except Exception as e:
-                logger.warning(f"Failed to extract chain from {pred_file}: {e}")
+                logger.warning("Failed to extract chain from %s: %s", pred_file, e)
                 continue

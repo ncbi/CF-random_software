@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests for monomer and multimer fold-switching TM-score pipelines.
+"""Tests for fold-switching TM-score pipelines.
 
-Unit tests cover TMScoreFS (monomer), TMScoreFSMulti (multimer),
-TMScore for both paths, and TMScoreCalAllVarFS._evaluate_monomer /
+Unit tests cover TMScoreFS (unified monomer + multimer),
+BaseTMScore model resolution, and TMScoreCalAllVarFS._evaluate_monomer /
 _evaluate_multimer in isolation.
 
 Run with:
-    pytest tests/test_tmscore_fs.py -v
+    pytest tests/test_fold_switching.py -v
 """
 
 import glob
@@ -19,7 +19,6 @@ import pytest
 
 from cf_random.utils.convert_multi_single import ConvertM2S
 from cf_random.analysis.cal_tmscore_fs_flmsa import TMScoreFS
-from cf_random.analysis.cal_tmscore_fs_multimer import TMScoreFSMulti
 from cf_random.analysis.tmscore_all_var_fs import TMScoreCalAllVarFS, MSA_MULTIPLIERS
 from cf_random.analysis.base import BaseTMScore
 
@@ -63,11 +62,7 @@ def _make_monomer_prediction_dir(
     n_models: int = NUM_PREDICTIONS,
     n_residues: int = 10,
 ) -> Path:
-    """Create a fake ColabFold monomer output directory.
-
-    Monomer filenames: <model>_unrelaxed_rank_NNN_<model_type>.pdb
-    No chain prefix, no TER between chains.
-    """
+    """Create a fake ColabFold monomer output directory."""
     pred_dir = base / name
     pred_dir.mkdir(parents=True, exist_ok=True)
     for i in range(1, n_models + 1):
@@ -83,10 +78,7 @@ def _make_multimer_prediction_dir(
     n_chains: int = 2,
     n_residues: int = 10,
 ) -> Path:
-    """Create a fake ColabFold multimer output directory.
-
-    Multimer filenames: 0_unrelaxed_rank_NNN_alphafold2_multimer_v3_model_1_seed_000.pdb
-    """
+    """Create a fake ColabFold multimer output directory."""
     pred_dir = base / name
     pred_dir.mkdir(parents=True, exist_ok=True)
     for i in range(1, n_models + 1):
@@ -123,34 +115,48 @@ def _good_tm_result(value: float = 0.6) -> MagicMock:
     return result
 
 
-class TestTMScoreFSMonomer:
+def _make_fs_scorer(model_glob: str = "*_unrelaxed*pdb") -> TMScoreFS:
+    """Create a TMScoreFS instance without running __init__."""
+    scorer = object.__new__(TMScoreFS)
+    scorer.model_glob = model_glob
+    return scorer
+
+
+class TestTMScoreFS:
     def test_get_coords_correct_range(self, tmp_path):
         pdb = tmp_path / "test.pdb"
         _write_minimal_pdb(pdb, n_residues=10, n_chains=1)
-        scorer = object.__new__(TMScoreFS)
-        coords, seq = scorer.get_coords(pdb, "1-5")
+        scorer = _make_fs_scorer()
+        coords, seq = scorer._get_coords(pdb, "1-5")
         assert len(coords) == 5
         assert len(seq) == 5
 
     def test_get_coords_full_range(self, tmp_path):
         pdb = tmp_path / "test.pdb"
         _write_minimal_pdb(pdb, n_residues=10, n_chains=1)
-        scorer = object.__new__(TMScoreFS)
-        coords, seq = scorer.get_coords(pdb, "1-10")
+        scorer = _make_fs_scorer()
+        coords, seq = scorer._get_coords(pdb, "1-10")
         assert len(coords) == 10
         assert len(seq) == 10
 
     def test_get_tmscore_returns_zeros_on_empty_dir(self, tmp_path):
         empty = tmp_path / "empty"
         empty.mkdir()
-        scorer = object.__new__(TMScoreFS)
+        scorer = _make_fs_scorer()
         coords = RNG.uniform(size=(5, 3))
-        scores = scorer.get_tmscore(coords, "AGVLI", empty, "1-5")
+        scores = scorer._get_tmscore(coords, "AGVLI", empty, "1-5")
         assert scores == [0.0, 0.0, 0.0, 0.0, 0.0]
 
-    def test_get_tmscore_uses_unrelaxed_glob(self, tmp_path):
+    def test_get_tmscore_monomer_uses_unrelaxed_glob(self, tmp_path):
         pred_dir = _make_monomer_prediction_dir(tmp_path, "pred", n_models=3)
         matched = glob.glob(str(pred_dir) + "/*_unrelaxed*pdb")
+        assert len(matched) == 3
+        assert all("rmTER" not in f for f in matched)
+
+    def test_get_tmscore_multimer_uses_single_files(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=3)
+        matched = glob.glob(str(pred_dir) + "/single_*_unrelaxed*pdb")
         assert len(matched) == 3
         assert all("rmTER" not in f for f in matched)
 
@@ -158,7 +164,7 @@ class TestTMScoreFSMonomer:
     def test_get_tmscore_picks_best_orientation(self, mock_align, tmp_path):
         """Forward scores > reverse → forward selected."""
         pred_dir = _make_monomer_prediction_dir(tmp_path, "pred", n_models=2, n_residues=5)
-        scorer = object.__new__(TMScoreFS)
+        scorer = _make_fs_scorer()
 
         fwd = MagicMock()
         fwd.tm_norm_chain1 = 0.8
@@ -167,13 +173,13 @@ class TestTMScoreFSMonomer:
         mock_align.side_effect = [fwd, rev, fwd, rev]
 
         coords = RNG.uniform(size=(5, 3))
-        scores = scorer.get_tmscore(coords, "AGVLI", pred_dir, "1-5")
+        scores = scorer._get_tmscore(coords, "AGVLI", pred_dir, "1-5")
         assert all(s == 0.8 for s in scores)
 
     @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     def test_get_tmscore_picks_reverse_when_higher(self, mock_align, tmp_path):
         pred_dir = _make_monomer_prediction_dir(tmp_path, "pred", n_models=2, n_residues=5)
-        scorer = object.__new__(TMScoreFS)
+        scorer = _make_fs_scorer()
 
         fwd = MagicMock()
         fwd.tm_norm_chain1 = 0.3
@@ -182,12 +188,12 @@ class TestTMScoreFSMonomer:
         mock_align.side_effect = [fwd, rev, fwd, rev]
 
         coords = RNG.uniform(size=(5, 3))
-        scores = scorer.get_tmscore(coords, "AGVLI", pred_dir, "1-5")
+        scores = scorer._get_tmscore(coords, "AGVLI", pred_dir, "1-5")
         assert all(s == 0.8 for s in scores)
 
     @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     def test_run_for_models_shape(self, mock_align, tmp_path, monkeypatch):
-        """run_for_models does pdb1 loop then pdb2 loop → shape (2, n_models)."""
+        """Two loops (pdb1 then pdb2) → shape (2, n_models)."""
         monkeypatch.chdir(tmp_path)
         _make_range_file(tmp_path / "range_fs_pairs_all.txt")
         pred_dir = _make_monomer_prediction_dir(tmp_path, "pred", n_models=5, n_residues=10)
@@ -195,81 +201,15 @@ class TestTMScoreFSMonomer:
         pdb2 = tmp_path / f"{PDB2_NAME}.pdb"
         _write_minimal_pdb(pdb1, n_residues=10)
         _write_minimal_pdb(pdb2, n_residues=10)
-
         mock_align.return_value = _good_tm_result(0.6)
 
-        scorer = object.__new__(TMScoreFS)
-        scorer.run_for_models(pdb1, pdb2, str(pred_dir), "1-5", "1-5", "1-5")
+        scorer = _make_fs_scorer()
+        scorer._run_for_models(pdb1, pdb2, str(pred_dir), "1-5", "1-5", "1-5")
         assert scorer.tmscores_fs.shape == (2, 5)
 
     @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
-    def test_full_init_completes(self, mock_align, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        _make_range_file(tmp_path / "range_fs_pairs_all.txt")
-        pred_root = tmp_path / "predictions_all" / PDB1_NAME
-        pred_root.mkdir(parents=True)
-        _make_monomer_prediction_dir(
-            pred_root, f"{PDB1_NAME}_predicted_models_full_rand_0", n_residues=10
-        )
-        pdb1 = tmp_path / f"{PDB1_NAME}.pdb"
-        pdb2 = tmp_path / f"{PDB2_NAME}.pdb"
-        _write_minimal_pdb(pdb1, n_residues=10)
-        _write_minimal_pdb(pdb2, n_residues=10)
-        mock_align.return_value = _good_tm_result(0.6)
-
-        scorer = TMScoreFS(pdb1, PDB1_NAME, pdb2, PDB2_NAME)
-        assert scorer.tmscores_fs is not None
-        assert scorer.tmscores_fs.shape[0] == 2
-
-
-class TestTMScoreFSMulti:
-    def test_get_coords_correct_range(self, tmp_path):
-        pdb = tmp_path / "test.pdb"
-        _write_minimal_pdb(pdb, n_residues=10, n_chains=1)
-        scorer = object.__new__(TMScoreFSMulti)
-        coords, seq = scorer.get_coords(pdb, "1-5")
-        assert len(coords) == 5
-        assert len(seq) == 5
-
-    def test_get_tmscore_uses_single_files(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=3)
-        matched = glob.glob(str(pred_dir) + "/single_0_unrelaxed*pdb")
-        assert len(matched) == 3
-        assert all("rmTER" not in f for f in matched)
-
-    def test_get_tmscore_does_not_use_rmter_files(self, tmp_path, monkeypatch):
-        monkeypatch.chdir(tmp_path)
-        pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=3)
-        matched = glob.glob(str(pred_dir) + "/single_0_unrelaxed*pdb")
-        # rmTER files exist but must not be in single_ glob
-        rmter = glob.glob(str(pred_dir) + "/rmTER*pdb")
-        assert rmter  # they exist
-        assert not any("rmTER" in f for f in matched)
-
-    def test_get_tmscore_returns_zeros_on_empty_dir(self, tmp_path):
-        empty = tmp_path / "empty"
-        empty.mkdir()
-        scorer = object.__new__(TMScoreFSMulti)
-        coords = RNG.uniform(size=(5, 3))
-        scores = scorer.get_tmscore(coords, "AGVLI", empty, "1-5")
-        assert scores == [0.0, 0.0, 0.0, 0.0, 0.0]
-
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
-    def test_get_tmscore_forward_only(self, mock_align, tmp_path, monkeypatch):
-        """TMScoreFSMulti does not do reverse alignment unlike TMScoreFS."""
-        monkeypatch.chdir(tmp_path)
-        pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=2, n_residues=5)
-        mock_align.return_value = _good_tm_result(0.7)
-        scorer = object.__new__(TMScoreFSMulti)
-        coords = RNG.uniform(size=(5, 3))
-        scores = scorer.get_tmscore(coords, "AGVLI", pred_dir, "1-5")
-        # One call per model, no reverse
-        assert mock_align.call_count == 2
-
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
-    def test_run_for_models_interleaves_folds(self, mock_align, tmp_path, monkeypatch):
-        """run_for_models appends pdb1 row then pdb2 row per directory → (2, n_models)."""
+    def test_run_for_models_multimer_shape(self, mock_align, tmp_path, monkeypatch):
+        """Multimer single_ glob → shape (2, n_models)."""
         monkeypatch.chdir(tmp_path)
         _make_range_file(tmp_path / "range_fs_pairs_all.txt")
         pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=5, n_residues=10)
@@ -279,23 +219,54 @@ class TestTMScoreFSMulti:
         _write_minimal_pdb(pdb2, n_residues=10)
         mock_align.return_value = _good_tm_result(0.6)
 
-        scorer = object.__new__(TMScoreFSMulti)
-        scorer.run_for_models(pdb1, pdb2, str(pred_dir), "1-5", "1-5", "1-5")
+        scorer = _make_fs_scorer(model_glob="single_*_unrelaxed*pdb")
+        scorer._run_for_models(pdb1, pdb2, str(pred_dir), "1-5", "1-5", "1-5")
         assert scorer.tmscores_fs.shape == (2, 5)
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     def test_full_init_completes(self, mock_align, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         _make_range_file(tmp_path / "range_fs_pairs_all.txt")
-        pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_residues=10)
+        pred_root = tmp_path / "predictions_all" / PDB1_NAME
+        pred_root.mkdir(parents=True)
+        pred_dir = _make_monomer_prediction_dir(
+            pred_root, f"{PDB1_NAME}_predicted_models_full_rand_0", n_residues=10
+        )
         pdb1 = tmp_path / f"{PDB1_NAME}.pdb"
         pdb2 = tmp_path / f"{PDB2_NAME}.pdb"
         _write_minimal_pdb(pdb1, n_residues=10)
         _write_minimal_pdb(pdb2, n_residues=10)
         mock_align.return_value = _good_tm_result(0.6)
 
-        scorer = TMScoreFSMulti(str(pred_dir), pdb1, PDB1_NAME, pdb2, PDB2_NAME)
-        assert scorer.tmscores_fs.shape == (2, NUM_PREDICTIONS)
+        scorer = TMScoreFS(str(pred_dir), pdb1, PDB1_NAME, pdb2, PDB2_NAME)
+        assert scorer.tmscores_fs is not None
+        assert scorer.tmscores_fs.shape[0] == 2
+
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
+    def test_full_init_multimer_completes(self, mock_align, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        _make_range_file(tmp_path / "range_fs_pairs_all.txt")
+        pred_root = tmp_path / "predictions_all" / PDB1_NAME
+        pred_root.mkdir(parents=True)
+        pred_dir = _make_converted_multimer_dir(
+            pred_root, f"{PDB1_NAME}_predicted_models_full_rand_0", n_residues=10
+        )
+        pdb1 = tmp_path / f"{PDB1_NAME}.pdb"
+        pdb2 = tmp_path / f"{PDB2_NAME}.pdb"
+        _write_minimal_pdb(pdb1, n_residues=10)
+        _write_minimal_pdb(pdb2, n_residues=10)
+        mock_align.return_value = _good_tm_result(0.6)
+
+        scorer = TMScoreFS(
+            str(pred_dir),
+            pdb1,
+            PDB1_NAME,
+            pdb2,
+            PDB2_NAME,
+            model_glob="single_*_unrelaxed*pdb",
+        )
+        assert scorer.tmscores_fs is not None
+        assert scorer.tmscores_fs.shape[0] == 2
 
 
 class TestTMScoreGetPredictedFiles:
@@ -315,13 +286,13 @@ class TestTMScoreGetPredictedFiles:
         assert all("unrelaxed" in f for f in files)
         assert all("rmTER" not in f for f in files)
 
-    def test_multimer_returns_rmter_files(self, tmp_path, monkeypatch):
+    def test_multimer_returns_single_files(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         pred_dir = _make_converted_multimer_dir(tmp_path, "pred")
         scorer = self._make_scorer(pred_dir, MULTIMER_MODEL_TYPE)
         files = scorer._resolve_models()
         assert len(files) == NUM_PREDICTIONS
-        assert all("rmTER" in f for f in files)
+        assert all("single_" in f for f in files)
 
     def test_multimer_triggers_conversion_when_missing(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -331,16 +302,16 @@ class TestTMScoreGetPredictedFiles:
         scorer = self._make_scorer(pred_dir, MULTIMER_MODEL_TYPE)
         files = scorer._resolve_models()
         assert len(files) == NUM_PREDICTIONS
-        assert list(pred_dir.glob("rmTER_0_unrelaxed*pdb"))
+        assert list(pred_dir.glob("single_*_unrelaxed*pdb"))
 
-    def test_multimer_does_not_reconvert_if_rmter_exists(self, tmp_path, monkeypatch):
+    def test_multimer_does_not_reconvert_if_single_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         pred_dir = _make_converted_multimer_dir(tmp_path, "pred", n_models=3)
-        rmter = list(pred_dir.glob("rmTER_0_unrelaxed*pdb"))
-        rmter[0].write_text("SENTINEL")
+        single_files = list(pred_dir.glob("single_*_unrelaxed*pdb"))
+        single_files[0].write_text("SENTINEL")
         scorer = self._make_scorer(pred_dir, MULTIMER_MODEL_TYPE)
         scorer._resolve_models()
-        assert rmter[0].read_text() == "SENTINEL"
+        assert single_files[0].read_text() == "SENTINEL"
 
     def test_monomer_does_not_create_rmter_files(self, tmp_path):
         pred_dir = _make_monomer_prediction_dir(tmp_path, "pred")
@@ -370,13 +341,9 @@ class TestEvaluateMonomerIntegration:
         pred_root = tmp_path / "predictions_all" / PDB1_NAME
         pred_root.mkdir(parents=True)
 
-        # Full MSA
         _make_monomer_prediction_dir(
-            pred_root,
-            f"{PDB1_NAME}_predicted_models_full_rand_0",
-            n_residues=10,
+            pred_root, f"{PDB1_NAME}_predicted_models_full_rand_0", n_residues=10
         )
-        # Shallow random MSA dirs
         max_msa, ext_msa = 1, 2
         for mult in MSA_MULTIPLIERS:
             max_msa *= mult
@@ -448,7 +415,6 @@ class TestEvaluateMonomerIntegration:
         low = _good_tm_result(0.2)
 
         def whole_side_effect(*args, **kwargs):
-            # tm_align called alternately for pdb1 then pdb2 rows
             whole_side_effect.count = getattr(whole_side_effect, "count", 0) + 1
             return high if whole_side_effect.count % 2 == 1 else low
 
@@ -480,12 +446,10 @@ class TestEvaluateMultimerIntegration:
         pred_root = tmp_path / "predictions_all" / PDB1_NAME
         pred_root.mkdir(parents=True)
 
-        # Full MSA
         full_name = f"{PDB1_NAME}_predicted_models_full_rand_0"
         _make_multimer_prediction_dir(pred_root, full_name, n_residues=10)
         ConvertM2S(str(pred_root / full_name), PDB1_NAME, PDB2_NAME)
 
-        # Shallow random MSA dirs
         max_msa, ext_msa = 1, 2
         for mult in MSA_MULTIPLIERS:
             max_msa *= mult
@@ -496,7 +460,7 @@ class TestEvaluateMultimerIntegration:
 
         return tmp_path
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
     def test_completes(self, mock_whole, mock_fs, multimer_pipeline_dir):
         mock_whole.return_value = _good_tm_result(0.6)
@@ -512,7 +476,7 @@ class TestEvaluateMultimerIntegration:
         )
         assert len(scorer.size_selection) == 1
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
     def test_csv_files_written(self, mock_whole, mock_fs, multimer_pipeline_dir):
         mock_whole.return_value = _good_tm_result(0.6)
@@ -532,7 +496,7 @@ class TestEvaluateMultimerIntegration:
         assert (base / f"TMScore_random-MSA_{PDB1_NAME}.csv").exists()
         assert (base / f"TMScore_fs_random-MSA_{PDB1_NAME}.csv").exists()
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
     def test_size_selection_is_int(self, mock_whole, mock_fs, multimer_pipeline_dir):
         mock_whole.return_value = _good_tm_result(0.6)
@@ -548,7 +512,7 @@ class TestEvaluateMultimerIntegration:
         )
         assert isinstance(scorer.size_selection[0], int)
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
     def test_bad_predictions_raise(self, mock_whole, mock_fs, multimer_pipeline_dir):
         mock_whole.return_value = _good_tm_result(0.1)
@@ -564,11 +528,12 @@ class TestEvaluateMultimerIntegration:
                 model_type=MULTIMER_MODEL_TYPE,
             )
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
-    def test_multimer_uses_rmter_for_whole_structure(
+    def test_multimer_whole_structure_uses_single_files(
         self, mock_whole, mock_fs, multimer_pipeline_dir
     ):
+        """BaseTMScore must resolve single_ files for multimer whole-structure scoring."""
         seen_files = []
         original_resolve = BaseTMScore._resolve_models
 
@@ -594,23 +559,22 @@ class TestEvaluateMultimerIntegration:
         assert seen_files
         assert all("rmTER" in f for f in seen_files)
 
-    @patch("cf_random.analysis.cal_tmscore_fs_multimer.tm_align")
+    @patch("cf_random.analysis.cal_tmscore_fs_flmsa.tm_align")
     @patch("cf_random.analysis.base.tm_align")
-    def test_multimer_uses_single_for_fs_region(self, mock_whole, mock_fs, multimer_pipeline_dir):
-        """FS scorer must receive single_ files, not rmTER or originals."""
+    def test_multimer_fs_region_uses_single_files(self, mock_whole, mock_fs, multimer_pipeline_dir):
+        """TMScoreFS must use single_ files for multimer FS-region scoring."""
         seen_files = []
-
-        original_get = TMScoreFSMulti.get_tmscore
+        original_get = TMScoreFS._get_tmscore
 
         def capturing_get(self_inner, coords1, seq1, predfilepath, res_range):
-            matched = glob.glob(str(predfilepath) + "/single_0_unrelaxed*pdb")
+            matched = glob.glob(str(predfilepath) + "/single_*_unrelaxed*pdb")
             seen_files.extend(matched)
             return original_get(self_inner, coords1, seq1, predfilepath, res_range)
 
         mock_whole.return_value = _good_tm_result(0.6)
         mock_fs.return_value = _good_tm_result(0.6)
 
-        with patch.object(TMScoreFSMulti, "get_tmscore", capturing_get):
+        with patch.object(TMScoreFS, "_get_tmscore", capturing_get):
             TMScoreCalAllVarFS(
                 pdb1=f"{PDB1_NAME}.pdb",
                 pdb1_name=PDB1_NAME,

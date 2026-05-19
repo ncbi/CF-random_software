@@ -1,0 +1,49 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+      checks: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache conda environment
+        uses: actions/cache@v4
+        id: conda-cache
+        with:
+          path: ~/conda/envs/cf-random
+          key: conda-${{ runner.os }}-${{ hashFiles('install.sh') }}
+
+      - name: Install dependencies
+        if: steps.conda-cache.outputs.cache-hit != 'true'
+        run: |
+          chmod +x install.sh
+          ./install.sh
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=cf_random --cov-report=xml:coverage.xml --cov-report=term-missing > pytest-coverage.txt
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            pytest-coverage.txt

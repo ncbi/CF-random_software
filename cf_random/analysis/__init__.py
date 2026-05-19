@@ -12,11 +12,11 @@ from .base import (
 from .cal_plddt_ac_fs import (
     PlddtCal,
 )
+from .cal_tmscore_fs_flmsa import (
+    TMScoreFS,
+)
 from .cal_tmscore_fs_multimer import (
     TMScoreFSMulti,
-)
-from .cal_tmscore_fs_only import (
-    TMScoreFS,
 )
 from .tmscore_all_var import (
     TMScoreCalAllVar,
@@ -28,7 +28,6 @@ from .tmscore_all_var_fs import (
 __all__ = [
     "BaseTMScore",
     "TMScoreFS",
-    "TMScoreFSMulti",
     "PlddtCal",
     "TMScoreCalAllVar",
     "TMScoreCalAllVarFS",

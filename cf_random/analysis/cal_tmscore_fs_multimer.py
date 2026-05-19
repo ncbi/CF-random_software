@@ -169,8 +169,8 @@ class TMScoreFSMulti:
 
     def run_for_models(
         self,
-        pdbfile1: Union[str, Path],
-        pdbfile2: Union[str, Path],
+        pdb_file1: Union[str, Path],
+        pdb_file2: Union[str, Path],
         data_dir: Union[str, Path],
         pred_range: str,
         res_range1: str,
@@ -179,15 +179,15 @@ class TMScoreFSMulti:
         """Compares predicted models against both original PDB structures.
 
         Calculates TM-scores for fold-switching regions by comparing predicted models
-        against both fold states (pdbfile1 and pdbfile2).
+        against both fold states (pdb_file1 and pdb_file2).
 
         Args:
-            pdbfile1 (str or Path): Path to first PDB structure (Fold1).
-            pdbfile2 (str or Path): Path to second PDB structure (Fold2).
+            pdb_file1 (str or Path): Path to first PDB structure (Fold1).
+            pdb_file2 (str or Path): Path to second PDB structure (Fold2).
             data_dir (str or Path): Path to directory containing predicted model subdirectories.
             pred_range (str): Residue range for fold-switching in predicted models.
-            res_range1 (str): Residue range for fold-switching in pdbfile1.
-            res_range2 (str): Residue range for fold-switching in pdbfile2.
+            res_range1 (str): Residue range for fold-switching in pdb_file1.
+            res_range2 (str): Residue range for fold-switching in pdb_file2.
 
         Returns:
             None: Stores results in self.tmscores_fs attribute.
@@ -205,8 +205,8 @@ class TMScoreFSMulti:
             data_dir,
         )
 
-        coords1, seq1 = self.get_coords(pdbfile1, res_range1)
-        coords2, seq2 = self.get_coords(pdbfile2, res_range2)
+        coords1, seq1 = self.get_coords(pdb_file1, res_range1)
+        coords2, seq2 = self.get_coords(pdb_file2, res_range2)
 
         tmscores_fs: List[List[float]] = []
 

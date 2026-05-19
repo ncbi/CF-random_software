@@ -97,11 +97,11 @@ class TMScoreFS:
         range_pred = range_pdb1[1]
         self.run_for_models(pdb1, pdb2, pred_path, range_pred, range_pdb1[0], range_pdb2[0])
 
-    def get_coords(self, pdbfile: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
+    def get_coords(self, pdb_file: Union[str, Path], fs_range: str) -> Tuple[np.ndarray, str]:
         """Extracts CA coordinates and sequence for fold-switching region from PDB.
 
         Args:
-            pdbfile (str or Path): Path to the PDB file.
+            pdb_file (str or Path): Path to the PDB file.
             fs_range (str): Residue range for fold-switching region, e.g., "112-162".
 
         Returns:
@@ -109,7 +109,7 @@ class TMScoreFS:
                    (N x 3) and seq is the one-letter amino acid sequence string.
         """
         pdb_parser = PDBParser(QUIET=True)
-        struct = pdb_parser.get_structure("x", str(pdbfile))
+        struct = pdb_parser.get_structure("x", str(pdb_file))
         coords: List[List[float]] = []
         seq_dict: Dict[int, str] = {}
 
@@ -130,7 +130,7 @@ class TMScoreFS:
         coords_np = np.array(coords)
         seq = "".join(item[1] for item in sorted(seq_dict.items()))
 
-        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdbfile, fs_range)
+        logger.debug("Extracted %d CA atoms from %s (range %s)", len(coords_np), pdb_file, fs_range)
         return coords_np, seq
 
     def get_tmscore(
@@ -177,8 +177,8 @@ class TMScoreFS:
 
     def run_for_models(
         self,
-        pdbfile1: Union[str, Path],
-        pdbfile2: Union[str, Path],
+        pdb_file1: Union[str, Path],
+        pdb_file2: Union[str, Path],
         data_dir: Union[str, Path],
         pred_range: str,
         res_range1: str,
@@ -187,15 +187,15 @@ class TMScoreFS:
         """Compares predicted models against both original PDB structures.
 
         Calculates TM-scores for fold-switching regions by comparing predicted
-        models against both fold states (pdbfile1 and pdbfile2).
+        models against both fold states (pdb_file1 and pdb_file2).
 
         Args:
-            pdbfile1 (str or Path): Path to first PDB structure (Fold1).
-            pdbfile2 (str or Path): Path to second PDB structure (Fold2).
+            pdb_file1 (str or Path): Path to first PDB structure (Fold1).
+            pdb_file2 (str or Path): Path to second PDB structure (Fold2).
             data_dir (str or Path): Path to directory containing predicted model subdirectories.
             pred_range (str): Residue range for fold-switching in predicted models.
-            res_range1 (str): Residue range for fold-switching in pdbfile1.
-            res_range2 (str): Residue range for fold-switching in pdbfile2.
+            res_range1 (str): Residue range for fold-switching in pdb_file1.
+            res_range2 (str): Residue range for fold-switching in pdb_file2.
 
         Returns:
             None: Stores results in self.tmscores_fs attribute.
@@ -213,8 +213,8 @@ class TMScoreFS:
             data_dir,
         )
 
-        coords1, seq1 = self.get_coords(pdbfile1, res_range1)
-        coords2, seq2 = self.get_coords(pdbfile2, res_range2)
+        coords1, seq1 = self.get_coords(pdb_file1, res_range1)
+        coords2, seq2 = self.get_coords(pdb_file2, res_range2)
 
         tmscores_fs: List[List[float]] = []
 

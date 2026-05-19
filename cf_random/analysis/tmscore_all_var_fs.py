@@ -27,7 +27,7 @@ from .cal_tmscore_fs_flmsa import (
 )
 
 PREDICTIONS_ROOT = Path("predictions_all")
-FAILED_ROOT = Path("failed_prediction")
+FAILED_ROOT = Path("failed_predictions")
 
 # Must match the multiplier sequence used in prediction_all_var.py
 MSA_MULTIPLIERS = (1, 2, 2, 2, 2, 2, 2)
@@ -181,7 +181,7 @@ class TMScoreCalAllVarFS:
             self._evaluate_multimer()
 
     def _move_failed_full_outputs(self) -> None:
-        """Move failed full-MSA prediction folders to failed_prediction/."""
+        """Move failed full-MSA prediction folders to failed_predictions/."""
         FAILED_ROOT.mkdir(parents=True, exist_ok=True)
         pattern = (
             str(PREDICTIONS_ROOT / self.pdb1_name)
@@ -229,6 +229,7 @@ class TMScoreCalAllVarFS:
 
         # Full MSA fold-switching region TM-scores
         msa_fs_tmscore = TMScoreFS(
+            full_pred_dir,
             self.pdb1,
             self.pdb1_name,
             self.pdb2,
@@ -290,11 +291,11 @@ class TMScoreCalAllVarFS:
             last_shallow = shallow
 
             shallow_fs = TMScoreFS(
+                pred_dir,
                 self.pdb1,
                 self.pdb1_name,
                 self.pdb2,
                 self.pdb2_name,
-                pred_dir_override=pred_dir,
             )
             tmscores_fs_random = list(np.append(tmscores_fs_random, shallow_fs.tmscores_fs))
 
@@ -361,12 +362,13 @@ class TMScoreCalAllVarFS:
         )
         full_tmscore = np.asarray(msa_full_tmscore.tmscores, dtype=float).reshape(2, num_seeds * 5)
 
-        msa_fs_tmscore = TMScoreFSMulti(
+        msa_fs_tmscore = TMScoreFS(
             full_pred_dir,
             self.pdb1,
             self.pdb1_name,
             self.pdb2,
             self.pdb2_name,
+            model_glob="single_0_unrelaxed*pdb",
         )
         fs_tmscore = np.asarray(msa_fs_tmscore.tmscores_fs, dtype=float).reshape(2, num_seeds * 5)
 
@@ -420,12 +422,13 @@ class TMScoreCalAllVarFS:
             tmscores_random = list(np.append(tmscores_random, shallow.tmscores))
             last_shallow = shallow
 
-            shallow_fs = TMScoreFSMulti(
+            shallow_fs = TMScoreFS(
                 pred_dir,
                 self.pdb1,
                 self.pdb1_name,
                 self.pdb2,
                 self.pdb2_name,
+                model_glob="single_0_unrelaxed*pdb",
             )
             tmscores_fs_random = list(np.append(tmscores_fs_random, shallow_fs.tmscores_fs))
 

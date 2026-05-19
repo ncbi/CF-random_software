@@ -12,6 +12,8 @@ To run CF-random in a Colab notebook:
 
 ## Installation
 
+> **Note:** Windows and macOS are not currently supported.
+
 CF-random depends on ColabFold (structure prediction) and Foldseek (structure search). A convenience script sets up the conda environment and required packages:
 
 ```bash
@@ -33,8 +35,9 @@ CF-random supports three modes:
 
 - FS and AC modes require two reference PDB files (fold1 and fold2).
 - Each target needs its own MSA directory; do not reuse output folders across runs.
+- All required PDB files, MSA files, and Python scripts must be in the same directory.
 - PDB files should contain a single chain. Multi-chain PDBs may be converted automatically in some workflows, but providing single-chain PDBs avoids issues.
-- FS mode requires a `range_fs_pairs_all.txt` file describing the fold-switching region. ColabFold uses 1-based residue indexing; ensure ranges match your PDB/sequence.
+- FS mode requires a `range_fs_pairs_all.txt` file describing the fold-switching region (see [Fold-switching mode](#1-fold-switching-mode-fs) below for format details). ColabFold uses 1-based residue indexing; ensure ranges match your PDB/sequence.
 - `--num_msa` and `--num_ens` apply to all modes except blind, which does not support `--num_ens`.
 - Activate the conda environment before running:
 
@@ -54,7 +57,7 @@ conda activate cf-random
 | `--pname` | blind | Job name for blind mode output naming |
 | `--num_msa` | No | Number of additional MSA seeds to run, added to the default 5 |
 | `--num_ens` | No | Number of ensemble samples to generate |
-| `--type` | No | ColabFold model type: `ptm`, `monomer`, or `multimer` |
+| `--model_type` | No | ColabFold model type: `ptm`, `monomer`, or `multimer` |
 
 ---
 
@@ -73,6 +76,13 @@ cf-random --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --option FS
 - `6c6s_D.pdb` — alternative reference
 - `2oug_C-search/0.a3m` — MSA
 - `range_fs_pairs_all.txt` — fold-switching region definition
+
+**`range_fs_pairs_all.txt` format:**
+
+Each line defines the fold-switching region for a pair of reference structures:
+pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX
+
+Fields are: PDB1 name, PDB2 name, residue range of reference 1, residue range of reference 2, residue range of prediction 1, residue range of prediction 2. ColabFold generates residue indices starting from 1; ensure your ranges match the residue numbering in your PDB files.
 
 *Generates 200 structures; takes under 30 minutes on an A100 GPU.*
 
@@ -127,6 +137,8 @@ Predicts alternative conformations or fold-switching without reference PDBs. Use
 cf-random --pname Mad2_test --fname 2vfx_L-search/ --option blind
 ```
 
+> **Note:** Before running blind mode, make a symbolic link to the Foldseek PDB libraries in the directory where you run the command.
+
 **Input files:**
 - `2vfx_L-search/0.a3m` — MSA
 
@@ -148,4 +160,4 @@ Lee, M., Schafer, J.W., Prabakaran, J. et al. Large-scale predictions of alterna
 
 ## License
 
-See [LICENSE.md](LICENSE.md).
+See [LICENSE.md](LICENSE.md).Want to be notified when Claude responds?NotifySonnet 4.6

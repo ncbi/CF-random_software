@@ -21,7 +21,7 @@ from .base import (
 )
 
 PREDICTIONS_ROOT = Path("predictions_all")
-FAILED_ROOT = Path("failed_prediction")
+FAILED_ROOT = Path("failed_predictions")
 MSA_MULTIPLIERS = (1, 2, 2, 2, 2, 2, 2)
 
 
@@ -233,7 +233,7 @@ class TMScoreCalAllVar:
         return matrix[0::2, :]
 
     def _move_failed_full_outputs(self) -> None:
-        """Move failed full-MSA prediction folders to failed_prediction/."""
+        """Move failed full-MSA prediction folders to failed_predictions/."""
         FAILED_ROOT.mkdir(parents=True, exist_ok=True)
         pattern = (
             str(PREDICTIONS_ROOT / self.pdb1_name)

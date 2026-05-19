@@ -166,7 +166,7 @@ class Plot2DScatter:
             vmin=PLDT_MIN,
             vmax=PLDT_MAX,
             s=SCATTER_SIZE,
-            marker="D",
+            marker="o",
             alpha=0.8,
             label="Full MSA",
         )
@@ -186,7 +186,7 @@ class Plot2DScatter:
 
         # Save figure
         output_file = f"TMscore_{self.full_category}_{self.pdb1_name}.png"
-        plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight")
+        plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight", transparent=True)
         logger.info(f"Saved whole structure plot to {output_file}")
         plt.close()
 
@@ -243,6 +243,6 @@ class Plot2DScatter:
 
         # Save figure
         output_file = f"TMscore_fs-region_{self.full_category}_{self.pdb1_name}.png"
-        plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight")
+        plt.savefig(output_file, dpi=DEFAULT_DPI, bbox_inches="tight", transparent=True)
         logger.info(f"Saved fold-switching region plot to {output_file}")
         plt.close()
