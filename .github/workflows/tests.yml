@@ -57,3 +57,13 @@ jobs:
           path: |
             coverage.xml
             pytest-coverage.txt
+
+      - name: Build package
+        run: python -m build
+
+      - name: Upload to Test PyPI
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: twine upload --repository testpypi dist/*

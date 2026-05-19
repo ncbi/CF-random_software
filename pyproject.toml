@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cf-random"
-version = "0.1.0"
+version = "0.2.1"
 description = "CF-random: Predicting alternative conformations and fold-switching proteins"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -45,6 +45,7 @@ dev = [
     "flake8",
     "autoflake",
     "twine",
+    "build",
 ]
 
 [project.urls]
@@ -55,7 +56,7 @@ cf-random = "cf_random.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["cf_random*", "code*"]
+include = ["cf_random*"]
 
 [tool.setuptools.package-data]
 cf_random = ["data/*"]
