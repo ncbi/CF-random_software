@@ -47,7 +47,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest tests/ --cov=cf_random --cov-report=xml:coverage.xml --cov-report=term-missing > pytest-coverage.txt
+          pytest tests/ --cov=cf_random --cov-report=xml:coverage.xml --cov-report=term-missing | tee pytest-coverage.txt
 
       - name: Upload coverage report
         if: always()
