@@ -33,6 +33,7 @@ dependencies = [
     "adjustText",
     "thefuzz",
     "numpy>=1.23.5,<2.0",
+    "biopython>=1.79",
 ]
 
 [project.optional-dependencies]
