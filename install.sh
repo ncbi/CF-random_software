@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-
 echo "=== CF-random Installation ==="
 echo "[1/2] Ensuring conda environment 'cf-random' exists..."
 eval "$(conda shell.bash hook)"
@@ -10,7 +9,6 @@ else
     echo "  Creating conda environment from environment.yml..."
     conda env create -f environment.yml -n cf-random
 fi
-
 conda activate cf-random
 
 # Install JAX with GPU or CPU depending on hardware
@@ -32,10 +30,9 @@ else
 fi
 
 echo "[2/2] Verifying installation (best-effort checks)..."
-python -c "import importlib; print('  biopython:', importlib.util.find_spec('Bio') is not None)"
-python -c "import importlib, pkgutil; print('  numpy:', importlib.util.find_spec('numpy') is not None)"
-python -c "import importlib; print('  pandas:', importlib.util.find_spec('pandas') is not None)"
-python -c "import importlib; print('  jax:', importlib.util.find_spec('jax') is not None)"
+python -c "import importlib.util; print('  biopython:', importlib.util.find_spec('Bio') is not None)"
+python -c "import importlib.util; print('  numpy:', importlib.util.find_spec('numpy') is not None)"
+python -c "import importlib.util; print('  jax:', importlib.util.find_spec('jax') is not None)"
 if command -v colabfold_batch &> /dev/null; then
     echo "  colabfold ok"
 fi
