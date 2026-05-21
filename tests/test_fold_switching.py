@@ -11,16 +11,30 @@ Run with:
 """
 
 import glob
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from pathlib import (
+    Path,
+)
+from unittest.mock import (
+    MagicMock,
+    patch,
+)
 
 import numpy as np
 import pytest
 
-from cf_random.utils.convert_multi_single import ConvertM2S
-from cf_random.analysis.cal_tmscore_fs_flmsa import TMScoreFS
-from cf_random.analysis.tmscore_all_var_fs import TMScoreCalAllVarFS, MSA_MULTIPLIERS
-from cf_random.analysis.base import BaseTMScore
+from cf_random.analysis.base import (
+    BaseTMScore,
+)
+from cf_random.analysis.cal_tmscore_fs_flmsa import (
+    TMScoreFS,
+)
+from cf_random.analysis.tmscore_all_var_fs import (
+    MSA_MULTIPLIERS,
+    TMScoreCalAllVarFS,
+)
+from cf_random.utils.convert_multi_single import (
+    ConvertM2S,
+)
 
 PDB1_NAME = "2oug_C"
 PDB2_NAME = "6c6s_D"

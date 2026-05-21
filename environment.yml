@@ -11,5 +11,3 @@ dependencies:
   - foldseek
   - pymol-open-source
   - pip
-  - pip:
-      - -e .

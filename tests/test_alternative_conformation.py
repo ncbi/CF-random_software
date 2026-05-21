@@ -9,15 +9,28 @@ Run with:
     pytest tests/test_alternative_conformation.py -v
 """
 
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from pathlib import (
+    Path,
+)
+from unittest.mock import (
+    MagicMock,
+    patch,
+)
 
 import numpy as np
 import pytest
 
-from cf_random.utils.convert_multi_single import ConvertM2S
-from cf_random.analysis.tmscore_all_var import TMScore, TMScoreCalAllVar, MSA_MULTIPLIERS
-from cf_random.analysis.base import BaseTMScore
+from cf_random.analysis.base import (
+    BaseTMScore,
+)
+from cf_random.analysis.tmscore_all_var import (
+    MSA_MULTIPLIERS,
+    TMScore,
+    TMScoreCalAllVar,
+)
+from cf_random.utils.convert_multi_single import (
+    ConvertM2S,
+)
 
 PDB1_NAME = "5olw_A"
 PDB2_NAME = "5olx_A"

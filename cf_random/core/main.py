@@ -47,6 +47,18 @@ from ..prediction.prediction_all_var import (
 from ..utils.search_foldseek_cluster import (
     BlindScreening,
 )
+from .constants import (
+    ALTERNATIVE_CONFORMATION,
+    BLIND,
+    BLIND_MODE,
+    BRI_MODE,
+    FOLD_SWITCHING,
+    FOLDSEEK_DONE_FILE_COUNT,
+    FULL_MSA,
+    MODEL_TYPES,
+    RANDOM_MSA,
+    SUCCESS,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -56,23 +68,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
-
-# Constants
-MODEL_TYPES = {
-    "ptm": "alphafold2_ptm",
-    "monomer": "alphafold2",
-    "multimer": "alphafold2_multimer_v3",
-}
-BLIND = "predictions_all"
-SUCCESS = "predictions_all"
-
-ALTERNATIVE_CONFORMATION = "AC"
-FOLD_SWITCHING = "FS"
-BLIND_MODE = "blind"
-FULL_MSA = "full-MSA"
-RANDOM_MSA = "random-MSA"
-
-FOLDSEEK_DONE_FILE_COUNT = 640
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -283,6 +278,8 @@ def main() -> None:
             num_msa=num_msa,
             model_type=model_type,
         )
+    elif args.option == BRI_MODE:
+        run_bri_workflow()
     else:
         raise ValueError(f"Unrecognized option: {args.option!r}. Choose from: AC, FS, inAC, blind")
 

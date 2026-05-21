@@ -13,9 +13,17 @@ Run with:
 import csv
 import shutil
 import subprocess
-from pathlib import Path
-from typing import List
-from unittest.mock import MagicMock, call, patch
+from pathlib import (
+    Path,
+)
+from typing import (
+    List,
+)
+from unittest.mock import (
+    MagicMock,
+    call,
+    patch,
+)
 
 import numpy as np
 import pytest
