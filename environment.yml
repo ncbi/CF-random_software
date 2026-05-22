@@ -1,0 +1,13 @@
+name: cf-random # conda activate cf-random
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - pandas=1.5.3
+  - biopython=1.79
+  - colabfold
+  - foldseek
+  - pymol-open-source
+  - pip
