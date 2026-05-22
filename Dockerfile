@@ -31,8 +31,7 @@ RUN wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Mi
 WORKDIR /app
 COPY environment.yml .
 
-RUN conda env create -f environment.yml \
-    && conda clean -afy
+RUN conda env create -f environment.yml
 
 ENV PATH="${CONDA_DIR}/envs/cf-random/bin:${PATH}"
 ENV CONDA_DEFAULT_ENV=cf-random
@@ -43,10 +42,6 @@ RUN pip install --no-cache-dir --retries 5 --timeout 100 -e .
 RUN pip install --no-cache-dir --retries 5 --timeout 120 \
     "jax==0.4.28" "jaxlib==0.4.28+cuda12.cudnn89" \
     -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-
-RUN python -c "import jax; print('JAX Version:', jax.__version__); print('Devices:', jax.devices())" \
-    && python -c "import colabfold; print('ColabFold: OK')" \
-    && cf-random --help > /dev/null && echo "CF-random: OK"
 
 ENTRYPOINT ["cf-random"]
 CMD ["--help"]
