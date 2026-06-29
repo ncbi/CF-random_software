@@ -1,6 +1,7 @@
 from pathlib import Path
 import glob
 import argparse
+import os
 
 
 from prediction_all_var import *
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--nENS", type=str, help='number of samples for predicting the structure for ensemble generation')
     parser.add_argument("--option", type=str, help='select prediction mode inAC, AC and FS e.g. AC = alterantive conformation or FS = fold-switching or inAC = increased sampling for predicting alternative conformation')
     parser.add_argument("--type", type=str, help='select model-type of Colabfold e.g. ptm, monomer, and, multimer')
+    parser.add_argument("--seq", type=str, help='only required for FS mode in from --option')
     args = parser.parse_args()
 
 
@@ -130,12 +132,12 @@ if __name__ == "__main__":
         print("Predicting alternative conformations")
         ######################################################################################################
         ###### running prediction using full- and shallow random-MSA
-        if not os.path.exists(success):
-            os.mkdir(success)
+        if not os.path.exists(blind):
+            os.mkdir(blind)
             succ_dir_count = 0
         else:
             succ_dir_count = 0
-            for root_dir, cur_dir, files in os.walk(pwd + success + '/'):
+            for root_dir, cur_dir, files in os.walk(pwd + success + '/' + pdb1_name):
                 succ_dir_count += len(cur_dir)
 
         if os.path.exists(success):
@@ -195,76 +197,82 @@ if __name__ == "__main__":
 
 
     elif args.option == "FS":
-        if not os.path.exists(success):
-            os.mkdir(success)
-            succ_dir_count = 0
+        if len(args.seq) == 0:
+            print("Please put sequence of fold-switching region for TM-score calculation")
+            sys.exit()
         else:
-            succ_dir_count = 0
-            for root_dir, cur_dir, files in os.walk(pwd + success + '/'):
-                succ_dir_count += len(cur_dir)
-
-        if os.path.exists(success + '/'):
-            if succ_dir_count >= 8:
-                print("Prediction was already done")
+            if not os.path.exists(blind):
+                os.mkdir(blind)
+                succ_dir_count = 0
             else:
-                print("Folder is already created and cleaning existed subfolders")
-                rm_pre_folders = 'rm -rf ' + success + '/' 
-                os.system(rm_pre_folders)
-        else:
-            pass
+                succ_dir_count = 0
+                for root_dir, cur_dir, files in os.walk(pwd + success + '/'):
+                    succ_dir_count += len(cur_dir)
 
-
-        print("Predicting fold-swithcing models")
-        prediction_option = args.option
-        ######################################################################################################
-        ###### running prediction using full- and shallow random-MSA
-        if os.path.exists(success) and succ_dir_count >= 8:
-            print("Predictions including full- and random-MSA were already done")
-            cal_TMscore = TMscore_cal_all_var_FS(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type)
-            shallow_MSA_size = []
-            shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
-            np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
-        #elif os.path.exists(multi + '/' + pdb1_name) and succ_dir_count >= 8:
-        #    print("Predictions including full- and random-MSA were already done")
-        else:
-            shallow_MSA_size = []
-            if args.type != "multimer":
-                prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
-                cal_TMscore = TMscore_cal_all_var_FS(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type)
-                shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
+            if os.path.exists(success + '/'):
+                if succ_dir_count >= 8:
+                    print("Prediction was already done")
+                else:
+                    print("Folder is already created and cleaning existed subfolders")
+                    rm_pre_folders = 'rm -rf ' + success + '/' 
+                    os.system(rm_pre_folders)
             else:
-                prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+                pass
+
+
+            print("Predicting fold-swithcing models")
+            prediction_option = args.option
+            ######################################################################################################
+            ###### running prediction using full- and shallow random-MSA
+            if os.path.exists(success) and succ_dir_count >= 8:
+                fs_seq = args.seq
+                print("Predictions including full- and random-MSA were already done")
+                cal_TMscore = TMscore_cal_all_var_FS(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type, fs_seq)
+                shallow_MSA_size = []
                 shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
-            print("               ")
-            print("Specific size of shallow random MSA is similar to full-MSA")
-            print(shallow_MSA_size)
-            np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
+                np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
+            #elif os.path.exists(multi + '/' + pdb1_name) and succ_dir_count >= 8:
+            #    print("Predictions including full- and random-MSA were already done")
+            else:
+                shallow_MSA_size = []
+                if args.type != "multimer":
+                    fs_seq = args.seq
+                    prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+                    cal_TMscore = TMscore_cal_all_var_FS(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type, fs_seq)
+                    shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
+                else:
+                    prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+                    shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
+                print("               ")
+                print("Specific size of shallow random MSA is similar to full-MSA")
+                print(shallow_MSA_size)
+                np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
 
-        ######################################################################################################
-        ##### calculate plddt of initial predictions
-        if model_type == "alphafold2_multimer_v3":
-            list_org_samplings = glob.glob( str(pwd) + str(multi) + '/' + str(pdb1_name) + '/*full_rand*/')
-            list_ran_samplings = glob.glob( str(pwd) + str(multi) + '/' + str(pdb1_name) + '/*max*/')
+            ######################################################################################################
+            ##### calculate plddt of initial predictions
+            if model_type == "alphafold2_multimer_v3":
+                list_org_samplings = glob.glob( str(pwd) + str(multi) + '/' + str(pdb1_name) + '/*full_rand*/')
+                list_ran_samplings = glob.glob( str(pwd) + str(multi) + '/' + str(pdb1_name) + '/*max*/')
 
-            full = 'full-MSA'; random = 'random-MSA' ;
-            plddt_cal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
-            plddt_cal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
+                full = 'full-MSA'; random = 'random-MSA' ;
+                plddt_cal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
+                plddt_cal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
 
-        else:
-            list_org_samplings = glob.glob( str(pwd) + str(success) + '/*full_rand*/')
-            list_ran_samplings = glob.glob( str(pwd) + str(success) + '/*max*/')
+            else:
+                list_org_samplings = glob.glob( str(pwd) + str(success) + '/*full_rand*/')
+                list_ran_samplings = glob.glob( str(pwd) + str(success) + '/*max*/')
 
-            full = 'full-MSA'; random = 'random-MSA' ;
-            plddt_cal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
-            plddt_cal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
+                full = 'full-MSA'; random = 'random-MSA' ;
+                plddt_cal(list_org_samplings, full, pdb1_name, nMSA, nENS, model_type)
+                plddt_cal(list_ran_samplings, random, pdb1_name, nMSA, nENS, model_type)
 
 
-        ######################################################################################################
-        ##### plot the 2D-scatter plot of TM-scores with pLDDT
-        if model_type == "alphafold2_multimer_v3":
-            plot_2D_scatter_AC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
-        else:
-            plot_2D_scatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS)
+            ######################################################################################################
+            ##### plot the 2D-scatter plot of TM-scores with pLDDT
+            if model_type == "alphafold2_multimer_v3":
+                plot_2D_scatter_AC(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS, model_type)
+            else:
+                plot_2D_scatter(full, random, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, nENS)
 
 
 
