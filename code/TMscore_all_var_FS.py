@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import glob
 import random
 import argparse
+
 # call related modules of tmtools after installation
 from tmtools import tm_align
 from tmtools.io import get_structure, get_residue_data
@@ -225,7 +226,7 @@ class TM_score():
 
 
 class TMscore_cal_all_var_FS():
-    def __init__(self, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, option, model_type):
+    def __init__(self, pdb1, pdb1_name, pdb2, pdb2_name, nMSA, option, model_type, seq):
         num_seeds = 5 + nMSA
         pwd = os.getcwd() + '/'
 
@@ -239,7 +240,7 @@ class TMscore_cal_all_var_FS():
             
             ##### check-out TM-scores of prediction with full-length-MSA (fs region)
             pred_path = 'predictions_all/' + pdb1_name + "/" + pdb1_name + '_predicted_models_full_rand_*' 
-            MSA_fs_TMscore = TM_score_fs(pred_path, pdb1, pdb1_name, pdb2, pdb2_name) 
+            MSA_fs_TMscore = TM_score_fs(pred_path, pdb1, pdb1_name, pdb2, pdb2_name, seq) 
             fs_TMscore = np.array(MSA_fs_TMscore.tmscores_fs)
             fs_TMscore = fs_TMscore.reshape(2, num_seeds * 5)
 
@@ -250,6 +251,8 @@ class TMscore_cal_all_var_FS():
                 elif np.any(fs_TMscore[1, :] >= 0.5) and np.any(full_TMscore[1, :] >= 0.5):
                     ref_name = pdb2_name; alt_name = pdb1_name
                 else:
+                    print(fs_TMscore[1, :])
+                    print(fs_TMscore[0, :])
                     print("Prediction with deep MSA was failed"); 
                     sys.exit()
             else:
@@ -258,6 +261,8 @@ class TMscore_cal_all_var_FS():
                 elif np.any(fs_TMscore[0, :] >= 0.5) and np.any(full_TMscore[0, :] >= 0.5):
                     ref_name = pdb1_name; alt_name = pdb2_name
                 else:
+                    print(fs_TMscore[1, :])
+                    print(fs_TMscore[0, :])
                     print("Prediction with deep MSA was failed");
                     sys.exit()
 
@@ -298,7 +303,7 @@ class TMscore_cal_all_var_FS():
                 TMscores_random = np.append(TMscores_random, MSA_shallow_TMscore.tmscores); print(TMscores_random)
 
                 ### TMscore fs part
-                MSA_shallow_fs_TMscore = TM_score_fs(pred_dir, pdb1, pdb1_name, pdb2, pdb2_name)
+                MSA_shallow_fs_TMscore = TM_score_fs(pred_dir, pdb1, pdb1_name, pdb2, pdb2_name, seq)
                 TMscores_fs_random = np.append(TMscores_fs_random, MSA_shallow_fs_TMscore.tmscores_fs); print(TMscores_fs_random)
 
             fin_pred_dir = 'predictions_all/' + pdb1_name + "/" + pdb1_name + '_predicted_models_rand_*_max_*'
@@ -336,7 +341,7 @@ class TMscore_cal_all_var_FS():
             print("                   ")
             
 
-            if np.any(TMscores_random_alter > 0.5) and np.any(TMscores_fs_random_alter > 0.5):
+            if np.any(TMscores_random_alter > 0.5) and np.any(TMscores_fs_random_alter > 0.45):
                 # save all TM-scores from random MSA (1-2, 2-4, 4-8.... in order)
                 #TMscores_random_reshape = TMscores_random.reshape(14, 5)
                 np.savetxt('TMScore_random-MSA_' + pdb1_name  + '.csv', TMscores_random_reshape, fmt='%2.3f')
