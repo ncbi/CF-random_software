@@ -41,10 +41,10 @@ conda install -c conda-forge -c bioconda foldseek
  --nMSA  ####    |  the number of additional samples for predicting the structure with MSAs, default = 0
  --type  ####    |  can choose the model type of Colabfold. e.g.) ptm, monomer, and multimer
  --options ###   |  AC: predicting alternative conformations of protein with references, FS: predicting the fold-switching protein with references, and blind: predicting the alternative conformations or fold-switching proteins without reference PDB files.
+ --seq ###       |  sequences of fold-switching region are required to compare the TM-score between reference crystal structure and preidcted structure. This option is only required for 'FS' option. 
 ```
 * In default mode (fold-switching and alternative conformation), CF-ramdon produces the results of TM-scores (csv and png files), plDDT, and information of selected random MSA. If CF-random predicts the both folds, generated prediction files are deposited under successed_prediction/pdb1_name and additional_sampling/pdb1_name . If not, it would not generate anything. <br>
-* Before running the default mode of fold-switching, setting the "range_fs_pairs_all.txt" file is required. The name of reference PDB files, residue ranges of reference pdb files, and residue ranges of prediction files. ColabFold generates the residue index starting from 1, so please choose the residue range of fold-switching region correctly. CF-random reads the residue index in PDB file, make sure that selection of residue range is correct. <br>
- examples) pdb1, pdb2, XXX-XXX, XXX-XXX, XXX-XXX, XXX-XXX (residue range of reference 1, residue range of reference 2, residue range of prediction1, resodie range of prediction2) <br>
+* Before running the default mode of fold-switching, --seq option is required. 
 * --nMSA can be applied for all options, but --nESN cannot be used for blind mode.
 * In blind mode, predicted files are deposited under blind_prediction/pdb1_name . CF-random with blind mode produces the comparison result with Foldseek. <br>
 * ### For running the foldseek in blind mode, Foldseek parameter files and running Python scripts should be in same directory. <br>
@@ -67,7 +67,7 @@ python main.py --fname 2oug_C-search/ --pdb1 2oug_C.pdb --pdb2 6c6s_D.pdb --opti
 * PDB1: 2oug_C.pdb <br>
 * PDB2: 6c6s_D.pdb <br>
 * MSA: 2oug_C-search/0.a3m (MSA file should be in a folder) <br>
-* range_fs_pairs_all.txt (This file is required for reading the fold-switching region in refernece and predicted structures. Users should check the region before running this mode.) <br>
+* '--seq' is required for comparing the fold-switching region between crystal structure and predicted structure <br>
 
 *This takes <30 Minutes to run on an A100 GPU (generates 200 structures total).* <br>
 
