@@ -29,6 +29,11 @@ import matplotlib.pyplot as plt
 import glob
 import random
 import argparse
+
+from Bio import SeqIO 
+from Bio.PDB import PDBParser
+from Bio.SeqUtils import seq1
+
 # call related modules of tmtools after installation
 from tmtools import tm_align
 from tmtools.io import get_structure, get_residue_data
@@ -49,6 +54,31 @@ aa3to1 = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 
 
 class TM_score_fs():
+    def find_resi_index(self, pdb, target_seq):
+        parser = PDBParser(QUIET=True)
+        structure = parser.get_structure("protein", pdb)                                   
+
+        # Extract residues from the first model                                            
+        model = structure[0]                                                               
+        chain = next(model.get_chains())
+        #chain = model[chain_id]                                                            
+
+        residues = [r for r in chain.get_residues() if r.id[0] == " "]  # exclude heteroatoms
+        # Build sequence and residue index list
+        sequence = "".join(seq1(r.resname) for r in residues)
+        res_indices = [r.id[1] for r in residues]
+
+        # Find the subsequence
+        start = sequence.find(target_seq)
+        if start == -1:
+            print("Subsequence not found in chain.")
+            return None
+
+        end = start + len(target_seq)
+        matched_indices = res_indices[start:end]
+
+        return matched_indices 
+
     def get_coords(self, pdbfile, fs_range):
             """
             parameters:
@@ -198,11 +228,12 @@ class TM_score_fs():
             print("         ")
             tmscores_fs = np.array(tmscores_fs)
             print("tmscores_fs")
+            print(tmscores_fs)
             self.tmscores_fs = tmscores_fs
             
 
 
-    def __init__(self, pred_path, pdb1, pdb1_name, pdb2, pdb2_name):
+    def __init__(self, pred_path, pdb1, pdb1_name, pdb2, pdb2_name, seq):
         # get numpy arrays for coords at the fold-switching region
         # also return the seq in 1-letter code for the same
 
@@ -216,28 +247,6 @@ class TM_score_fs():
         data_dir = Path(pred_path) # Path to the predicted models
 
 
-        # the range of the fold-switching region
-        range_file = current_dir + 'range_fs_pairs_all.txt'
-
-        # convert this file into a dictionary for reference later
-        fs_res = {}
-        
-        # The range_file file has the fold-switching residue ranges
-        # for the original PDB/PDB1, alternate PDB/PDB2
-        # Predicted model for PDB1, predicted model for PDB2
-        with open(range_file,'r') as Infile:
-                next(Infile) # skip header line "# pdb1,pdb2,pred1,pred2"
-                for line in Infile:
-                        line=line.strip()
-                        (n1,n2,p1,p2,m1,m2)=line.split(",")
-                        # the value of the dictionary is a tuple
-                        # the first element of tuple is the fs range in the original PDB 
-                        # followed by the range in the predicted model
-                        if n1 not in fs_res:
-                                fs_res[n1]=(p1,m1)
-                        if n2 not in fs_res:
-                                fs_res[n2]=(p2,m2)
-        
 
 
         print("Running for pair ",pdb1_name, pdb2_name, end="..")
@@ -246,31 +255,19 @@ class TM_score_fs():
         print("                ")
 
 
-        try:
-                range_pdb1 = fs_res[pdb1_name] # so if pdb1 is '1nqd_A', fs_res['1nqd_A']=('895-919', '1-33')
-                range_pdb2 = fs_res[pdb2_name] # and if pdb2 is '1nqj_B', fs_res['1nqj_B']=('894-919', '1-33')
-        except:
-                print("check PDBIDs ",pdb1_name, pdb2_name)
-                sys.exit(1)
-        
 
-        range_pred = range_pdb1[1]
-        self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1[0], range_pdb2[0])
+        #range_pred = range_pdb1[1]
+        pred_path = glob.glob(pred_path + '/*pdb')
+        pred = pred_path[0]
+        pdb1_index = self.find_resi_index(pdb1, seq)
+        pdb2_index = self.find_resi_index(pdb2, seq)
+        pred_index = self.find_resi_index(pred, seq)
+        print(pdb1_index, pdb2_index, pred_index)
+        range_pdb1 = str(pdb1_index[0]) + '-' + str(pdb1_index[-1])
+        range_pdb2 = str(pdb2_index[0]) + '-' + str(pdb2_index[-1])
+        range_pred = str(pred_index[0]) + '-' + str(pred_index[-1])
+        print(range_pdb1, range_pdb2, range_pred)
+
+        self.run_for_models(pdb1, pdb2, data_dir, range_pred, range_pdb1, range_pdb2)
 
 
-#if __name__ == "__main__":
-#
-#    import warnings
-#    warnings.filterwarnings('ignore')
-#
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument("--pdb1", type=str, help='PDB structure for the target crystal structure (target to be predicted)')
-#    parser.add_argument("--pdb2", type=str, help='PDB structure for the alternative crystal structure')
-#
-#    args = parser.parse_args()
-#
-#    pdb1 = args.pdb1; pdb2 = args.pdb2
-#    pdb1_name = pdb1.replace('.pdb','');  pdb2_name = pdb2.replace('.pdb','')
-#
-#    TM_score_fs(pdb1, pdb1_name, pdb2, pdb2_name)
-#
