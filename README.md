@@ -14,6 +14,7 @@ Now create a conda new conda environment:
 ```
 conda create --name CF-random python=3.10
 conda activate CF-random
+pip install colabfold[alphafold,openmm] jax[cuda12] openmm[cuda12]
 pip install textalloc tmtools adjustText thefuzz mdtraj biopython seaborn MDAnalysis Colabfold
 conda install conda-forge::pymol-open-source
 pip3 install -U scikit-learn
