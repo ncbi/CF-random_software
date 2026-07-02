@@ -159,7 +159,7 @@ if __name__ == "__main__":
             shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
             np.savetxt('selected_MSA-size_' + pdb1_name + '.csv', shallow_MSA_size)
         else:
-            prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+            prediction_all(pdb1_name, search_dir, nMSA, model_type)
             shallow_MSA_size = []
             cal_TMscore = TMscore_cal_all_var(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type)
             shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
@@ -237,11 +237,11 @@ if __name__ == "__main__":
                 shallow_MSA_size = []
                 if args.type != "multimer":
                     fs_seq = args.seq
-                    prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+                    prediction_all(pdb1_name, search_dir, nMSA, model_type)
                     cal_TMscore = TMscore_cal_all_var_FS(pdb1, pdb1_name, pdb2, pdb2_name, nMSA, prediction_option, model_type, fs_seq)
                     shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
                 else:
-                    prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+                    prediction_all(pdb1_name, search_dir, nMSA, model_type)
                     shallow_MSA_size = np.append(shallow_MSA_size, cal_TMscore.size_selection)
                 print("               ")
                 print("Specific size of shallow random MSA is similar to full-MSA")
@@ -321,7 +321,7 @@ if __name__ == "__main__":
                 blind_screening(pdb1_name, blind_pred_path)
 
         else:
-            prediction_all(pdb1_name, search_dir, search_multi_dir, nMSA, model_type)
+            prediction_all(pdb1_name, search_dir, nMSA, model_type)
             print("               ")
             print("Finished running for prediction using full- and shallow random-MSAs")
 
@@ -331,5 +331,3 @@ if __name__ == "__main__":
 
             #### performing the PCA calculation with RMSD
             blind_screening(pdb1_name, blind_pred_path)
-
-
