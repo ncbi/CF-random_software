@@ -117,7 +117,7 @@ class CF_MSA_var():
 
 
 class prediction_all():
-    def __init__(self, pdb1_name, search_dir, search_multi_dir, nMSA, model_type):
+    def __init__(self, pdb1_name, search_dir, nMSA, model_type):
         
         num_seeds = 5 + nMSA
         
@@ -150,7 +150,4 @@ class prediction_all():
         if model_type != "alphafold2_multimer_v3":
             MSA_var = CF_MSA_var(pdb1_name, search_dir, output_dir, random_seed, num_seeds, model_type)
         else:
-            MSA_var = CF_MSA_var(pdb1_name, search_multi_dir, output_dir, random_seed, num_seeds, model_type)
-
-
-
+            MSA_var = CF_MSA_var(pdb1_name, search_dir, output_dir, random_seed, num_seeds, model_type)
