@@ -38,8 +38,10 @@ if __name__ == "__main__":
 
 
 
-
+    ### downloading alphafold parameters
     download_alphafold_params("alphafold2_ptm", Path("."))
+    download_alphafold_params("alphafold2_multimer_v3", Path("."))
+    download_alphafold_params("alphafold2", Path("."))
 
 
     blind = 'predictions_all'
